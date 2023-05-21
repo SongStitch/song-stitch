@@ -1,84 +1,34 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"image"
+	"image/jpeg"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/dyninc/qstring"
 )
 
 type CollageRequest struct {
-	Width    int    `url:"width"`
-	Height   int    `url:"height"`
+	Rows     int    `url:"rows"`
+	Columns  int    `url:"columns"`
 	Username string `url:"username"`
 	Period   string `url:"period"`
 }
 
-type CollageResponse struct {
-	Images []string `json:"images"`
-}
+func get_collage(request *CollageRequest) image.Image {
+	limit := request.Rows * request.Columns
+	imageUrls := get_albums(request.Username, request.Period, limit)
 
-type LastFMResponse struct {
-	TopAlbums struct {
-		Album []struct {
-			Image []struct {
-				Size string `json:"size"`
-				Link string `json:"#text"`
-			} `json:"image"`
-		} `json:"album"`
-	} `json:"topalbums"`
-}
-
-func get_collage(request *CollageRequest) CollageResponse {
-
-	endpoint := os.Getenv("LASTFM_ENDPOINT")
-	key := os.Getenv("LASTFM_API_KEY")
-
-	limit := request.Width * request.Height
-
-	url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&api_key=%s&format=json", endpoint, request.Username, request.Period, limit, key)
-
-	req, err := http.NewRequest("GET", url, nil)
+	images, err := downloadImages(imageUrls)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var lastFMResponse LastFMResponse
-	err = json.Unmarshal([]byte(body), &lastFMResponse)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	var imageArray []string
-	imageArray = make([]string, limit)
-	for i, album := range lastFMResponse.TopAlbums.Album {
-		for _, image := range album.Image {
-			if image.Size == "small" {
-				imageArray[i] = image.Link
-			}
-		}
-	}
-
-	return CollageResponse{
-		Images: imageArray,
-	}
-
+	collage, _ := create_collage(images, request.Rows, request.Columns)
+	return collage
 }
 
 func collage(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +39,6 @@ func collage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var request CollageRequest
-
 	err = qstring.Unmarshal(queryParams, &request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -97,8 +46,12 @@ func collage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := get_collage(&request)
-	responseJson, err := json.Marshal(response)
-	fmt.Fprintf(w, string(responseJson))
+	w.Header().Set("Content-Type", "image/jpeg")
+	err = jpeg.Encode(w, response, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
