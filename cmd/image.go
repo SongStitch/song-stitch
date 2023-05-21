@@ -147,7 +147,7 @@ func create_collage(images []image.Image, width int, height int) (image.Image, e
 	err := imaging.Save(collage, "collage.jpg")
 	if err != nil {
 		fmt.Println(err)
-		return
+		//		return
 	}
 	return collage, nil
 }
