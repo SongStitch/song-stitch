@@ -25,8 +25,7 @@ type LastFMResponse struct {
 	} `json:"topalbums"`
 }
 
-func get_albums(username string, period string, count int) []Album {
-
+func get_albums(username string, period Period, count int) []Album {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 	url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&api_key=%s&format=json", endpoint, username, period, count, key)
