@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"image"
 	"image/color"
 	"image/draw"
+	"image/jpeg"
 	"log"
 	"net/url"
 	"os"
@@ -77,6 +79,19 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 	d.DrawString(label)
 }
 
+func compressImage(collage image.Image, quality int) (image.Image, error) {
+	var buf bytes.Buffer
+	err := jpeg.Encode(&buf, collage, &jpeg.Options{Quality: quality})
+	if err != nil {
+		return nil, err
+	}
+	collageCompressed, err := jpeg.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		return nil, err
+	}
+	return collageCompressed, nil
+}
+
 func create_collage(albums []Album, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
@@ -93,13 +108,11 @@ func create_collage(albums []Album, rows int, columns int) (image.Image, error) 
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
 	}
 
-	/* No need to save? */
-	// save the collage to file
-	//	err := imaging.Save(collage, "collage.jpg")
-	//	if err != nil {
-	//		fmt.Println(err)
-	//				return
-	//	}
+	collageCompressed, err := compressImage(collage, 100)
+	if err != nil {
+		// Just serve the non-compressed image
+		collageCompressed = collage
+	}
 
-	return collage, nil
+	return collageCompressed, nil
 }
