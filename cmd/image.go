@@ -67,7 +67,7 @@ func getExtension(u string) (string, error) {
 }
 
 func addLabel(img *image.RGBA, x, y int, label string) {
-	col := color.RGBA{255, 255, 255, 255} // black
+	col := color.RGBA{255, 255, 255, 255} // white
 	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
 
 	d := &font.Drawer{
