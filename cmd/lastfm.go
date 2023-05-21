@@ -52,7 +52,7 @@ func get_albums(username string, period string, count int) []string {
 	imageArray = make([]string, count)
 	for i, album := range lastFMResponse.TopAlbums.Album {
 		for _, image := range album.Image {
-			if image.Size == "small" {
+			if image.Size == "extralarge" {
 				imageArray[i] = image.Link
 			}
 		}

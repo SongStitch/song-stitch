@@ -6,16 +6,48 @@ import (
 	"image"
 	"image/jpeg"
 	"io/ioutil"
+	"log"
+	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/disintegration/imaging"
 )
 
 const (
-	jpgFileType = ".jpg"
+	jpgFileType      = ".jpg"
+	imageCoverWidth  = 300
+	imageCoverHeight = 300
 )
+
+var fallbackImage image.Image
+
+func init() {
+	var err error
+	fallbackImage, err = ReadImage("./fallback.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ReadImage(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return img, nil
+}
 
 func getExtension(u string) (string, error) {
 	parsedURL, err := url.Parse(u)
@@ -49,7 +81,6 @@ func downloadImage(url string) (image.Image, error) {
 
 	fmt.Println(extension)
 	if strings.ToLower(extension) == jpgFileType {
-		fmt.Println("JPG FILE")
 		img, err := jpeg.Decode(ioBody)
 		if err != nil {
 			fmt.Println(err)
@@ -69,59 +100,54 @@ func downloadImages(imageUrls []string) ([]image.Image, error) {
 	var wg sync.WaitGroup
 	wg.Add(len(imageUrls))
 
+	fmt.Println(imageUrls)
 	images := make([]image.Image, len(imageUrls))
 
 	var mux sync.Mutex
 
-	for _, url := range imageUrls {
+	for i, url := range imageUrls {
 		// download each image in a separate goroutine
-		go func(url string) {
+		go func(i int, url string) {
 			defer wg.Done()
 			img, err := downloadImage(url)
 			if err != nil {
 				fmt.Println("Error downloading image:", err)
-				return
+				img = fallbackImage
+				//	return
 			}
 			// Protect writing to the images slice with a mutex
 			mux.Lock()
-			images = append(images, img)
+			images[i] = img
 			mux.Unlock()
-		}(url)
+		}(i, url)
 	}
 
 	// wait for all downloads to finish
 	wg.Wait()
 
+	fmt.Println(images)
 	return images, nil
 }
 
 func create_collage(images []image.Image, width int, height int) (image.Image, error) {
-	//	// determine collage grid size (assume square grid for simplicity)
-	//	gridSize := int(math.Sqrt(float64(len(images))))
-	//
-	//	// dimensions of the collage based on the first image
-	//	width := images[0].Bounds().Size().X
-	//	height := images[0].Bounds().Size().Y
-	//
-	//	// create a new blank image with dimensions to fit all the images
-	//	collage := imaging.New(width*gridSize, height*gridSize, image.Transparent)
-	//
-	//	// add each image to the collage
-	//	for i, img := range images {
-	//		x := (i % gridSize) * width
-	//		y := (i / gridSize) * heighg@l
-	//		collage = imaging.Paste(collage, img, image.Pt(x, y))
-	//	}
-	//
-	//	// save the collage to file
-	//	err = imaging.Save(collage, "collage.jpg")
-	//	if err != nil {
-	//		fmt.Println(err)
-	//		return
-	//	}
-	//
-	//	fmt.Println("Collage created successfully!")
+	// determine collage grid size (assume square grid for simplicity)
+	gridSize := int(math.Sqrt(float64(len(images))))
 
-	// TODO: Figure out why the first element of this array is nil - should only be one element anyways.
-	return images[1], nil
+	// create a new blank image with dimensions to fit all the images
+	collage := imaging.New(imageCoverHeight*gridSize, imageCoverHeight*gridSize, image.Transparent)
+
+	// add each image to the collage
+	for i, img := range images {
+		x := (i % gridSize) * imageCoverWidth
+		y := (i / gridSize) * imageCoverHeight
+		collage = imaging.Paste(collage, img, image.Pt(x, y))
+	}
+
+	// save the collage to file
+	err := imaging.Save(collage, "collage.jpg")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	return collage, nil
 }
