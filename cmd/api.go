@@ -40,16 +40,16 @@ type CollageRequest struct {
 	Period   Period `url:"period" validate:"required,validatePeriod"`
 }
 
-func get_collage(request *CollageRequest) image.Image {
+func getCollage(request *CollageRequest) image.Image {
 	count := request.Rows * request.Columns
-	albums := get_albums(request.Username, request.Period, count)
+	albums := getAlbums(request.Username, request.Period, count)
 
 	err := downloadImagesForAlbums(albums)
 	if err != nil {
 		log.Println(err)
 	}
 
-	collage, _ := create_collage(albums, request.Rows, request.Columns)
+	collage, _ := createCollage(albums, request.Rows, request.Columns)
 	return collage
 }
 
@@ -76,7 +76,7 @@ func collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := get_collage(&request)
+	response := getCollage(&request)
 	w.Header().Set("Content-Type", "image/jpeg")
 	err = jpeg.Encode(w, response, nil)
 	if err != nil {
