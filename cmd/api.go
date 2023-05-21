@@ -5,11 +5,10 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, world!")
+func collage(w http.ResponseWriter, r *http.Request) {
+
 }
 
-func run() {
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8080", nil)
+func hello(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, world!")
 }
