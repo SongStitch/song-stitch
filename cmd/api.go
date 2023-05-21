@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/dyninc/qstring"
+	"github.com/go-playground/validator/v10"
 )
 
 type Period string
@@ -22,7 +23,8 @@ const (
 	TWELVE_MONTHS Period = "12month"
 )
 
-func validate_period(period Period) bool {
+func validatePeriod(fl validator.FieldLevel) bool {
+	period := Period(fl.Field().String())
 	switch period {
 	case OVERALL, SEVEN_DAYS, ONE_MONTH, THREE_MONTHS, SIX_MONTHS, TWELVE_MONTHS:
 		return true
@@ -32,10 +34,10 @@ func validate_period(period Period) bool {
 }
 
 type CollageRequest struct {
-	Rows     int    `url:"rows"`
-	Columns  int    `url:"columns"`
-	Username string `url:"username"`
-	Period   Period `url:"period"`
+	Rows     int    `url:"rows" validate:"required,gte=1,lte=10"`
+	Columns  int    `url:"columns" validate:"required,gte=1,lte=10"`
+	Username string `url:"username" validate:"required"`
+	Period   Period `url:"period" validate:"required,validatePeriod"`
 }
 
 func get_collage(request *CollageRequest) image.Image {
@@ -65,8 +67,12 @@ func collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !validate_period(request.Period) {
-		http.Error(w, "Invalid period", http.StatusBadRequest)
+	validate := validator.New()
+	validate.RegisterValidation("validatePeriod", validatePeriod)
+
+	err = validate.Struct(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
