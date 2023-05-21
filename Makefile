@@ -5,6 +5,9 @@ mod:
 	go mod tidy
 	go mod vendor
 
+run:
+	go run cmd/*.go
+
 build:
 	go build -o bin/${BINARY_NAME} cmd/*.go
 
