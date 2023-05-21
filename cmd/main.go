@@ -31,6 +31,7 @@ func logging(logger *log.Logger) func(http.Handler) http.Handler {
 		})
 	}
 }
+
 func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +45,7 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 		})
 	}
 }
+
 func run_server() {
 	router := http.NewServeMux()
 	router.HandleFunc("/", status)

@@ -102,5 +102,5 @@ func collage(w http.ResponseWriter, r *http.Request) {
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Api running")
+	fmt.Fprintf(w, "API running")
 }
