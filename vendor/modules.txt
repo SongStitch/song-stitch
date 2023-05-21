@@ -4,6 +4,10 @@ github.com/disintegration/imaging
 # github.com/dyninc/qstring v0.0.0-20160719172318-ab5840a88e81
 ## explicit
 github.com/dyninc/qstring
+# github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+## explicit
+github.com/golang/freetype/raster
+github.com/golang/freetype/truetype
 # github.com/joho/godotenv v1.5.1
 ## explicit; go 1.12
 github.com/joho/godotenv
@@ -12,7 +16,6 @@ github.com/joho/godotenv
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
 golang.org/x/image/font
-golang.org/x/image/font/basicfont
 golang.org/x/image/math/fixed
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw

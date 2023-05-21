@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/jpeg"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -13,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
 )
 
@@ -22,9 +23,15 @@ const (
 	jpgFileType      = ".jpg"
 	imageCoverWidth  = 300
 	imageCoverHeight = 300
+	fontfile         = "./Hack-Regular.ttf"
+	size             = 12
+	dpi              = 72
 )
 
-var fallbackImage image.Image
+var (
+	fallbackImage image.Image
+	fontTrueType  *truetype.Font
+)
 
 func init() {
 	var err error
@@ -32,6 +39,17 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Read the font data
+	fontBytes, err := ioutil.ReadFile(fontfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fontTrueType, err = truetype.Parse(fontBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func ReadImage(path string) (image.Image, error) {
@@ -67,14 +85,17 @@ func getExtension(u string) (string, error) {
 }
 
 func addLabel(img *image.RGBA, x, y int, label string) {
-	col := color.RGBA{255, 255, 255, 255} // white
+	textColor := color.RGBA{255, 255, 255, 255} // white
 	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
 
 	d := &font.Drawer{
-		Dst:  img,
-		Src:  image.NewUniform(col),
-		Face: basicfont.Face7x13,
-		Dot:  point,
+		Dst: img,
+		Src: image.NewUniform(textColor),
+		Face: truetype.NewFace(fontTrueType, &truetype.Options{
+			Size: size,
+			DPI:  dpi,
+		}),
+		Dot: point,
 	}
 	d.DrawString(label)
 }
@@ -101,8 +122,8 @@ func create_collage(albums []Album, rows int, columns int) (image.Image, error) 
 	for i, album := range albums {
 		imgRGBA := image.NewRGBA(album.Image.Bounds())
 		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
-		addLabel(imgRGBA, 10, 10, album.Artist)
-		addLabel(imgRGBA, 10, 25, album.Name)
+		addLabel(imgRGBA, 10, 20, album.Artist)
+		addLabel(imgRGBA, 10, 35, album.Name)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
