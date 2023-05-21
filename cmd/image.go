@@ -23,7 +23,7 @@ const (
 	jpgFileType      = ".jpg"
 	imageCoverWidth  = 300
 	imageCoverHeight = 300
-	fontfile         = "./Hack-Regular.ttf"
+	fontfile         = "./assets/Hack-Regular.ttf"
 	size             = 12
 	dpi              = 72
 )
@@ -35,7 +35,7 @@ var (
 
 func init() {
 	var err error
-	fallbackImage, err = ReadImage("./fallback.jpg")
+	fallbackImage, err = ReadImage("./assets/fallback.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
