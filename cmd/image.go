@@ -2,19 +2,20 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"image"
+	"image/color"
+	"image/draw"
 	"image/jpeg"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/disintegration/imaging"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 )
 
 const (
@@ -65,88 +66,53 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func downloadImage(url string) (image.Image, error) {
-	resp, err := http.Get(url)
+func addLabel(img *image.RGBA, x, y int, label string) {
+	col := color.RGBA{255, 255, 255, 255} // white
+	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(col),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+	d.DrawString(label)
+}
+
+func compressImage(collage image.Image, quality int) (image.Image, error) {
+	var buf bytes.Buffer
+	err := jpeg.Encode(&buf, collage, &jpeg.Options{Quality: quality})
 	if err != nil {
 		return nil, err
 	}
-	ioBody := resp.Body
-	defer resp.Body.Close()
-
-	extension, err := getExtension(url)
+	collageCompressed, err := jpeg.Decode(bytes.NewReader(buf.Bytes()))
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(extension)
-	if strings.ToLower(extension) == jpgFileType {
-		img, err := jpeg.Decode(ioBody)
-		if err != nil {
-			fmt.Println(err)
-		}
-		return img, err
-	} else {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		img, _, err := image.Decode(bytes.NewReader(body))
-		return img, err
-	}
+	return collageCompressed, nil
 }
 
-func downloadImages(imageUrls []string) ([]image.Image, error) {
-	var wg sync.WaitGroup
-	wg.Add(len(imageUrls))
-
-	fmt.Println(imageUrls)
-	images := make([]image.Image, len(imageUrls))
-
-	var mux sync.Mutex
-
-	for i, url := range imageUrls {
-		// download each image in a separate goroutine
-		go func(i int, url string) {
-			defer wg.Done()
-			img, err := downloadImage(url)
-			if err != nil {
-				fmt.Println("Error downloading image:", err)
-				img = fallbackImage
-				//	return
-			}
-			// Protect writing to the images slice with a mutex
-			mux.Lock()
-			images[i] = img
-			mux.Unlock()
-		}(i, url)
-	}
-
-	// wait for all downloads to finish
-	wg.Wait()
-
-	fmt.Println(images)
-	return images, nil
-}
-
-func create_collage(images []image.Image, rows int, columns int) (image.Image, error) {
+func create_collage(albums []Album, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
 	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
 
 	// add each image to the collage
-	for i, img := range images {
+	for i, album := range albums {
+		imgRGBA := image.NewRGBA(album.Image.Bounds())
+		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
+		addLabel(imgRGBA, 10, 10, album.Artist)
+		addLabel(imgRGBA, 10, 25, album.Name)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
-		collage = imaging.Paste(collage, img, image.Pt(x, y))
+		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
 	}
 
-	/* No need to save? */
-	// save the collage to file
-	//	err := imaging.Save(collage, "collage.jpg")
-	//	if err != nil {
-	//		fmt.Println(err)
-	//				return
-	//	}
+	collageCompressed, err := compressImage(collage, 100)
+	if err != nil {
+		// Just serve the non-compressed image
+		collageCompressed = collage
+	}
 
-	return collage, nil
+	return collageCompressed, nil
 }

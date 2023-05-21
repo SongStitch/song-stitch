@@ -12,7 +12,12 @@ import (
 type LastFMResponse struct {
 	TopAlbums struct {
 		Album []struct {
-			Image []struct {
+			Artist struct {
+				ArtistName string `json:"name"`
+			}
+			Playcount int    `json:"playcount"`
+			AlbumName string `json:"name"`
+			Image     []struct {
 				Size string `json:"size"`
 				Link string `json:"#text"`
 			} `json:"image"`
@@ -20,7 +25,7 @@ type LastFMResponse struct {
 	} `json:"topalbums"`
 }
 
-func get_albums(username string, period string, count int) []string {
+func get_albums(username string, period string, count int) []Album {
 
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -48,15 +53,18 @@ func get_albums(username string, period string, count int) []string {
 		fmt.Println("Error:", err)
 	}
 
-	var imageArray []string
-	imageArray = make([]string, count)
+	var albums []Album
+	albums = make([]Album, count)
 	for i, album := range lastFMResponse.TopAlbums.Album {
+		albums[i].Name = album.AlbumName
+		albums[i].Artist = album.Artist.ArtistName
+		albums[i].Playcount = album.Playcount
 		for _, image := range album.Image {
 			if image.Size == "extralarge" {
-				imageArray[i] = image.Link
+				albums[i].ImageUrl = image.Link
 			}
 		}
 	}
 
-	return imageArray
+	return albums
 }

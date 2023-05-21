@@ -20,14 +20,14 @@ type CollageRequest struct {
 
 func get_collage(request *CollageRequest) image.Image {
 	limit := request.Rows * request.Columns
-	imageUrls := get_albums(request.Username, request.Period, limit)
+	albums := get_albums(request.Username, request.Period, limit)
 
-	images, err := downloadImages(imageUrls)
+	err := downloadImagesForAlbums(albums)
 	if err != nil {
 		log.Println(err)
 	}
 
-	collage, _ := create_collage(images, request.Rows, request.Columns)
+	collage, _ := create_collage(albums, request.Rows, request.Columns)
 	return collage
 }
 
