@@ -66,7 +66,7 @@ func getExtension(u string) (string, error) {
 
 func addLabel(img *image.RGBA, x, y int, label string) {
 	col := color.RGBA{255, 255, 255, 255} // black
-	point := fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
+	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
 
 	d := &font.Drawer{
 		Dst:  img,
@@ -86,7 +86,8 @@ func create_collage(albums []Album, rows int, columns int) (image.Image, error) 
 	for i, album := range albums {
 		imgRGBA := image.NewRGBA(album.Image.Bounds())
 		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
-		addLabel(imgRGBA, 10, 10, "Hello, World!")
+		addLabel(imgRGBA, 10, 10, album.Artist)
+		addLabel(imgRGBA, 10, 25, album.Name)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
