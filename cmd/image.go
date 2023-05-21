@@ -1,20 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
-	"image/jpeg"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/disintegration/imaging"
 	"golang.org/x/image/font"
@@ -70,69 +64,6 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func downloadImage(url string) (image.Image, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	ioBody := resp.Body
-	defer resp.Body.Close()
-
-	extension, err := getExtension(url)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(extension)
-	if strings.ToLower(extension) == jpgFileType {
-		img, err := jpeg.Decode(ioBody)
-		if err != nil {
-			fmt.Println(err)
-		}
-		return img, err
-	} else {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		img, _, err := image.Decode(bytes.NewReader(body))
-		return img, err
-	}
-}
-
-func downloadImages(imageUrls []string) ([]image.Image, error) {
-	var wg sync.WaitGroup
-	wg.Add(len(imageUrls))
-
-	fmt.Println(imageUrls)
-	images := make([]image.Image, len(imageUrls))
-
-	var mux sync.Mutex
-
-	for i, url := range imageUrls {
-		// download each image in a separate goroutine
-		go func(i int, url string) {
-			defer wg.Done()
-			img, err := downloadImage(url)
-			if err != nil {
-				fmt.Println("Error downloading image:", err)
-				img = fallbackImage
-				//	return
-			}
-			// Protect writing to the images slice with a mutex
-			mux.Lock()
-			images[i] = img
-			mux.Unlock()
-		}(i, url)
-	}
-
-	// wait for all downloads to finish
-	wg.Wait()
-
-	fmt.Println(images)
-	return images, nil
-}
-
 func addLabel(img *image.RGBA, x, y int, label string) {
 	col := color.RGBA{255, 255, 255, 255} // black
 	point := fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
@@ -146,15 +77,15 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 	d.DrawString(label)
 }
 
-func create_collage(images []image.Image, rows int, columns int) (image.Image, error) {
+func create_collage(albums []Album, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
 	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
 
 	// add each image to the collage
-	for i, img := range images {
-		imgRGBA := image.NewRGBA(img.Bounds())
-		draw.Draw(imgRGBA, imgRGBA.Bounds(), img, img.Bounds().Min, draw.Src)
+	for i, album := range albums {
+		imgRGBA := image.NewRGBA(album.Image.Bounds())
+		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
 		addLabel(imgRGBA, 10, 10, "Hello, World!")
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
