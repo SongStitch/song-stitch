@@ -12,14 +12,14 @@ import (
 )
 
 type CollageRequest struct {
-	Width    int    `url:"width"`
-	Height   int    `url:"height"`
+	Rows     int    `url:"rows"`
+	Columns  int    `url:"columns"`
 	Username string `url:"username"`
 	Period   string `url:"period"`
 }
 
 func get_collage(request *CollageRequest) image.Image {
-	limit := request.Width * request.Height
+	limit := request.Rows * request.Columns
 	imageUrls := get_albums(request.Username, request.Period, limit)
 
 	images, err := downloadImages(imageUrls)
@@ -27,7 +27,7 @@ func get_collage(request *CollageRequest) image.Image {
 		log.Println(err)
 	}
 
-	collage, _ := create_collage(images, request.Width, request.Height)
+	collage, _ := create_collage(images, request.Rows, request.Columns)
 	return collage
 }
 

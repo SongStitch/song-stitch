@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	"io/ioutil"
 	"log"
-	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -129,25 +128,25 @@ func downloadImages(imageUrls []string) ([]image.Image, error) {
 	return images, nil
 }
 
-func create_collage(images []image.Image, width int, height int) (image.Image, error) {
-	// determine collage grid size (assume square grid for simplicity)
-	gridSize := int(math.Sqrt(float64(len(images))))
+func create_collage(images []image.Image, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
-	collage := imaging.New(imageCoverHeight*gridSize, imageCoverHeight*gridSize, image.Transparent)
+	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
 
 	// add each image to the collage
 	for i, img := range images {
-		x := (i % gridSize) * imageCoverWidth
-		y := (i / gridSize) * imageCoverHeight
+		x := (i % columns) * imageCoverWidth
+		y := (i / columns) * imageCoverHeight
 		collage = imaging.Paste(collage, img, image.Pt(x, y))
 	}
 
+	/* No need to save? */
 	// save the collage to file
-	err := imaging.Save(collage, "collage.jpg")
-	if err != nil {
-		fmt.Println(err)
-		//		return
-	}
+	//	err := imaging.Save(collage, "collage.jpg")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//				return
+	//	}
+
 	return collage, nil
 }
