@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/dyninc/qstring"
 	"net/http"
 	"net/url"
+
+	"github.com/dyninc/qstring"
 )
 
 type CollageRequest struct {
@@ -12,6 +14,17 @@ type CollageRequest struct {
 	Height   int    `url:"height"`
 	Username string `url:"username"`
 	Period   string `url:"period"`
+}
+
+type CollageResponse struct {
+	Images []string `json:"images"`
+}
+
+func get_collage(request *CollageRequest) CollageResponse {
+	return CollageResponse{
+		Images: []string{"https://i.imgur.com/3jO3l4l.jpg", "https://i.imgur.com/3jO3l4l.jpg"},
+	}
+
 }
 
 func collage(w http.ResponseWriter, r *http.Request) {
@@ -29,12 +42,11 @@ func collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Width: %d\n", request.Width)
-	fmt.Fprintf(w, "Height: %d\n", request.Height)
-	fmt.Fprintf(w, "Username: %s\n", request.Username)
-	fmt.Fprintf(w, "Period: %s\n", request.Period)
+	response := get_collage(&request)
+	responseJson, err := json.Marshal(response)
+	fmt.Fprintf(w, string(responseJson))
 }
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, world!")
+func status(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Api running")
 }

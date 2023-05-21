@@ -23,7 +23,7 @@ func logging(logger *log.Logger) func(http.Handler) http.Handler {
 				if !ok {
 					requestID = "unknown"
 				}
-				logger.Println(requestID, r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
+				logger.Println(requestID, r.Method, r.URL.Path, r.URL.RawQuery, r.RemoteAddr, r.UserAgent())
 			}()
 			next.ServeHTTP(w, r)
 		})
@@ -44,7 +44,7 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 }
 func run_server() {
 	router := http.NewServeMux()
-	router.HandleFunc("/", hello)
+	router.HandleFunc("/", status)
 	router.HandleFunc("/collage", collage)
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
