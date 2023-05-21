@@ -11,5 +11,8 @@ github.com/joho/godotenv
 ## explicit; go 1.12
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
+golang.org/x/image/font
+golang.org/x/image/font/basicfont
+golang.org/x/image/math/fixed
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw

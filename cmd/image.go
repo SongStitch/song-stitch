@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
+	"image/draw"
 	"image/jpeg"
 	"io/ioutil"
 	"log"
@@ -15,6 +17,9 @@ import (
 	"sync"
 
 	"github.com/disintegration/imaging"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 )
 
 const (
@@ -128,6 +133,19 @@ func downloadImages(imageUrls []string) ([]image.Image, error) {
 	return images, nil
 }
 
+func addLabel(img *image.RGBA, x, y int, label string) {
+	col := color.RGBA{255, 255, 255, 255} // black
+	point := fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(col),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+	d.DrawString(label)
+}
+
 func create_collage(images []image.Image, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
@@ -135,9 +153,12 @@ func create_collage(images []image.Image, rows int, columns int) (image.Image, e
 
 	// add each image to the collage
 	for i, img := range images {
+		imgRGBA := image.NewRGBA(img.Bounds())
+		draw.Draw(imgRGBA, imgRGBA.Bounds(), img, img.Bounds().Min, draw.Src)
+		addLabel(imgRGBA, 10, 10, "Hello, World!")
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
-		collage = imaging.Paste(collage, img, image.Pt(x, y))
+		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
 	}
 
 	/* No need to save? */

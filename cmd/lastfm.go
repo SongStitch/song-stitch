@@ -12,7 +12,11 @@ import (
 type LastFMResponse struct {
 	TopAlbums struct {
 		Album []struct {
-			Image []struct {
+			Artist []struct {
+				ArtistName string `json:"name"`
+			}
+			AlbumName string `json:"name"`
+			Image     []struct {
 				Size string `json:"size"`
 				Link string `json:"#text"`
 			} `json:"image"`
