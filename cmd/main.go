@@ -46,7 +46,7 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 	}
 }
 
-func run_server() {
+func runServer() {
 	router := http.NewServeMux()
 	router.HandleFunc("/", status)
 	router.HandleFunc("/collage", collage)
@@ -72,5 +72,5 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	run_server()
+	runServer()
 }

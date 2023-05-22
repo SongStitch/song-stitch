@@ -23,7 +23,7 @@ const (
 	jpgFileType      = ".jpg"
 	imageCoverWidth  = 300
 	imageCoverHeight = 300
-	fontfile         = "./Hack-Regular.ttf"
+	fontfile         = "./assets/Hack-Regular.ttf"
 	size             = 12
 	dpi              = 72
 )
@@ -35,7 +35,7 @@ var (
 
 func init() {
 	var err error
-	fallbackImage, err = ReadImage("./fallback.jpg")
+	fallbackImage, err = readImage("./assets/fallback.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func init() {
 
 }
 
-func ReadImage(path string) (image.Image, error) {
+func readImage(path string) (image.Image, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func compressImage(collage image.Image, quality int) (image.Image, error) {
 	return collageCompressed, nil
 }
 
-func create_collage(albums []Album, rows int, columns int) (image.Image, error) {
+func createCollage(albums []Album, rows int, columns int) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
 	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
