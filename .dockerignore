@@ -1,0 +1,151 @@
+# flyctl launch added from .gitignore
+**/bin
+
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+**/*.exe
+**/*.exe~
+**/*.dll
+**/*.so
+**/*.dylib
+
+# Test binary, built with `go test -c`
+**/*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+**/*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+**/go.work
+**/.env
+
+# flyctl launch added from vendor/github.com/ggicci/httpin/.gitignore
+# Binaries for programs and plugins
+vendor/github.com/ggicci/httpin/**/*.exe
+vendor/github.com/ggicci/httpin/**/*.exe~
+vendor/github.com/ggicci/httpin/**/*.dll
+vendor/github.com/ggicci/httpin/**/*.so
+vendor/github.com/ggicci/httpin/**/*.dylib
+
+# Test binary, built with `go test -c`
+vendor/github.com/ggicci/httpin/**/*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+vendor/github.com/ggicci/httpin/**/*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+vendor/github.com/ggicci/httpin/**/.vscode
+
+# Project specified
+vendor/github.com/ggicci/httpin/**/.DS_Store
+
+# flyctl launch added from vendor/github.com/go-playground/locales/.gitignore
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+vendor/github.com/go-playground/locales/**/*.o
+vendor/github.com/go-playground/locales/**/*.a
+vendor/github.com/go-playground/locales/**/*.so
+
+# Folders
+vendor/github.com/go-playground/locales/**/_obj
+vendor/github.com/go-playground/locales/**/_test
+
+# Architecture specific extensions/prefixes
+vendor/github.com/go-playground/locales/**/*.[568vq]
+vendor/github.com/go-playground/locales/**/[568vq].out
+
+vendor/github.com/go-playground/locales/**/*.cgo1.go
+vendor/github.com/go-playground/locales/**/*.cgo2.c
+vendor/github.com/go-playground/locales/**/_cgo_defun.c
+vendor/github.com/go-playground/locales/**/_cgo_gotypes.go
+vendor/github.com/go-playground/locales/**/_cgo_export.*
+
+vendor/github.com/go-playground/locales/**/_testmain.go
+
+vendor/github.com/go-playground/locales/**/*.exe
+vendor/github.com/go-playground/locales/**/*.test
+vendor/github.com/go-playground/locales/**/*.prof
+
+# flyctl launch added from vendor/github.com/go-playground/universal-translator/.gitignore
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+vendor/github.com/go-playground/universal-translator/**/*.o
+vendor/github.com/go-playground/universal-translator/**/*.a
+vendor/github.com/go-playground/universal-translator/**/*.so
+
+# Folders
+vendor/github.com/go-playground/universal-translator/**/_obj
+vendor/github.com/go-playground/universal-translator/**/_test
+
+# Architecture specific extensions/prefixes
+vendor/github.com/go-playground/universal-translator/**/*.[568vq]
+vendor/github.com/go-playground/universal-translator/**/[568vq].out
+
+vendor/github.com/go-playground/universal-translator/**/*.cgo1.go
+vendor/github.com/go-playground/universal-translator/**/*.cgo2.c
+vendor/github.com/go-playground/universal-translator/**/_cgo_defun.c
+vendor/github.com/go-playground/universal-translator/**/_cgo_gotypes.go
+vendor/github.com/go-playground/universal-translator/**/_cgo_export.*
+
+vendor/github.com/go-playground/universal-translator/**/_testmain.go
+
+vendor/github.com/go-playground/universal-translator/**/*.exe
+vendor/github.com/go-playground/universal-translator/**/*.test
+vendor/github.com/go-playground/universal-translator/**/*.prof
+vendor/github.com/go-playground/universal-translator/**/*.coverprofile
+
+# flyctl launch added from vendor/github.com/go-playground/validator/v10/.gitignore
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+vendor/github.com/go-playground/validator/v10/**/*.o
+vendor/github.com/go-playground/validator/v10/**/*.a
+vendor/github.com/go-playground/validator/v10/**/*.so
+
+# Folders
+vendor/github.com/go-playground/validator/v10/**/_obj
+vendor/github.com/go-playground/validator/v10/**/_test
+vendor/github.com/go-playground/validator/v10/**/bin
+
+# Architecture specific extensions/prefixes
+vendor/github.com/go-playground/validator/v10/**/*.[568vq]
+vendor/github.com/go-playground/validator/v10/**/[568vq].out
+
+vendor/github.com/go-playground/validator/v10/**/*.cgo1.go
+vendor/github.com/go-playground/validator/v10/**/*.cgo2.c
+vendor/github.com/go-playground/validator/v10/**/_cgo_defun.c
+vendor/github.com/go-playground/validator/v10/**/_cgo_gotypes.go
+vendor/github.com/go-playground/validator/v10/**/_cgo_export.*
+
+vendor/github.com/go-playground/validator/v10/**/_testmain.go
+
+vendor/github.com/go-playground/validator/v10/**/*.exe
+vendor/github.com/go-playground/validator/v10/**/*.test
+vendor/github.com/go-playground/validator/v10/**/*.prof
+vendor/github.com/go-playground/validator/v10/**/*.test
+vendor/github.com/go-playground/validator/v10/**/*.out
+vendor/github.com/go-playground/validator/v10/**/*.txt
+vendor/github.com/go-playground/validator/v10/**/*.DS_Store
+vendor/github.com/go-playground/validator/v10/**/cover.html
+vendor/github.com/go-playground/validator/v10/**/README.html
+vendor/github.com/go-playground/validator/v10/**/.idea
+
+# flyctl launch added from vendor/github.com/joho/godotenv/.gitignore
+vendor/github.com/joho/godotenv/**/.DS_Store
+
+# flyctl launch added from vendor/github.com/leodido/go-urn/.gitignore
+vendor/github.com/leodido/go-urn/**/*.exe
+vendor/github.com/leodido/go-urn/**/*.dll
+vendor/github.com/leodido/go-urn/**/*.so
+vendor/github.com/leodido/go-urn/**/*.dylib
+
+vendor/github.com/leodido/go-urn/**/*.test
+
+vendor/github.com/leodido/go-urn/**/*.out
+vendor/github.com/leodido/go-urn/**/*.txt
+
+vendor/github.com/leodido/go-urn/**/vendor
+vendor/github.com/leodido/go-urn/removecomments
+fly.toml
