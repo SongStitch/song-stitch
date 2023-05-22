@@ -59,6 +59,7 @@ type CollageRequest struct {
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
+	PlayCount     bool   `in:"query=playcount;default=false"`
 }
 
 func getCollage(request *CollageRequest) image.Image {
@@ -72,7 +73,7 @@ func getCollage(request *CollageRequest) image.Image {
 		log.Println(err)
 	}
 
-	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayArtist, request.DisplayAlbum)
+	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayArtist, request.DisplayAlbum, request.PlayCount)
 	return collage
 }
 

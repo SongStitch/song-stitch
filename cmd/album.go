@@ -14,7 +14,7 @@ import (
 type Album struct {
 	Name      string
 	Artist    string
-	Playcount int
+	Playcount string
 	ImageUrl  string
 	Image     image.Image
 }
