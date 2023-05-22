@@ -95,8 +95,9 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 		Dst: img,
 		Src: image.NewUniform(textColor),
 		Face: truetype.NewFace(fontTrueType, &truetype.Options{
-			Size: size,
-			DPI:  dpi,
+			Size:    size,
+			DPI:     dpi,
+			Hinting: font.HintingNone,
 		}),
 		Dot: point,
 	}
@@ -127,7 +128,9 @@ func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bo
 		i++
 	}
 	if playCount {
-		addLabel(img, 10, textLocation[i], fmt.Sprintf("Plays: %s", album.Playcount))
+		if len(album.Playcount) > 0 {
+			addLabel(img, 10, textLocation[i], fmt.Sprintf("Plays: %s", album.Playcount))
+		}
 	}
 }
 
@@ -146,11 +149,15 @@ func createCollage(albums []Album, rows int, columns int, displayArtist bool, di
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
 	}
 
-	collageCompressed, err := compressImage(collage, 100)
-	if err != nil {
-		// Just serve the non-compressed image
-		collageCompressed = collage
-	}
+	// Not needed for now
+	/*
+		collageCompressed, err := compressImage(collage, 100)
+		if err != nil {
+			// Just serve the non-compressed image
+			collageCompressed = collage
+		}
+		return collageCompressed, nil
+	*/
+	return collage, nil
 
-	return collageCompressed, nil
 }
