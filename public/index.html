@@ -198,7 +198,25 @@
       </script>
     </main>
     <div class="footer" >
-      <p>Made with ❤️ by <a href="https://github.com/theden" target="_blank" rel="noopener">TheDen</a> and <a href="https://github.com/BradLewis" target="_blank" rel="noopener">Brad</a></p>
+      <p id="links">Made with ❤️ by
+        <span><a href="https://github.com/theden" target="_blank" rel="noopener">TheDen</a></span>
+        <span><a href="https://github.com/BradLewis" target="_blank" rel="noopener">BradLewis</a></span>
+      </p>
+  <script>
+    window.onload = function() {
+      var p = document.getElementById('links');
+      var spans = p.getElementsByTagName('span');
+      var spanArr = Array.prototype.slice.call(spans);
+      spanArr.sort(function() { return 0.5 - Math.random() });
+      spanArr.forEach(function(span) {
+        p.appendChild(span); // This will move the <span> element (containing an <a> tag) to the end of the list.
+      });
+      // We need to adjust the "and" position after the first link
+      var andNode = document.createTextNode(" and ");
+      p.insertBefore(andNode, p.children[1]);
+    }
+  </script>
+
     </div>
   </body>
 </html>
