@@ -9,7 +9,7 @@ body {
   display: grid;
   place-items: center;
   min-height: 100%;
-  font-family: Helvetica, sans-serif;
+  font-family: avenir, Helvetica, sans-serif;
   background-color: #f2f2f2;
   padding: 20px;
   box-sizing: border-box;
@@ -84,10 +84,10 @@ body {
       }
     }
 
-		.footer {
-			text-align: center;
-			text-align: -webkit-center;
-		}
+    .footer {
+      text-align: center;
+      text-align: -webkit-center;
+    }
 
     .footer a {
       padding: 10px;
@@ -104,9 +104,9 @@ body {
       <h2>Last.fm Collage Generator</h2>
       <p>Generate an image collage of your most played albums!</p>
 
-      <form action="/collage" method="get">
+      <form action="/collage" method="get" id="form">
         <label for="username">Last.fm username</label><br>
-        <input required autofocus placeholder="Last.fm username" type="text" id="username" name="username"><br>
+        <input required autofocus autocomplete="on" placeholder="Last.fm username" type="text" id="username" name="username"><br>
         <label for="period">Period</label><br>
         <select name="period" id="period">
           <option value="7day">7 Days</option>
@@ -138,13 +138,20 @@ body {
 
         <input type="submit" value="Submit">
       </form>
+      <script>
+        var username = document.querySelector('#username');
+        username.value = localStorage.getItem('username') || '';
+        document.querySelector('#form').addEventListener('submit', function() {
+          localStorage.setItem('username', username.value);
+        });
+      </script>
     </main>
 
     <div class="footer" >
-    <p>Copyright © 2023 SoundStitch</p>
-			<a href="/">Home</a>
-			<a href="/about">About</a>
-			<a href="/contact">Contact</a>
-			</div>
-	</body>
+      <p>Copyright © 2023 SoundStitch</p>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </div>
+  </body>
 </html>
