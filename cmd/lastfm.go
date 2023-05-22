@@ -15,7 +15,7 @@ type LastFMResponse struct {
 			Artist struct {
 				ArtistName string `json:"name"`
 			}
-			Playcount int    `json:"playcount"`
+			Playcount string `json:"playcount"`
 			AlbumName string `json:"name"`
 			Image     []struct {
 				Size string `json:"size"`

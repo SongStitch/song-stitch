@@ -147,6 +147,7 @@
     }
     .nonbold {
       font-weight: normal;
+      color: grey;
     }
     </style>
   </head>
@@ -177,9 +178,14 @@
           <option value="true">Yes</option>
           <option value="false">No</option>
         </select><br>
-        <label for="rows">Number of Rows <span class="nonbold">(max 10)</span></label><br>
+        <label for="album">Display Play Count</label><br>
+        <select name="playcount" id="playcount">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select><br>
+        <label for="rows">Number of Rows <span class="nonbold">(max. 10)</span></label><br>
         <input type="number" id="rows" name="rows" min="1" max="10" value="3"><br>
-        <label for="columns">Number of Columns <span class="nonbold">(max 10)</span></label><br>
+        <label for="columns">Number of Columns <span class="nonbold">(max. 10)</span></label><br>
         <input type="number" id="columns" name="columns" min="1" max="10" value="3"><br>
         <input class="btn-grad" type="submit" value="Generate">
       </form>
