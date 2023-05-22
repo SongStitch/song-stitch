@@ -95,9 +95,8 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 		Dst: img,
 		Src: image.NewUniform(textColor),
 		Face: truetype.NewFace(fontTrueType, &truetype.Options{
-			Size:    size,
-			DPI:     dpi,
-			Hinting: font.HintingNone,
+			Size: size,
+			DPI:  dpi,
 		}),
 		Dot: point,
 	}
