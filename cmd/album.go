@@ -32,7 +32,6 @@ func (a *Album) DownloadImage() error {
 		return err
 	}
 
-	fmt.Println(extension)
 	if strings.ToLower(extension) == jpgFileType {
 		img, err := jpeg.Decode(ioBody)
 		if err != nil {
