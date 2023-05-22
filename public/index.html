@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SongStitch</title>
+    <meta name="description" content="Generate an image collage of your most played albums!">
+    <meta name="keywords" content="lastfm, collage, image, music, albums">
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="SongStitch">
+    <meta property="og:description" content="Generate an image collage of your most played albums!">
+    <meta property="og:image" content="/public/logo.png">
+    <meta property="og:url" content="http://your-website.com">
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://your-website.com/">
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
+    <!-- manifest -->
+    <link rel="manifest" href="/public/site.webmanifest" />
+    <style>
+    @font-face {
+      font-family: "Secular One";
+      src: url("/public/SecularOne-Regular.ttf") format('truetype');
+      font-display: swap;
+    }
+    a:link {color: black;}      /* unvisited link */
+    a:visited { color:black;}  /* visited link */
+    a:hover {color: #f2f2f2; background: black;}  /* selected link */
+    a:active {color: #f2f2f2; background: black;}  /* selected link */
+    html {
+      background-color: #ffffff;
+      background-image: radial-gradient(#f2f2f2 2px, #ffffff 2px);
+      background-size: 40px 40px;
+    }
+    body, input[type='text']  {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      font-family: 'Secular One',Poppins, avenir, Helvetica, sans-serif;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    form {
+      max-width: 500px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+    }
+    input[type=text], select, input[type=number] {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 1em;
+      background-color: white;
+      background: none;
+    }
+    input[type=submit] {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    input[type=submit]:hover {
+      background-color: #45a049;
+    }
+    input:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px black;
+    }
+    label {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2em;
+    }
+    @media (max-width: :00px) {
+      body {
+        padding: 10px;
+      }
+      form {
+        padding: 10px;
+      }
+      input[type=text], select, input[type=number], input[type=submit] {
+        padding: 10px 15px;
+        font-size: 0.8em;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+
+      label {
+        font-size: 1em;
+      }
+    }
+    .header-img {
+      border-radius: 0.5em;
+      width: 100%;
+      max-width: 40vh;
+      display: block;
+      height: auto;
+      margin: auto;
+    }
+
+    .footer {
+      text-align: center;
+      text-align: -webkit-center;
+    }
+
+    .footer a {
+    }
+
+    .btn-grad {
+      background-image: linear-gradient(to right, #DA22FF 0%, #9733EE  51%, #DA22FF  100%);
+      margin: 10px;
+      padding: 15px 45px;
+      text-align: center;
+      text-transform: uppercase;
+      transition: 0.5s;
+      background-size: 200% auto;
+      color: white;
+      box-shadow: 0 0 20px #eee;
+      border-radius: 10px;
+      display: block;
+    }
+    .btn-grad:hover {
+      background-position: right center;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    </style>
+  </head>
+  <body>
+    <main class="main">
+      <img src="/public/logo.png" class="header-img" alt="SongStitch Logo">
+      <h2>Last.fm Collage Generator</h2>
+      <p>Generate an image collage of your most played albums!</p>
+      <form action="/collage" method="get" id="form">
+        <label for="username">Last.fm Username</label><br>
+        <input required autofocus autocomplete="on" placeholder="Last.fm username" title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'." pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$" type="text" id="username" name="username"><br>
+        <label for="period">Period</label><br>
+        <select name="period" id="period">
+          <option value="7day">7 Days</option>
+          <option value="1month">1 Month</option>
+          <option value="3month">3 Months</option>
+          <option value="6month">6 Months</option>
+          <option value="12month">1 Year</option>
+          <option value="overall">Overall</option>
+        </select><br>
+        <label for="album">Display Artist</label><br>
+        <select name="artist" id="artist">
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select><br>
+        <label for="album">Display Album</label><br>
+        <select name="album" id="album">
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select><br>
+        <label for="rows">Rows</label><br>
+        <input type="number" id="rows" name="rows" min="2" max="10" value="2"><br>
+        <label for="columns">Columns</label><br>
+        <input type="number" id="columns" name="columns" min="2" max="10" value="2"><br>
+        <input class="btn-grad" type="submit" value="Submit">
+      </form>
+      <script>
+        var username = document.querySelector('#username');
+        username.value = localStorage.getItem('username') || '';
+        document.querySelector('#form').addEventListener('submit', function() {
+          localStorage.setItem('username', username.value);
+        });
+      </script>
+    </main>
+    <div class="footer" >
+      <p>Made with ❤️ by <a href="https://github.com/theden" target="_blank" rel="noopener">TheDen</a> and <a href="https://github.com/BradLewis" target="_blank" rel="noopener">Brad</a></p>
+    </div>
+  </body>
+</html>
