@@ -50,10 +50,16 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 
 func runServer() {
 	router := http.NewServeMux()
-	router.HandleFunc("/", status)
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/index.html")
+	})
 	router.Handle("/collage", alice.New(
 		httpin.NewInput(CollageRequest{}),
 	).ThenFunc(collage))
+
+	// serve files from public folder
+	fs := http.FileServer(http.Dir("public"))
+	router.Handle("/public/", http.StripPrefix("/public/", fs))
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 
