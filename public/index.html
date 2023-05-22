@@ -141,7 +141,13 @@
       color: #fff;
       text-decoration: none;
     }
-
+    .asterisk {
+      color: #ff0000;
+      font-weight: normal;
+    }
+    .nonbold {
+      font-weight: normal;
+    }
     </style>
   </head>
   <body>
@@ -150,32 +156,32 @@
       <h2>Last.fm Collage Generator</h2>
       <p>Generate an image collage of your most played albums!</p>
       <form action="/collage" method="get" id="form">
-        <label for="username">Last.fm Username</label><br>
+        <label for="username">Your Last.fm Username <span class="asterisk">*</span></label><br>
         <input required autofocus autocomplete="on" placeholder="Last.fm username" title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'." pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$" type="text" id="username" name="username"><br>
-        <label for="period">Period</label><br>
+        <label for="period">Period of Time</label><br>
         <select name="period" id="period">
           <option value="7day">7 Days</option>
           <option value="1month">1 Month</option>
           <option value="3month">3 Months</option>
           <option value="6month">6 Months</option>
           <option value="12month">1 Year</option>
-          <option value="overall">Overall</option>
+          <option value="overall">All Time</option>
         </select><br>
-        <label for="album">Display Artist</label><br>
+        <label for="album">Display Artist Name</label><br>
         <select name="artist" id="artist">
-          <option value="true">True</option>
-          <option value="false">False</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
         </select><br>
-        <label for="album">Display Album</label><br>
+        <label for="album">Display Album Name</label><br>
         <select name="album" id="album">
-          <option value="true">True</option>
-          <option value="false">False</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
         </select><br>
-        <label for="rows">Rows</label><br>
-        <input type="number" id="rows" name="rows" min="2" max="10" value="2"><br>
-        <label for="columns">Columns</label><br>
-        <input type="number" id="columns" name="columns" min="2" max="10" value="2"><br>
-        <input class="btn-grad" type="submit" value="Submit">
+        <label for="rows">Number of Rows <span class="nonbold">(max 10)</span></label><br>
+        <input type="number" id="rows" name="rows" min="1" max="10" value="3"><br>
+        <label for="columns">Number of Columns <span class="nonbold">(max 10)</span></label><br>
+        <input type="number" id="columns" name="columns" min="1" max="10" value="3"><br>
+        <input class="btn-grad" type="submit" value="Generate">
       </form>
       <script>
         var username = document.querySelector('#username');
