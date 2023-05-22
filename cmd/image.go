@@ -28,6 +28,8 @@ const (
 	dpi              = 72
 )
 
+var textLocation = [3]int{20, 35, 50}
+
 var (
 	fallbackImage image.Image
 	fontTrueType  *truetype.Font
@@ -113,7 +115,18 @@ func compressImage(collage image.Image, quality int) (image.Image, error) {
 	return collageCompressed, nil
 }
 
-func createCollage(albums []Album, rows int, columns int) (image.Image, error) {
+func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bool) {
+	i := 0
+	if displayArtist {
+		addLabel(img, 10, textLocation[i], album.Artist)
+		i++
+	}
+	if displayAlbum {
+		addLabel(img, 10, textLocation[i], album.Name)
+	}
+}
+
+func createCollage(albums []Album, rows int, columns int, displayArtist bool, displayAlbum bool) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
 	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
@@ -122,8 +135,7 @@ func createCollage(albums []Album, rows int, columns int) (image.Image, error) {
 	for i, album := range albums {
 		imgRGBA := image.NewRGBA(album.Image.Bounds())
 		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
-		addLabel(imgRGBA, 10, 20, album.Artist)
-		addLabel(imgRGBA, 10, 35, album.Name)
+		placeText(imgRGBA, album, displayArtist, displayAlbum)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
