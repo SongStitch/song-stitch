@@ -3,17 +3,45 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Webpage</title>
+    <title>SongStitch</title>
+    <meta name="description" content="Generate an image collage of your most played albums!">
+    <meta name="keywords" content="lastfm, collage, image, music, albums">
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="SongStitch">
+    <meta property="og:description" content="Generate an image collage of your most played albums!">
+    <meta property="og:image" content="/public/logo.png">
+    <meta property="og:url" content="http://your-website.com">
+    <!-- Canonical URL -->
+    <link rel="canonical" href="http://your-website.com/">
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
+    <!-- manifest -->
+    <link rel="manifest" href="/public/site.webmanifest" />
     <style>
-body {
-  display: grid;
-  place-items: center;
-  min-height: 100%;
-  font-family: avenir, Helvetica, sans-serif;
-  background-color: #f2f2f2;
-  padding: 20px;
-  box-sizing: border-box;
-}
+    @font-face {
+      font-family: "Secular One";
+      src: url("/public/SecularOne-Regular.ttf") format('truetype');
+      font-display: swap;
+    }
+    a:link {color: black;}      /* unvisited link */
+    a:visited { color:black;}  /* visited link */
+    a:hover {color: #f2f2f2; background: black;}  /* selected link */
+    a:active {color: #f2f2f2; background: black;}  /* selected link */
+    html {
+      background-color: #ffffff;
+      background-image: radial-gradient(#f2f2f2 2px, #ffffff 2px);
+      background-size: 40px 40px;
+    }
+    body, input[type='text']  {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      font-family: 'Secular One',Poppins, avenir, Helvetica, sans-serif;
+      padding: 20px;
+      box-sizing: border-box;
+    }
 
     form {
       /* width: 100%; */
@@ -33,6 +61,8 @@ body {
       border-radius: 4px;
       box-sizing: border-box;
       font-size: 1em;
+      background-color: white;
+      background: none;
     }
 
     input[type=submit] {
@@ -51,6 +81,10 @@ body {
       background-color: #45a049;
     }
 
+    input:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px black;
+    }
     label {
       font-weight: bold;
       font-size: 1.2em;
@@ -61,7 +95,7 @@ body {
       font-size: 2em;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: :00px) {
       body {
         padding: 10px;
       }
@@ -84,28 +118,52 @@ body {
       }
     }
 
+    .header-img {
+      border-radius: 0.5em;
+      width: 100%;
+      max-width: 40vh;
+      display: block;
+      height: auto;
+      margin: auto;
+    }
+
     .footer {
       text-align: center;
       text-align: -webkit-center;
     }
 
     .footer a {
-      padding: 10px;
+    }
+
+    .btn-grad {
+      background-image: linear-gradient(to right, #DA22FF 0%, #9733EE  51%, #DA22FF  100%);
+      margin: 10px;
+      padding: 15px 45px;
+      text-align: center;
+      text-transform: uppercase;
+      transition: 0.5s;
+      background-size: 200% auto;
+      color: white;
+      box-shadow: 0 0 20px #eee;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .btn-grad:hover {
+      background-position: right center; /* change the direction of the change here */
+      color: #fff;
+      text-decoration: none;
     }
 
     </style>
   </head>
   <body>
-    </nav>
-    <header>
-      <h1>SoundStitch</h1>
-    </header>
     <main class="main">
+      <img src="/public/logo.png" class="header-img" alt="SongStitch Logo">
       <h2>Last.fm Collage Generator</h2>
       <p>Generate an image collage of your most played albums!</p>
-
       <form action="/collage" method="get" id="form">
-        <label for="username">Last.fm username</label><br>
+        <label for="username">Last.fm Username</label><br>
         <input required autofocus autocomplete="on" placeholder="Last.fm username" type="text" id="username" name="username"><br>
         <label for="period">Period</label><br>
         <select name="period" id="period">
@@ -129,14 +187,14 @@ body {
           <option value="false">False</option>
         </select><br>
 
-        <label for="rows">Rows:</label><br>
+        <label for="rows">Rows</label><br>
         <input type="number" id="rows" name="rows" min="2" max="10" value="2"><br>
 
-        <label for="columns">Columns:</label><br>
+        <label for="columns">Columns</label><br>
         <input type="number" id="columns" name="columns" min="2" max="10" value="2"><br>
 
 
-        <input type="submit" value="Submit">
+        <input class="btn-grad" type="submit" value="Submit">
       </form>
       <script>
         var username = document.querySelector('#username');
@@ -148,10 +206,7 @@ body {
     </main>
 
     <div class="footer" >
-      <p>Copyright © 2023 SoundStitch</p>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
+      <p>Made with ❤️ by <a href="https://github.com/theden" target="_blank" rel="noopener">TheDen</a> and <a href="https://github.com/BradLewis" target="_blank" rel="noopener">Brad</a></p>
     </div>
   </body>
 </html>
