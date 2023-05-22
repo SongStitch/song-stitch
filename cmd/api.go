@@ -72,7 +72,7 @@ func getCollage(request *CollageRequest) image.Image {
 		log.Println(err)
 	}
 
-	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayAlbum, request.DisplayArtist)
+	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayArtist, request.DisplayAlbum)
 	return collage
 }
 
