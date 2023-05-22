@@ -53,13 +53,12 @@ func validatePeriod(fl validator.FieldLevel) bool {
 }
 
 type CollageRequest struct {
-	Rows             int    `in:"query=rows;default=3" validate:"required,gte=1,lte=10"`
-	Columns          int    `in:"query=columns;default=3" validate:"required,gte=1,lte=10"`
-	Username         string `in:"query=username;required" validate:"required"`
-	Period           string `in:"query=period;default=7day" validate:"required,validatePeriod"`
-	DisplayArtist    bool   `in:"query=artist;default=false"`
-	DisplayAlbum     bool   `in:"query=album;default=false"`
-	DisplayPlaycount bool   `in:"query=playcount;default=false"`
+	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=10"`
+	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=10"`
+	Username      string `in:"query=username;required" validate:"required"`
+	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
+	DisplayArtist bool   `in:"query=artist;default=false"`
+	DisplayAlbum  bool   `in:"query=album;default=false"`
 }
 
 func getCollage(request *CollageRequest) image.Image {
@@ -73,7 +72,7 @@ func getCollage(request *CollageRequest) image.Image {
 		log.Println(err)
 	}
 
-	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayAlbum, request.DisplayArtist, request.DisplayPlaycount)
+	collage, _ := createCollage(albums, request.Rows, request.Columns, request.DisplayAlbum, request.DisplayArtist)
 	return collage
 }
 

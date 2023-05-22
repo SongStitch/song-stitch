@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -116,7 +115,7 @@ func compressImage(collage image.Image, quality int) (image.Image, error) {
 	return collageCompressed, nil
 }
 
-func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bool, displayPlaycount bool) {
+func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bool) {
 	i := 0
 	if displayArtist {
 		addLabel(img, 10, textLocation[i], album.Artist)
@@ -124,14 +123,10 @@ func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bo
 	}
 	if displayAlbum {
 		addLabel(img, 10, textLocation[i], album.Name)
-		i++
-	}
-	if displayPlaycount {
-		addLabel(img, 10, textLocation[i], fmt.Sprint(album.Playcount))
 	}
 }
 
-func createCollage(albums []Album, rows int, columns int, displayArtist bool, displayAlbum bool, displayPlaycount bool) (image.Image, error) {
+func createCollage(albums []Album, rows int, columns int, displayArtist bool, displayAlbum bool) (image.Image, error) {
 
 	// create a new blank image with dimensions to fit all the images
 	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
@@ -140,7 +135,7 @@ func createCollage(albums []Album, rows int, columns int, displayArtist bool, di
 	for i, album := range albums {
 		imgRGBA := image.NewRGBA(album.Image.Bounds())
 		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
-		placeText(imgRGBA, album, displayArtist, displayAlbum, displayPlaycount)
+		placeText(imgRGBA, album, displayArtist, displayAlbum)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
 		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
