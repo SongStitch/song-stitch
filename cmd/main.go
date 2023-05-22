@@ -8,7 +8,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/ggicci/httpin"
 	"github.com/joho/godotenv"
+	"github.com/justinas/alice"
 )
 
 type key int
@@ -49,7 +51,9 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 func runServer() {
 	router := http.NewServeMux()
 	router.HandleFunc("/", status)
-	router.HandleFunc("/collage", collage)
+	router.Handle("/collage", alice.New(
+		httpin.NewInput(CollageRequest{}),
+	).ThenFunc(collage))
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 
@@ -59,7 +63,7 @@ func runServer() {
 
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: tracing(nextRequestID)(logging(logger)(router)),
+		Handler: alice.New(tracing(nextRequestID), logging(logger)).Then(router),
 	}
 
 	logger.Println("Starting server...")
