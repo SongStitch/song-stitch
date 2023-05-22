@@ -164,7 +164,7 @@
       <p>Generate an image collage of your most played albums!</p>
       <form action="/collage" method="get" id="form">
         <label for="username">Last.fm Username</label><br>
-        <input required autofocus autocomplete="on" placeholder="Last.fm username" type="text" id="username" name="username"><br>
+        <input required autofocus autocomplete="on" placeholder="Last.fm username" pattern="[A-Za-z0-9_-!]{2,25}" type="text" id="username" name="username"><br>
         <label for="period">Period</label><br>
         <select name="period" id="period">
           <option value="7day">7 Days</option>
