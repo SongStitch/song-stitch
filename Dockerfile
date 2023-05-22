@@ -11,10 +11,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/song-stitch cmd/*.go
 
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
-WORKDIR /
+WORKDIR /app
 
-COPY --from=builder /app/bin/song-stitch /song-stitch
-COPY assets/ ./assets
 USER nonroot:nonroot
+COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
+COPY --chown=nonroot:nonroot assets/ /app/assets
+COPY --chown=nonroot:nonroot public/ /app/public
 
-ENTRYPOINT ["/song-stitch"]
+ENTRYPOINT ["/app/song-stitch"]
