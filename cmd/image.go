@@ -18,7 +18,7 @@ type DisplayOptions struct {
 }
 
 const (
-	fontfile = "./assets/Hack-Regular.ttf"
+	fontFile = "./assets/Hack-Regular.ttf"
 )
 
 var textLocation = [3]int{20, 35, 50}
