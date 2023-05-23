@@ -60,7 +60,7 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func placeText(dc *gg.Context, album Album, displayOptions DisplayOptions, x int, y int) {
+func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x int, y int) {
 	i := 0
 	if displayOptions.ArtistName {
 		dc.SetRGB(1, 1, 1)
@@ -92,7 +92,7 @@ func createCollage(albums []Album, rows int, columns int, displayOptions Display
 		if album.Image != nil {
 			dc.DrawImage(album.Image, x, y)
 		}
-		placeText(dc, album, displayOptions, x, y)
+		placeText(dc, &album, displayOptions, x, y)
 	}
 	collage := dc.Image()
 
