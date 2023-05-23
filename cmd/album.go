@@ -11,6 +11,8 @@ import (
 	"sync"
 )
 
+const jpgFileType = ".jpg"
+
 type Album struct {
 	Name      string
 	Artist    string
