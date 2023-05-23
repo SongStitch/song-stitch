@@ -1,0 +1,7 @@
+---
+version: "3.7"
+services:
+  song-stitch:
+     build:
+       context: .
+     image: songstitch/song-stitch
