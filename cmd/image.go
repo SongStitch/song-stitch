@@ -1,24 +1,21 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"image"
-	"image/color"
-	"image/draw"
-	"image/jpeg"
-	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/disintegration/imaging"
-	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
+	"github.com/fogleman/gg"
 )
+
+type DisplayOptions struct {
+	ArtistName bool
+	AlbumName  bool
+	PlayCount  bool
+}
 
 const (
 	jpgFileType      = ".jpg"
@@ -30,30 +27,6 @@ const (
 )
 
 var textLocation = [3]int{20, 35, 50}
-
-var (
-	fallbackImage image.Image
-	fontTrueType  *truetype.Font
-)
-
-func init() {
-	var err error
-	fallbackImage, err = readImage("./assets/fallback.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Read the font data
-	fontBytes, err := ioutil.ReadFile(fontfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fontTrueType, err = truetype.Parse(fontBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-}
 
 func readImage(path string) (image.Image, error) {
 	file, err := os.Open(path)
@@ -87,76 +60,42 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func addLabel(img *image.RGBA, x, y int, label string) {
-	textColor := color.RGBA{255, 255, 255, 255} // white
-	point := fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
-
-	d := &font.Drawer{
-		Dst: img,
-		Src: image.NewUniform(textColor),
-		Face: truetype.NewFace(fontTrueType, &truetype.Options{
-			Size: size,
-			DPI:  dpi,
-		}),
-		Dot: point,
-	}
-	d.DrawString(label)
-}
-
-func compressImage(collage image.Image, quality int) (image.Image, error) {
-	var buf bytes.Buffer
-	err := jpeg.Encode(&buf, collage, &jpeg.Options{Quality: quality})
-	if err != nil {
-		return nil, err
-	}
-	collageCompressed, err := jpeg.Decode(bytes.NewReader(buf.Bytes()))
-	if err != nil {
-		return nil, err
-	}
-	return collageCompressed, nil
-}
-
-func placeText(img *image.RGBA, album Album, displayArtist bool, displayAlbum bool, playCount bool) {
+func placeText(dc *gg.Context, album Album, displayOptions DisplayOptions, x int, y int) {
 	i := 0
-	if displayArtist {
-		addLabel(img, 10, textLocation[i], album.Artist)
+	if displayOptions.ArtistName {
+		dc.SetRGB(1, 1, 1)
+		dc.DrawStringAnchored(album.Artist, float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
-	if displayAlbum {
-		addLabel(img, 10, textLocation[i], album.Name)
+	if displayOptions.AlbumName {
+		dc.SetRGB(1, 1, 1)
+		dc.DrawStringAnchored(album.Name, float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
-	if playCount {
+	if displayOptions.PlayCount {
 		if len(album.Playcount) > 0 {
-			addLabel(img, 10, textLocation[i], fmt.Sprintf("Plays: %s", album.Playcount))
+			dc.SetRGB(1, 1, 1)
+			dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
 		}
 	}
 }
 
-func createCollage(albums []Album, rows int, columns int, displayArtist bool, displayAlbum bool, playCount bool) (image.Image, error) {
+func createCollage(albums []Album, rows int, columns int, displayOptions DisplayOptions) (image.Image, error) {
 
-	// create a new blank image with dimensions to fit all the images
-	collage := imaging.New(imageCoverWidth*columns, imageCoverHeight*rows, image.Transparent)
+	dc := gg.NewContext(imageCoverWidth*columns, imageCoverHeight*rows)
+	dc.SetRGB(0, 0, 0)
+	dc.LoadFontFace(fontfile, 12)
 
-	// add each image to the collage
 	for i, album := range albums {
-		imgRGBA := image.NewRGBA(album.Image.Bounds())
-		draw.Draw(imgRGBA, imgRGBA.Bounds(), album.Image, album.Image.Bounds().Min, draw.Src)
-		placeText(imgRGBA, album, displayArtist, displayAlbum, playCount)
 		x := (i % columns) * imageCoverWidth
 		y := (i / columns) * imageCoverHeight
-		collage = imaging.Paste(collage, imgRGBA, image.Pt(x, y))
-	}
-
-	// Not needed for now
-	/*
-		collageCompressed, err := compressImage(collage, 100)
-		if err != nil {
-			// Just serve the non-compressed image
-			collageCompressed = collage
+		if album.Image != nil {
+			dc.DrawImage(album.Image, x, y)
 		}
-		return collageCompressed, nil
-	*/
+		placeText(dc, album, displayOptions, x, y)
+	}
+	collage := dc.Image()
+
 	return collage, nil
 
 }
