@@ -12,7 +12,13 @@ COPY public ./public
 # Minify Assets
 RUN apt-get update \
       && apt-get install minify \
-      && find ./public -type f -name "*.html" -print0 | xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
+      && find ./public -type f \( \
+      -name "*.html" \
+      -o -name '*.js' \
+      -o -name '*.css' \
+      \) \
+      -print0 | \
+      xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/song-stitch cmd/*.go
 
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
