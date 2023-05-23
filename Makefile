@@ -25,6 +25,9 @@ linux-amd64:
 docker-build:
 	docker-compose build song-stitch
 
+docker-run:
+	docker-compose run song-stitch
+
 clean:
 	rm -rf bin/*
 
