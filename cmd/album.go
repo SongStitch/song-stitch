@@ -62,8 +62,6 @@ func downloadImagesForAlbums(albums []Album) error {
 			err := album.DownloadImage()
 			if err != nil {
 				fmt.Println("Error downloading image:", err)
-				album.Image = fallbackImage
-				//	return
 			}
 		}(album)
 	}
