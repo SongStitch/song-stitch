@@ -18,12 +18,7 @@ type DisplayOptions struct {
 }
 
 const (
-	jpgFileType      = ".jpg"
-	imageCoverWidth  = 300
-	imageCoverHeight = 300
-	fontFile         = "./assets/Hack-Regular.ttf"
-	size             = 12
-	dpi              = 72
+	fontfile = "./assets/Hack-Regular.ttf"
 )
 
 var textLocation = [3]int{20, 35, 50}
@@ -87,18 +82,19 @@ func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x in
 	}
 }
 
-func createCollage(albums []Album, rows int, columns int, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage(albums []Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
 
-	dc := gg.NewContext(imageCoverWidth*columns, imageCoverHeight*rows)
+	dc := gg.NewContext(imageDimension*columns, imageDimension*rows)
 	dc.SetRGB(0, 0, 0)
+	dc.LoadFontFace(fontfile, fontSize)
 	err := dc.LoadFontFace(fontFile, 12)
 	if err != nil {
 		panic(err)
 	}
 
 	for i, album := range albums {
-		x := (i % columns) * imageCoverWidth
-		y := (i / columns) * imageCoverHeight
+		x := (i % columns) * imageDimension
+		y := (i / columns) * imageDimension
 		if album.Image != nil {
 			dc.DrawImage(album.Image, x, y)
 		}

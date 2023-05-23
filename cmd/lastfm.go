@@ -25,7 +25,7 @@ type LastFMResponse struct {
 	} `json:"topalbums"`
 }
 
-func getAlbums(username string, period Period, count int) []Album {
+func getAlbums(username string, period Period, count int, imageSize string) []Album {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 	url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&api_key=%s&format=json", endpoint, username, period, count, key)
@@ -59,7 +59,7 @@ func getAlbums(username string, period Period, count int) []Album {
 		albums[i].Artist = album.Artist.ArtistName
 		albums[i].Playcount = album.Playcount
 		for _, image := range album.Image {
-			if image.Size == "extralarge" {
+			if image.Size == imageSize {
 				albums[i].ImageUrl = image.Link
 			}
 		}
