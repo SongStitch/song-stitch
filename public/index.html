@@ -266,7 +266,7 @@
         text-transform: uppercase;
         transition: 0.5s;
         background-size: 200% auto;
-        color: white;            
+        color: white;
         box-shadow: 0 0 20px #eee;
         border-radius: 10px;
         display: block;
@@ -279,24 +279,24 @@
       }
 
       .modal {
-        display: none; 
+        display: none;
         position: fixed;
-        z-index: 1; 
+        z-index: 1;
         left: 0;
         top: 0;
-        width: 100%; 
+        width: 100%;
         height: 100%;
         overflow: auto;
         background-color: rgb(0,0,0);
-        background-color: rgba(0,0,0,0.4); 
+        background-color: rgba(0,0,0,0.4);
       }
 
       .modal-content {
+        position: relative;
         background-color: #fefefe;
         margin: 15% auto;
         padding: 20px;
-        border: 1px solid #888;
-        width: 60%;
+        width: 50%;
         border-radius: 4px;
       }
 
@@ -305,6 +305,10 @@
         float: right;
         font-size: 28px;
         font-weight: bold;
+        position: absolute;
+        top: 0;
+        right: 15px;
+        transition: 0.3s;
       }
 
       .close:hover,
@@ -333,6 +337,89 @@
       .btn-copy:hover {
         background-color: #45a049;
       }
+.highlight-wrapper {
+  display: block;
+}
+
+.highlight {
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+}
+
+.highlight > .chroma {
+  color: #d0d0d0;
+  background-color: #212121;
+  position: static;
+  z-index: 1;
+  border-radius: 4px;
+  padding: 2em;
+}
+
+.chroma {
+  overflow: auto;
+}
+
+.chroma .lntable {
+  display: table;
+  width: 100%;
+  padding: 0 0 5px;
+  margin: 0;
+  border-spacing: 0;
+  border: 0;
+  overflow: auto;
+}
+
+.chroma .lntd:first-child {
+  padding: 7px 7px 7px 10px;
+  margin: 0;
+}
+
+.chroma .lntd:last-child {
+  padding: 7px 10px 7px 7px;
+  margin: 0;
+}
+
+.copy-code-button {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  top: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 14px;
+  width: 65px;
+  color: #232326;
+  background-color: #7f7f7f;
+  border: 1.25px solid #232326;
+  border-top-left-radius: 0;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 4px;
+  white-space: nowrap;
+  padding: 4px 4px 5px 4px;
+  margin: 0 0 0 1px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.copy-code-button:hover,
+.copy-code-button:focus,
+.copy-code-button:active,
+.copy-code-button:active:hover {
+  color: #222225;
+  background-color: #b3b3b3;
+  opacity: 0.8;
+}
+
+.copyable-text-area {
+  position: absolute;
+  height: 0;
+  z-index: -1;
+  opacity: 0.01;
+}
 
     </style>
   </head>
@@ -353,7 +440,7 @@
           <option value="12month">1 Year</option>
           <option value="overall">All Time</option>
         </select><br>
-        <fieldset>
+        <fieldset id="fieldset">
           <legend>Collage Options</legend>
           <div class="checkbox-wrapper">
             <input checked value="true" name="artist" id="artist" type="checkbox" onclick="updateValue(this)">
@@ -373,14 +460,16 @@
           <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 10)</span></label><br>
           <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="10" value="3"><br>
         </fieldset>
-        <input class="btn-grad" type="submit" value="Generate">
-        <input class="btn-grad-embed" type="button" value="Embed" onclick="embedUrl()">
+        <input name="submit" class="btn-grad" type="submit" value="Generate">
+        <input name="embed" class="btn-grad-embed" type="button" value="embed" onclick="embedUrl()">
       </form>
       <div id="myModal" class="modal">
         <div class="modal-content">
           <span class="close">&times;</span>
-          <pre id="embedUrl" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
-          <button class="btn-copy" onclick="copyToClipboard()">Copy to Clipboard</button>
+          <!-- <pre id="embedUrl" style="white-space: pre-wrap; word-wrap: break-word;"></pre> -->
+          <div class="highlight">
+            <pre class="chroma"><code id="embedUrl" class="language-python"></code></pre>
+          </div>
         </div>
       </div>
       <script>
@@ -391,7 +480,7 @@
           var url = action;
           var first = true;
           for(var i = 0; i < elems.length; i++) {
-            if(elems[i].type === "submit") continue;
+            if(elems[i].type === "submit" || elems[i].name === "embed" || elems[i].id === "fieldset") continue;
             if(first) {
               url += '?';
               first = false;
@@ -471,7 +560,72 @@
           p.insertBefore(andNode, p.children[1]);
         }
       </script>
+      <script>
+        function createCopyButton(highlightDiv) {
+          const button = document.createElement("button");
+          button.className = "copy-code-button";
+          button.type = "button";
+          button.innerText = "Copy";
+          button.addEventListener("click", () =>
+            copyCodeToClipboard(button, highlightDiv)
+          );
+          addCopyButtonToDom(button, highlightDiv);
+        }
 
+        async function copyCodeToClipboard(button, highlightDiv) {
+          const codeToCopy = highlightDiv.querySelector(":last-child > .chroma > code")
+            .innerText;
+          try {
+            result = await navigator.permissions.query({ name: "clipboard-write" });
+            if (result.state == "granted" || result.state == "prompt") {
+              await navigator.clipboard.writeText(codeToCopy);
+            } else {
+              copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+            }
+          } catch (_) {
+            copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+          } finally {
+            codeWasCopied(button);
+          }
+        }
+
+        function copyCodeBlockExecCommand(codeToCopy, highlightDiv) {
+          const textArea = document.createElement("textArea");
+          textArea.contentEditable = "true";
+          textArea.readOnly = "false";
+          textArea.className = "copyable-text-area";
+          textArea.value = codeToCopy;
+          highlightDiv.insertBefore(textArea, highlightDiv.firstChild);
+          const range = document.createRange();
+          range.selectNodeContents(textArea);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          textArea.setSelectionRange(0, 999999);
+          document.execCommand("copy");
+          highlightDiv.removeChild(textArea);
+        }
+
+        function codeWasCopied(button) {
+          button.blur();
+          button.innerText = "Copied!";
+          setTimeout(function () {
+            button.innerText = "Copy";
+          }, 2000);
+        }
+
+        function addCopyButtonToDom(button, highlightDiv) {
+          highlightDiv.insertBefore(button, highlightDiv.firstChild);
+          const wrapper = document.createElement("div");
+          wrapper.className = "highlight-wrapper";
+          highlightDiv.parentNode.insertBefore(wrapper, highlightDiv);
+          wrapper.appendChild(highlightDiv);
+        }
+
+        document
+          .querySelectorAll(".highlight")
+          .forEach((highlightDiv) => createCopyButton(highlightDiv));
+      </script>
     </div>
   </body>
 </html>
