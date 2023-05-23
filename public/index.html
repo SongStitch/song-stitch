@@ -20,15 +20,15 @@
     <!-- manifest -->
     <link rel="manifest" href="/public/site.webmanifest" />
     <style>
-    @font-face {
-      font-family: "Secular One";
-      src: url("/public/SecularOne-Regular.ttf") format('truetype');
-      font-display: swap;
-    }
-    a:link {color: black;}      /* unvisited link */
-    a:visited { color:black;}  /* visited link */
-    a:hover {color: #f2f2f2; background: black;}  /* selected link */
-    a:active {color: #f2f2f2; background: black;}  /* selected link */
+      @font-face {
+        font-family: "Secular One";
+        src: url("/public/SecularOne-Regular.ttf") format('truetype');
+        font-display: swap;
+      }
+      a:link {color: black;}      /* unvisited link */
+      a:visited { color:black;}  /* visited link */
+      a:hover {color: #f2f2f2; background: black;}  /* selected link */
+      a:active {color: #f2f2f2; background: black;}  /* selected link */
       html {
         background-color: #ffffff;
         background-image: radial-gradient(#f2f2f2 2px, #ffffff 2px);
@@ -38,7 +38,7 @@
         display: grid;
         place-items: center;
         min-height: 100%;
-        font-family: 'Secular One',Poppins, avenir, Helvetica, sans-serif;
+        font-family: 'Secular One', avenir, Helvetica, sans-serif;
         padding: 20px;
         box-sizing: border-box;
       }
@@ -49,7 +49,7 @@
         border-radius: 8px;
         box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
       }
-      input[type=text], select, input[type=number] {
+      #username, input[type=text], select, input[type=number] {
         width: 100%;
         padding: 12px 20px;
         margin: 8px 0;
@@ -61,6 +61,7 @@
         background-color: white;
         background: none;
         color: black;
+        font-family: "Secular One";
       }
       input[type=submit],  input[type=button] {
         width: 100%;
@@ -95,9 +96,10 @@
         form {
           padding: 10px;
         }
-        input[type=text], select, input[type=number], input[type=submit] {
+        #username, input[type=text], select, input[type=number], input[type=submit] {
           padding: 10px 15px;
           font-size: 0.8em;
+          font-family: "Secular One";
         }
         h2 {
           font-size: 1.5em;
@@ -337,90 +339,80 @@
       .btn-copy:hover {
         background-color: #45a049;
       }
-.highlight-wrapper {
-  display: block;
-}
-
-.highlight {
-  position: relative;
-  z-index: 0;
-  padding: 0;
-  margin: 0;
-  border-radius: 4px;
-}
-
-.highlight > .chroma {
-  color: #d0d0d0;
-  background-color: #212121;
-  position: static;
-  z-index: 1;
-  border-radius: 4px;
-  padding: 2em;
-}
-
-.chroma {
-  overflow: auto;
-}
-
-.chroma .lntable {
-  display: table;
-  width: 100%;
-  padding: 0 0 5px;
-  margin: 0;
-  border-spacing: 0;
-  border: 0;
-  overflow: auto;
-}
-
-.chroma .lntd:first-child {
-  padding: 7px 7px 7px 10px;
-  margin: 0;
-}
-
-.chroma .lntd:last-child {
-  padding: 7px 10px 7px 7px;
-  margin: 0;
-}
-
-.copy-code-button {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  top: 0;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 14px;
-  width: 65px;
-  color: #232326;
-  background-color: #7f7f7f;
-  border: 1.25px solid #232326;
-  border-top-left-radius: 0;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 4px;
-  white-space: nowrap;
-  padding: 4px 4px 5px 4px;
-  margin: 0 0 0 1px;
-  cursor: pointer;
-  opacity: 0.6;
-}
-
-.copy-code-button:hover,
-.copy-code-button:focus,
-.copy-code-button:active,
-.copy-code-button:active:hover {
-  color: #222225;
-  background-color: #b3b3b3;
-  opacity: 0.8;
-}
-
-.copyable-text-area {
-  position: absolute;
-  height: 0;
-  z-index: -1;
-  opacity: 0.01;
-}
-
+      .highlight-wrapper {
+        display: block;
+      }
+      .highlight {
+        position: relative;
+        z-index: 0;
+        padding: 0;
+        margin: 0;
+        border-radius: 4px;
+      }
+      .highlight > .chroma {
+        color: #d0d0d0;
+        background-color: #212121;
+        position: static;
+        z-index: 1;
+        border-radius: 4px;
+        padding: 2em;
+      }
+      .chroma {
+        overflow: auto;
+      }
+      .chroma .lntable {
+        display: table;
+        width: 100%;
+        padding: 0 0 5px;
+        margin: 0;
+        border-spacing: 0;
+        border: 0;
+        overflow: auto;
+      }
+      .chroma .lntd:first-child {
+        padding: 7px 7px 7px 10px;
+        margin: 0;
+      }
+      .chroma .lntd:last-child {
+        padding: 7px 10px 7px 7px;
+        margin: 0;
+      }
+      .copy-code-button {
+        position: absolute;
+        z-index: 2;
+        right: 0;
+        top: 0;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 14px;
+        width: 65px;
+        color: #232326;
+        background-color: #7f7f7f;
+        border: 1.25px solid #232326;
+        border-top-left-radius: 0;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 4px;
+        white-space: nowrap;
+        padding: 4px 4px 5px 4px;
+        margin: 0 0 0 1px;
+        cursor: pointer;
+        opacity: 0.6;
+      }
+      .copy-code-button:hover,
+      .copy-code-button:focus,
+      .copy-code-button:active,
+      .copy-code-button:active:hover {
+        color: #222225;
+        background-color: #b3b3b3;
+        opacity: 0.8;
+      }
+      .copyable-text-area {
+        position: absolute;
+        height: 0;
+        z-index: -1;
+        opacity: 0.01;
+      }
     </style>
   </head>
   <body>
@@ -429,8 +421,10 @@
       <h2>Last.fm Collage Generator</h2>
       <p>Generate an image collage of your most played albums!</p>
       <form action="/collage" method="get" id="form">
-        <label for="username">Your Last.fm Username <span class="asterisk">*</span></label><br>
-        <input required autofocus autocomplete="on" placeholder="Last.fm username" title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'." pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$" type="text" id="username" name="username"><br>
+        <label for="username">Your Last.fm Username <span class="asterisk">*</span></label>
+        <br>
+        <input required autofocus autocomplete="on" placeholder="Last.fm username" title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'" pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$" type="text" id="username" name="username">
+        <br>
         <label for="period">Period of Time</label><br>
         <select name="period" id="period">
           <option value="7day">7 Days</option>
@@ -466,7 +460,6 @@
       <div id="myModal" class="modal">
         <div class="modal-content">
           <span class="close">&times;</span>
-          <!-- <pre id="embedUrl" style="white-space: pre-wrap; word-wrap: break-word;"></pre> -->
           <div class="highlight">
             <pre class="chroma"><code id="embedUrl" class="language-python"></code></pre>
           </div>
@@ -494,7 +487,6 @@
           modal.style.display = "block";
           return false; // prevent the form from submitting
         }
-
         function copyToClipboard() {
           var urlText = document.getElementById('embedUrl').textContent;
           navigator.clipboard.writeText(urlText).then(function() {
@@ -503,19 +495,11 @@
             console.error('Failed to copy text');
           });
         }
-
-        // Get the modal
         var modal = document.getElementById("myModal");
-
-        // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
         span.onclick = function() {
           modal.style.display = "none";
         }
-
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
           if (event.target == modal) {
             modal.style.display = "none";
