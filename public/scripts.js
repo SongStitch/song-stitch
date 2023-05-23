@@ -69,6 +69,13 @@ window.onclick = function(event) {
   }
 }
 
+// close modal when ESC key is pressed
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      modal.style.display = "none";
+    }
+});
+
 /// Copy embed button logic
 function createCopyButton(highlightDiv) {
   const button = document.createElement("button");
