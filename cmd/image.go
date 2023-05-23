@@ -58,17 +58,24 @@ func getExtension(u string) (string, error) {
 func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x int, y int) {
 	i := 0
 	if displayOptions.ArtistName {
+		// Add shadow
+		dc.SetRGB(0, 0, 0)
+		dc.DrawStringAnchored(album.Artist, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
 		dc.DrawStringAnchored(album.Artist, float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
 	if displayOptions.AlbumName {
+		dc.SetRGB(0, 0, 0)
+		dc.DrawStringAnchored(album.Name, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
 		dc.DrawStringAnchored(album.Name, float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
 	if displayOptions.PlayCount {
 		if len(album.Playcount) > 0 {
+			dc.SetRGB(0, 0, 0)
+			dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 			dc.SetRGB(1, 1, 1)
 			dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
 		}
@@ -80,6 +87,10 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	dc := gg.NewContext(imageDimension*columns, imageDimension*rows)
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace(fontfile, fontSize)
+	err := dc.LoadFontFace(fontFile, 12)
+	if err != nil {
+		panic(err)
+	}
 
 	for i, album := range albums {
 		x := (i % columns) * imageDimension
