@@ -57,16 +57,20 @@
             <label for="playcount">Display Play Count</label>
           </div>
           <br>
-          <label for="rows">Number of Rows <span class="nonbold">(max. 10)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="10" value="3"><br>
-          <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 10)</span></label><br>
-          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="10" value="3"><br>
+          <label for="rows">Number of Rows <span class="nonbold">(max. 15</span></label><br>
+          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="15" value="3"><br>
+          <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 15)</span></label><br>
+          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="15" value="3"><br>
         </fieldset>
+        <div class="loader-container">
+          <div class="loader"></div>
+        </div>
         <input name="submit" class="btn-grad" type="submit" value="Generate">
         <input name="embed" class="btn-grad-embed" type="button" value="embed" onclick="embedUrl()">
       </form>
       <div id="myModal" class="modal">
         <div class="modal-content">
+          <p class="modal-text">Use this HTML code to embed your configured collage. The latest collage automatically be shown whenever viewed! 🎉</P>
           <span class="close">&times;</span>
           <div class="highlight">
             <pre class="chroma"><code id="embedUrl" class="language-python"></code></pre>

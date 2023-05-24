@@ -280,6 +280,9 @@ fieldset {
   border-radius: 4px;
 }
 
+.modal-text {
+  word-break: break-all;
+}
 .close {
   color: #aaa;
   float: right;
@@ -365,7 +368,7 @@ pre {
   line-height: 14px;
   width: 65px;
   color: #232326;
-  background-color: #7f7f7f;
+  background-color: #b3b3b3;
   border: 1.25px solid #232326;
   border-top-left-radius: 0;
   border-top-right-radius: 4px;
@@ -375,7 +378,6 @@ pre {
   padding: 4px 4px 5px 4px;
   margin: 0 0 0 1px;
   cursor: pointer;
-  opacity: 0.6;
 }
 .copy-code-button:hover,
 .copy-code-button:focus,
@@ -390,4 +392,30 @@ pre {
   height: 0;
   z-index: -1;
   opacity: 0.01;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid black;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 0.6s linear infinite;
+  margin-top: 1em;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-container {
+  display: grid;
+  place-items: center;
 }
