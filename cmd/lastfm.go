@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -25,31 +26,41 @@ type LastFMResponse struct {
 	} `json:"topalbums"`
 }
 
-func getAlbums(username string, period Period, count int, imageSize string) []Album {
+func getAlbums(username string, period Period, count int, imageSize string) ([]Album, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 	url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&api_key=%s&format=json", endpoint, username, period, count, key)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	var lastFMResponse LastFMResponse
 	err = json.Unmarshal([]byte(body), &lastFMResponse)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Println(err)
+		return nil, err
+	}
+
+	// No albums to return
+	if len(lastFMResponse.TopAlbums.Album) == 0 {
+		log.Println("no albums!")
+		return nil, errors.New("No Albums found! Is the username correct?")
 	}
 
 	var albums []Album
@@ -65,5 +76,5 @@ func getAlbums(username string, period Period, count int, imageSize string) []Al
 		}
 	}
 
-	return albums
+	return albums, nil
 }

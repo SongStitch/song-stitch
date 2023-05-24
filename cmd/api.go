@@ -62,7 +62,7 @@ type CollageRequest struct {
 	PlayCount     bool   `in:"query=playcount;default=false"`
 }
 
-func getCollage(request *CollageRequest) image.Image {
+func getCollage(request *CollageRequest) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -74,10 +74,15 @@ func getCollage(request *CollageRequest) image.Image {
 	}
 
 	period := getPeriodFromStr(request.Period)
-	albums := getAlbums(request.Username, period, count, imageSize)
-
-	err := downloadImagesForAlbums(albums)
+	albums, err := getAlbums(request.Username, period, count, imageSize)
 	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	err = downloadImagesForAlbums(albums)
+	if err != nil {
+		// skip the album art if it doesn't exist
 		log.Println(err)
 	}
 
@@ -88,7 +93,7 @@ func getCollage(request *CollageRequest) image.Image {
 	}
 
 	collage, _ := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)
-	return collage
+	return collage, err
 }
 
 func collage(w http.ResponseWriter, r *http.Request) {
@@ -99,14 +104,22 @@ func collage(w http.ResponseWriter, r *http.Request) {
 
 	err := validate.Struct(request)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	response := getCollage(request)
+	response, err := getCollage(request)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "image/jpeg")
 	err = jpeg.Encode(w, response, nil)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

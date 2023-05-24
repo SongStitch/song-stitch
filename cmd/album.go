@@ -2,10 +2,10 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -22,8 +22,13 @@ type Album struct {
 }
 
 func (a *Album) DownloadImage() error {
+	if len(a.ImageUrl) == 0 {
+		// Skip album art if it doesn't exist
+		return nil
+	}
 	resp, err := http.Get(a.ImageUrl)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	ioBody := resp.Body
@@ -31,19 +36,21 @@ func (a *Album) DownloadImage() error {
 
 	extension, err := getExtension(a.ImageUrl)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	if strings.ToLower(extension) == jpgFileType {
 		img, err := jpeg.Decode(ioBody)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		a.Image = img
 		return err
 	} else {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 		img, _, err := image.Decode(bytes.NewReader(body))
@@ -63,7 +70,7 @@ func downloadImagesForAlbums(albums []Album) error {
 			defer wg.Done()
 			err := album.DownloadImage()
 			if err != nil {
-				fmt.Println("Error downloading image:", err)
+				log.Println(err)
 			}
 		}(album)
 	}
