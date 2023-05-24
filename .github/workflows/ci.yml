@@ -26,3 +26,25 @@ jobs:
       - uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
+
+  build:
+    name: runner / Go package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: build
+        run: go build cmd/*go
+
+      - name: Install dependencies
+        run: go get -u golang.org/x/lint/golint
+
+      - name: vet and lint
+        run: |
+          go vet cmd/
+          golint cmd/
