@@ -92,7 +92,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		ArtistName: request.DisplayArtist,
 		AlbumName:  request.DisplayAlbum,
 		PlayCount:  request.PlayCount,
-		Resize:     request.Width > 0 && request.Height > 0,
+		Resize:     request.Width > 0 || request.Height > 0,
 		Width:      request.Width,
 		Height:     request.Height,
 	}
