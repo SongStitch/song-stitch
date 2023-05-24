@@ -426,6 +426,7 @@ pre {
 
 .advanced {
   color: darkgrey;
+  display: none;
 }
 
 #advanced-options {
