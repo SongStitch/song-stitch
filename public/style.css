@@ -394,10 +394,6 @@ pre {
   opacity: 0.01;
 }
 
-.spinner {
-  display: none;
-}
-
 .loader {
   width: 48px;
   height: 48px;
