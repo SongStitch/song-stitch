@@ -427,3 +427,7 @@ pre {
 .advanced {
   color: darkgrey;
 }
+
+#advanced-options {
+  padding-top: 1em;
+}
