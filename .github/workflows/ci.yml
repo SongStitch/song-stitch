@@ -1,6 +1,6 @@
-name: ci
+name: CI
 
-on: [pull_request]
+on: push:
 
 jobs:
   misspell:
