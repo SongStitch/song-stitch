@@ -19,31 +19,26 @@ A <em>blazingly fast</em> web application for generating LastFM collages, writte
 <br/>
 
 <p align="center">
-  <img alt="SongStitch Logo" src="https://raw.githubusercontent.com/SongStitch/song-stitch/main/collage.png" width="300px"/>
+  <img alt="SongStitch Logo" src="https://raw.githubusercontent.com/SongStitch/song-stitch/main/docs/collage.png" width="300px"/>
 </p>
 
-### Requirements
-
-- Docker
-- Docker Compose
-
-### Usage
+## Usage
 
 1. Clone the repository
 
-```bash
+```shell
 git clone git@github.com:SongStitch/song-stitch.git
 ```
 
-2. Create an API key for [LastFM](https://www.last.fm/api).
+2. Create an API key for [last.fm](https://www.last.fm/api).
 
 3. Add environment variables to a `.env` file in the root directory. The `.env.example` includes everything that the application requires.
 
-4. Run the application with `docker-compose up`. This will start the application on port `8080`.
+4. Run the application with either `docker-compose up` or `make run`. This will start the application on port `8080`.
 
 5. Go to `localhost:8080` and enjoy!
 
-### Contributors
+## Contributors
 
 - [TheDen](https://github.com/TheDen)
 - [BradLewis](https://github.com/BradLewis)
