@@ -8,10 +8,12 @@ COPY cmd ./cmd
 COPY assets ./assets
 COPY public ./public
 
-# We don't care about layers/size for the intermediate image
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Minify Assets
+# hadolint ignore=DL3008
 RUN apt-get update \
-      && apt-get install minify \
+      && apt-get install -y --no-install-recommends minify \
       && find ./public -type f \( \
       -name "*.html" \
       -o -name '*.js' \
@@ -21,6 +23,7 @@ RUN apt-get update \
       xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/song-stitch cmd/*.go
 
+# hadolint ignore=DL3006
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
 WORKDIR /app
