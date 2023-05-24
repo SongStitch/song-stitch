@@ -9,12 +9,16 @@ import (
 	"strings"
 
 	"github.com/fogleman/gg"
+	"github.com/nfnt/resize"
 )
 
 type DisplayOptions struct {
 	ArtistName bool
 	AlbumName  bool
 	PlayCount  bool
+	Resize     bool
+	Width      uint
+	Height     uint
 }
 
 const (
@@ -101,6 +105,10 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 		placeText(dc, &album, displayOptions, x, y)
 	}
 	collage := dc.Image()
+
+	if displayOptions.Resize {
+		collage = resize.Resize(displayOptions.Width, displayOptions.Height, collage, resize.Lanczos3)
+	}
 
 	return collage, nil
 
