@@ -1,3 +1,11 @@
+// Hide Spinner when not submitting
+window.addEventListener("pageshow", hideSpinners);
+function hideSpinners() {
+  document.getElementsByClassName("loader")[0].style.display = "none"
+    document.getElementsByClassName("btn-grad")[0].style.display = "block"
+  document.getElementsByClassName("btn-grad-embed")[0].style.display = "block"
+}
+
 window.onload = function() {
   // init checkbox values
   document.getElementById("artist").value = "true";
@@ -134,3 +142,9 @@ function addCopyButtonToDom(button, highlightDiv) {
 document
   .querySelectorAll(".highlight")
   .forEach((highlightDiv) => createCopyButton(highlightDiv));
+
+document.getElementById("form").addEventListener("submit", function() {
+  document.getElementsByClassName("loader")[0].style.display = "block"
+  document.getElementsByClassName("btn-grad")[0].style.display = "none"
+  document.getElementsByClassName("btn-grad-embed")[0].style.display = "none"
+});
