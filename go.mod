@@ -9,6 +9,7 @@ require (
 	github.com/ggicci/httpin v0.10.1
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/justinas/alice v1.2.0
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 )
 
 require (
