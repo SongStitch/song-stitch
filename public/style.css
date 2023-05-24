@@ -63,9 +63,13 @@ label {
   font-weight: bold;
   font-size: 1.2em;
 }
-h2 {
+h2, h1 {
   text-align: center;
   font-size: 2em;
+}
+
+.subheading {
+  text-align: center;
 }
 @media (max-width: :00px) {
   body {
@@ -79,7 +83,7 @@ h2 {
     font-size: 0.8em;
     font-family: "Secular One";
   }
-  h2 {
+  h2, h1 {
     font-size: 1.5em;
   }
 
@@ -418,4 +422,8 @@ pre {
 .loader-container {
   display: grid;
   place-items: center;
+}
+
+.advanced {
+  color: darkgrey;
 }

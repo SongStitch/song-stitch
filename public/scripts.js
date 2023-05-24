@@ -44,7 +44,7 @@ function embedUrl() {
   var url = action;
   var first = true;
   for(var i = 0; i < elems.length; i++) {
-    if(elems[i].type === "submit" || elems[i].name === "embed" || elems[i].id === "fieldset") continue;
+    if(elems[i].type === "submit" || elems[i].name === "embed" || elems[i].id === "fieldset" || elems[i].id === "advanced" || elems[i].value === "" ) continue;
     if(first) {
       url += '?';
       first = false;
@@ -151,7 +151,33 @@ document
   .forEach((highlightDiv) => createCopyButton(highlightDiv));
 
 document.getElementById("form").addEventListener("submit", function() {
+  event.preventDefault()
+  submitForm(event.target);;
   document.getElementsByClassName("loader")[0].style.display = "block"
   document.getElementsByClassName("btn-grad")[0].style.display = "none"
   document.getElementsByClassName("btn-grad-embed")[0].style.display = "none"
 });
+
+function toggleAdvancedOptions(checkBoxElement) {
+    var advancedOptions = document.getElementById('advanced-options');
+    if (checkBoxElement.checked) {
+        advancedOptions.style.display = 'block';
+        document.getElementById("width").value = "300"
+        document.getElementById("height").value = "300"
+    } else {
+        advancedOptions.style.display = 'none';
+      document.getElementById("width").value = ""
+      document.getElementById("height").value = ""
+    }
+
+}
+
+function submitForm(form) {
+    let params = new URLSearchParams();
+    for (let field of form.elements) {
+        if (field.name && field.value && field.name !== "submit" && field.name !== "advanced") {
+            params.append(field.name, field.value);
+        }
+    }
+    window.location.href = "/collage?" + params.toString();
+}
