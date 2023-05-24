@@ -26,7 +26,9 @@ form {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+  font-family: "Secular One";
 }
+
 #username, input[type=text], select, input[type=number] {
   width: 100%;
   padding: 12px 20px;
@@ -41,6 +43,11 @@ form {
   color: black;
   font-family: "Secular One";
 }
+
+input[type=submit], input[type=button] {
+  font-family: "Secular One";
+}
+
 input[type=submit],  input[type=button] {
   width: 100%;
   background-color: #4CAF50;
@@ -71,24 +78,28 @@ h2, h1 {
 .subheading {
   text-align: center;
 }
-@media (max-width: :00px) {
+@media (max-width: 600px) {
   body {
     padding: 10px;
   }
   form {
     padding: 10px;
   }
-  #username, input[type=text], select, input[type=number], input[type=submit] {
+  #username, input[type=text], select, input[type=number], input[type=submit], input[type=submit], input[type=button] {
     padding: 10px 15px;
-    font-size: 0.8em;
+    font-size: 1em;
     font-family: "Secular One";
   }
+
   h2, h1 {
     font-size: 1.5em;
   }
-
   label {
     font-size: 1em;
+  }
+  .modal-content {
+    width: 80% !important;
+    margin: 50% auto !important;
   }
 }
 .header-img {
@@ -278,14 +289,15 @@ fieldset {
 .modal-content {
   position: relative;
   background-color: #fefefe;
-  margin: 15% auto;
+  margin: 20% auto;
   padding: 20px;
   width: 50%;
   border-radius: 4px;
 }
 
 .modal-text {
-  word-break: break-all;
+  text-align: center;
+  padding: 0.5em;
 }
 .close {
   color: #aaa;
