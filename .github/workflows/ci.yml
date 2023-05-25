@@ -42,9 +42,9 @@ jobs:
         run: go build cmd/*go
 
       - name: Install dependencies
-        run: go get -u golang.org/x/lint/golint
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: vet and lint
         run: |
-          go vet cmd/
-          golint cmd/
+          go vet ./...
+          staticcheck ./...
