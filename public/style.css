@@ -419,3 +419,11 @@ pre {
   display: grid;
   place-items: center;
 }
+
+.advanced {
+  color: darkgrey;
+}
+
+#advanced-options {
+  padding-top: 1em;
+}

@@ -44,7 +44,7 @@ function embedUrl() {
   var url = action;
   var first = true;
   for(var i = 0; i < elems.length; i++) {
-    if(elems[i].type === "submit" || elems[i].name === "embed" || elems[i].id === "fieldset") continue;
+    if(elems[i].type === "submit" || elems[i].name === "embed" || elems[i].id === "fieldset" || elems[i].id === "aspectRatio" || elems[i].id === "advanced") continue;
     if(first) {
       url += '?';
       first = false;
@@ -150,8 +150,47 @@ document
   .querySelectorAll(".highlight")
   .forEach((highlightDiv) => createCopyButton(highlightDiv));
 
-document.getElementById("form").addEventListener("submit", function() {
-  document.getElementsByClassName("loader")[0].style.display = "block"
-  document.getElementsByClassName("btn-grad")[0].style.display = "none"
-  document.getElementsByClassName("btn-grad-embed")[0].style.display = "none"
+document.getElementById('form').addEventListener('submit', function () {
+  event.preventDefault()
+  submitForm(event.target)
+  document.getElementsByClassName('loader')[0].style.display = 'block'
+  document.getElementsByClassName('btn-grad')[0].style.display = 'none'
+  document.getElementsByClassName('btn-grad-embed')[0].style.display = 'none'
+})
+
+function toggleAdvancedOptions (checkBoxElement) {
+  const advancedOptions = document.getElementById('advanced-options')
+  if (checkBoxElement.checked) {
+    advancedOptions.style.display = 'block'
+    document.getElementById('width').value = '300'
+    document.getElementById('height').value = '300'
+  } else {
+    advancedOptions.style.display = 'none'
+    document.getElementById('width').value = ''
+    document.getElementById('height').value = ''
+  }
+}
+
+function maintainAspectRatio(input) {
+    if(aspectRatioChecked) {
+        if(input.id === "width") {
+            document.getElementById('height').value = input.value;
+        } else if(input.id === "height") {
+            document.getElementById('width').value = input.value;
+        }
+    }
+}
+
+document.getElementById('aspectRatio').addEventListener('change', function() {
+    aspectRatioChecked = this.checked;
 });
+
+function submitForm (form) {
+  const params = new URLSearchParams()
+  for (const field of form.elements) {
+    if (field.name && field.value && field.name !== 'submit' && field.name !== 'advanced') {
+      params.append(field.name, field.value)
+    }
+  }
+  window.location.href = '/collage?' + params.toString()
+}
