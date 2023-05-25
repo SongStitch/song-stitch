@@ -120,7 +120,7 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	collage := dc.Image()
 
 	if displayOptions.Resize {
-		collage = resize.Resize(displayOptions.Width, displayOptions.Height, collage, resize.Lanczos3)
+		collage = resizeImage(collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	return collage, nil
