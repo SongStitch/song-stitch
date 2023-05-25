@@ -61,6 +61,16 @@ func runServer() {
 	fs := http.FileServer(http.Dir("public"))
 	router.Handle("/public/", http.StripPrefix("/public/", fs))
 
+	// serve robots.txt file
+	router.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/robots.txt")
+	})
+
+	// serve humans.txt file
+	router.HandleFunc("/humans.txt", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/humans.txt")
+	})
+
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 
 	nextRequestID := func() string {
