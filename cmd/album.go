@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"image"
 	"image/jpeg"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -48,7 +48,7 @@ func (a *Album) DownloadImage() error {
 		a.Image = img
 		return err
 	} else {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
 			return err

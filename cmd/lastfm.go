@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -44,7 +44,7 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -60,11 +60,10 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 	// No albums to return
 	if len(lastFMResponse.TopAlbums.Album) == 0 {
 		log.Println("no albums!")
-		return nil, errors.New("No Albums found! Is the username correct?")
+		return nil, errors.New("no albums found! is the username correct?")
 	}
 
-	var albums []Album
-	albums = make([]Album, count)
+	albums := make([]Album, count)
 	for i, album := range lastFMResponse.TopAlbums.Album {
 		albums[i].Name = album.AlbumName
 		albums[i].Artist = album.Artist.ArtistName
