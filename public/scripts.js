@@ -187,10 +187,14 @@ function toggleAdvancedOptions(checkBoxElement) {
 
 function maintainAspectRatio(input) {
     if (aspectRatioChecked) {
+        const numCols = document.getElementById('columns').value;
+        const numRows = document.getElementById('rows').value;
         if (input.id === 'width') {
-            document.getElementById('height').value = input.value;
+            const value = Math.round((input.value * numRows) / numCols);
+            document.getElementById('height').value = value;
         } else if (input.id === 'height') {
-            document.getElementById('width').value = input.value;
+            const value = Math.round((input.value * numCols) / numRows);
+            document.getElementById('width').value = value;
         }
     }
 }
