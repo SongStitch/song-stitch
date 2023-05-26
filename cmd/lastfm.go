@@ -41,6 +41,8 @@ type LastFMResponse struct {
 	} `json:"topalbums"`
 }
 
+var ErrUserNotFound = errors.New("user not found")
+
 func getAlbums(username string, period Period, count int, imageSize string) ([]Album, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -73,6 +75,10 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 		}
 		defer res.Body.Close()
 
+		if res.StatusCode == http.StatusNotFound {
+			return nil, ErrUserNotFound
+		}
+
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			log.Println(err)
@@ -84,11 +90,6 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 		if err != nil {
 			log.Println(err)
 			return nil, err
-		}
-
-		// No albums to return
-		if len(lastFMResponse.TopAlbums.Album) == 0 && page == 1 {
-			return nil, errors.New("no Albums found! Is the username correct?")
 		}
 
 		totalPages, err := strconv.Atoi(lastFMResponse.TopAlbums.Attr.TotalPages)
