@@ -262,11 +262,18 @@ function checkAspectRatioValues (inputValue, min = 0) {
   return inputValue
 }
 
+function updateAndValidateValue (id, checkFunction) {
+  const element = document.getElementById(id)
+  const value = checkFunction(Number(element.value))
+  element.value = value
+  return value
+}
+
 function validate (input) {
-  let numCols = checkGridValues(Number(document.getElementById('columns').value))
-  let numRows = checkGridValues(Number(document.getElementById('rows').value))
-  let height = checkAspectRatioValues(Number(document.getElementById('height').value))
-  let width = checkAspectRatioValues(Number(document.getElementById('width').value))
+  let numCols = updateAndValidateValue('columns', checkGridValues)
+  let numRows = updateAndValidateValue('rows', checkGridValues)
+  let height = updateAndValidateValue('height', checkAspectRatioValues)
+  let width = updateAndValidateValue('width', checkAspectRatioValues)
 
   if (aspectRatioChecked) {
     numCols = document.getElementById('columns').value
