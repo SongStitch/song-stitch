@@ -52,15 +52,15 @@ func validatePeriod(fl validator.FieldLevel) bool {
 }
 
 type CollageRequest struct {
-	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=30"`
-	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=30"`
+	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
+	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=15"`
 	Username      string `in:"query=username;required" validate:"required"`
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
-	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=10000"`
-	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=10000"`
+	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
+	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 }
 
 func getCollage(request *CollageRequest) (image.Image, error) {
