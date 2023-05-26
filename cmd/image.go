@@ -25,7 +25,8 @@ type DisplayOptions struct {
 }
 
 const (
-	fontFile = "./assets/Hack-Regular.ttf"
+	fontFile           = "./assets/Hack-Regular.ttf"
+	compressionQuality = 70
 )
 
 var textLocation = [3]int{20, 35, 50}
@@ -124,7 +125,7 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	}
 
 	if displayOptions.Compress {
-		collageCompressed, err := compressImage(collage, 70)
+		collageCompressed, err := compressImage(collage, compressionQuality)
 		if err != nil {
 			// Just serve the non-compressed image
 			collageCompressed = collage
