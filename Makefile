@@ -9,7 +9,7 @@ run:
 	go run cmd/*.go
 
 run-debug:
-	GODEBUG=madvdontneed=1 go run cmd/*.go
+	GODEBUG=gctrace=1 go run cmd/*.go
 
 build:
 	go build -o bin/${BINARY_NAME} cmd/*.go
