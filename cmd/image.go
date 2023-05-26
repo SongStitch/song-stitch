@@ -123,12 +123,11 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	if displayOptions.Compress {
 		collageCompressed, err := compressImage(&collage, compressionQuality)
 		if err != nil {
-			// Just serve the non-compressed image
-			collageCompressed = collage
+			log.Println(err)
 		} else {
+			// Just serve the non-compressed image
 			collage = collageCompressed
 		}
 	}
 	return collage, nil
-
 }
