@@ -58,6 +58,7 @@ function initCheckboxValues () {
       element.value = 'true'
     }
   })
+  document.getElementById("compress").value = "false"
 }
 
 function randomizeCredits () {
@@ -100,6 +101,9 @@ function embedUrl () {
     }
     if (document.getElementById('height').value.length == 0) {
       excludedNames.push('height')
+    }
+    if (document.getElementById('compress').value == "false") {
+      excludedNames.push('compress')
     }
     return !(el.type === 'submit' || excludedIds.includes(el.id) || excludedNames.includes(el.name) || el.value === '')
   })
