@@ -59,6 +59,7 @@ type CollageRequest struct {
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
+	Compress      bool   `in:"query=compress;default=false"`
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 }
@@ -98,6 +99,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		Resize:     request.Width > 0 || request.Height > 0,
 		Width:      request.Width,
 		Height:     request.Height,
+		Compress:   request.Compress,
 	}
 
 	collage, _ := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)

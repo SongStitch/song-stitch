@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"log"
 	"net/url"
 	"path/filepath"
@@ -16,6 +18,7 @@ type DisplayOptions struct {
 	ArtistName bool
 	AlbumName  bool
 	PlayCount  bool
+	Compress   bool
 	Resize     bool
 	Width      uint
 	Height     uint
@@ -81,6 +84,19 @@ func resizeImage(img image.Image, width uint, height uint) image.Image {
 	return resize.Resize(width, height, img, resize.Lanczos3)
 }
 
+func compressImage(collage image.Image, quality int) (image.Image, error) {
+	var buf bytes.Buffer
+	err := jpeg.Encode(&buf, collage, &jpeg.Options{Quality: quality})
+	if err != nil {
+		return nil, err
+	}
+	collageCompressed, err := jpeg.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		return nil, err
+	}
+	return collageCompressed, nil
+}
+
 func createCollage(albums []Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := imageDimension * columns
@@ -107,6 +123,15 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 		collage = resizeImage(collage, displayOptions.Width, displayOptions.Height)
 	}
 
+	if displayOptions.Compress {
+		collageCompressed, err := compressImage(collage, 70)
+		if err != nil {
+			// Just serve the non-compressed image
+			collageCompressed = collage
+		} else {
+			collage = collageCompressed
+		}
+	}
 	return collage, nil
 
 }
