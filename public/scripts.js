@@ -1,83 +1,143 @@
-// Hide Spinner when not submitting
-window.addEventListener('pageshow', hideSpinners)
-function hideSpinners () {
-  document.getElementsByClassName('loader')[0].style.display = 'none'
-  document.getElementsByClassName('btn-grad')[0].style.display = 'block'
-  document.getElementsByClassName('btn-grad-embed')[0].style.display = 'block'
+window.addEventListener('pageshow', () => toggleLoader(false))
+
+// Form Submission
+function submitForm (form) {
+  const IGNORED_FIELDS = ['submit', 'advanced', 'aspectRatio', 'embed']
+  const params = new URLSearchParams()
+
+  Array.from(form.elements)
+    .filter(field => field.name && field.value && !IGNORED_FIELDS.includes(field.name))
+    .forEach(field => params.append(field.name, field.value))
+
+  window.location.href = '/collage?' + params.toString()
 }
 
-window.onload = function () {
-  // init checkbox values
-  document.getElementById('artist').value = 'true'
-  document.getElementById('album').value = 'true'
-  document.getElementById('playcount').value = 'true'
+const formElement = document.getElementById('form')
+if (formElement) {
+  formElement.addEventListener('submit', handleFormSubmit)
+}
 
-  // randomise credits
+// Event handler for form submit
+function handleFormSubmit (event) {
+  event.preventDefault()
+  toggleLoader(true)
+  submitForm(event.target)
+}
+
+/**
+ * Toggle the visibility of the loader and associated buttons
+ * @param {boolean} isLoading - Whether the loader should be visible
+ */
+function toggleLoader (isLoading) {
+  const elementClasses = ['loader-container', 'loader', 'btn-grad', 'btn-grad-embed']
+  const displayValue = isLoading ? ['grid', 'block', 'none', 'none'] : ['none', 'none', 'block', 'block']
+
+  elementClasses.forEach((className, index) => {
+    const element = document.getElementsByClassName(className)[0]
+    if (element) {
+      element.style.display = displayValue[index]
+    } else {
+      console.error(`Element with class ${className} could not be found in the DOM.`)
+    }
+  })
+}
+
+window.addEventListener('DOMContentLoaded', initializePage)
+
+// Function to initialize the page after the DOM has been loaded
+function initializePage () {
+  initCheckboxValues()
+  randomizeCredits()
+  handleLocalStorage()
+}
+
+function initCheckboxValues () {
+  ['artist', 'album', 'playcount'].forEach(id => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.value = 'true'
+    }
+  })
+}
+
+function randomizeCredits () {
   const p = document.getElementById('links')
-  const spans = p.getElementsByTagName('span')
-  const spanArr = Array.prototype.slice.call(spans)
-  spanArr.sort(function () {
-    return 0.5 - Math.random()
-  })
-  spanArr.forEach(function (span) {
-    p.appendChild(span) // This will move the <span> element (containing an <a> tag) to the end of the list.
-  })
-  // We need to adjust the "and" position after the first link
+  const spanArr = Array.from(p.getElementsByTagName('span'))
+  spanArr.sort(() => Math.random() - 0.5)
+  spanArr.forEach(span => p.appendChild(span))
   const andNode = document.createTextNode(' and ')
-  p.insertBefore(andNode, p.children[1])
-
-  // LocalStorage for username
-  const username = document.querySelector('#username')
-  username.value = localStorage.getItem('username') || ''
-  document.querySelector('#form').addEventListener('submit', function () {
-    localStorage.setItem('username', username.value)
-  })
+  if (p.children[1]) {
+    p.insertBefore(andNode, p.children[1])
+  }
 }
 
+function handleLocalStorage () {
+  const username = document.getElementById('username')
+  if (username && formElement) {
+    username.value = localStorage.getItem('username') || ''
+    formElement.addEventListener('submit', () => {
+      localStorage.setItem('username', username.value)
+    })
+  }
+}
+
+// checkbox value
 function updateValue (checkbox) {
   checkbox.value = checkbox.checked ? 'true' : 'false'
 }
 
-// Embed button js
+// Embed button and modal
 function embedUrl () {
-  const form = document.getElementById('form')
-  const action = form.action
-  const elems = form.elements
-  let url = action
-  let first = true
-  for (let i = 0; i < elems.length; i++) {
-    if (elems[i].type === 'submit' || elems[i].name === 'embed' || elems[i].id === 'fieldset' || elems[i].id === 'aspectRatio' || elems[i].id === 'advanced') continue
-    if (elems[i].name == 'height' && elems[i].value.length == 0) continue
-    if (elems[i].name == 'width' && elems[i].value.length == 0) continue
-    if (first) {
-      url += '?'
-      first = false
-    } else {
-      url += '&'
+  form = document.getElementById('form')
+  action = form.action
+  elems = Array.from(form.elements)
+
+  const filteredElems = elems.filter(el => {
+    excludedIds = ['fieldset', 'aspectRatio', 'advanced']
+    excludedNames = ['embed']
+    if (document.getElementById('width').value.length == 0) {
+      excludedNames.push('width')
     }
-    url += elems[i].name + '=' + encodeURIComponent(elems[i].value)
-    var embedData = '<img class="songstitch-collage" src="' + url + '">'
-  }
+    if (document.getElementById('height').value.length == 0) {
+      excludedNames.push('height')
+    }
+    return !(el.type === 'submit' || excludedIds.includes(el.id) || excludedNames.includes(el.name) || el.value === '')
+  })
+
+  const query = filteredElems.map(el => `${el.name}=${encodeURIComponent(el.value)}`).join('&')
+  const url = `${action}?${query}`
+
+  const embedData = `<img class="songstitch-collage" src="${url}">`
+
   document.getElementById('embedUrl').textContent = embedData
-  modal.style.display = 'block'
+  displayModal()
+
   return false // prevent the form from submitting
 }
+
+function displayModal () {
+  const modal = document.getElementById('modal')
+  modal.style.display = 'block'
+}
+
+// copy to Clipboard
 function copyToClipboard () {
   const urlText = document.getElementById('embedUrl').textContent
   navigator.clipboard
     .writeText(urlText)
     .then(function () {
-      console.log('Copied to clipboard')
     })
     .catch(function () {
       console.error('Failed to copy text')
     })
 }
-var modal = document.getElementById('myModal')
+
+const modal = document.getElementById('modal')
 const span = document.getElementsByClassName('close')[0]
 span.onclick = function () {
   modal.style.display = 'none'
 }
+// close modal when user clicks outside
 window.onclick = function (event) {
   if (event.target == modal) {
     modal.style.display = 'none'
@@ -156,15 +216,6 @@ function addCopyButtonToDom (button, highlightDiv) {
 
 document.querySelectorAll('.highlight').forEach((highlightDiv) => createCopyButton(highlightDiv))
 
-// Loader logic
-document.getElementById('form').addEventListener('submit', function () {
-  event.preventDefault()
-  submitForm(event.target)
-  document.getElementsByClassName('loader')[0].style.display = 'block'
-  document.getElementsByClassName('btn-grad')[0].style.display = 'none'
-  document.getElementsByClassName('btn-grad-embed')[0].style.display = 'none'
-})
-
 // Advanced Options
 function toggleAdvancedOptions (checkBoxElement) {
   const advancedOptions = document.getElementById('advanced-options')
@@ -173,12 +224,12 @@ function toggleAdvancedOptions (checkBoxElement) {
     if (typeof tempWidth !== 'undefined') {
       document.getElementById('width').value = tempWidth
     } else {
-      document.getElementById('width').value = 500
+      document.getElementById('width').value = 1000
     }
     if (typeof tempHeight !== 'undefined') {
       document.getElementById('height').value = tempHeight
     } else {
-      document.getElementById('height').value = 500
+      document.getElementById('height').value = 1000
     }
   } else {
     advancedOptions.style.display = 'none'
@@ -189,17 +240,40 @@ function toggleAdvancedOptions (checkBoxElement) {
   }
 }
 
-let aspectRatioChecked = false
-document.getElementById('aspectRatio').addEventListener('change', function () {
-  aspectRatioChecked = this.checked
-  maintainAspectRatio('aspectRatio')
-})
+// input validation
+maxResolution = document.getElementById('width').getAttribute('max')
+maxGridSize = document.getElementById('rows').getAttribute('max')
 
-function maintainAspectRatio (input) {
+function checkGridValues (inputValue, min = 0) {
+  if (inputValue > maxGridSize) {
+    return maxGridSize
+  } else if (inputValue < min) {
+    return min
+  }
+  return inputValue
+}
+
+function checkAspectRatioValues (inputValue, min = 0) {
+  if (inputValue > maxResolution) {
+    return maxResolution
+  } else if (inputValue < min) {
+    return min
+  }
+  return inputValue
+}
+
+function validate (input) {
+  let numCols = checkGridValues(Number(document.getElementById('columns').value))
+  let numRows = checkGridValues(Number(document.getElementById('rows').value))
+  let height = checkAspectRatioValues(Number(document.getElementById('height').value))
+  let width = checkAspectRatioValues(Number(document.getElementById('width').value))
+
   if (aspectRatioChecked) {
     numCols = document.getElementById('columns').value
     numRows = document.getElementById('rows').value
-    if (Math.round(numRows) === 0 || Math.round(numCols) === 0) {
+    height = document.getElementById('height').value
+    width = document.getElementById('width').value
+    if (Math.round(numRows) === 0 || Math.round(numCols) === 0 || Math.round(height) === 0 || Math.round(width) === 0) {
       return
     }
     if (input.id === 'width') {
@@ -208,21 +282,18 @@ function maintainAspectRatio (input) {
     } else if (input.id === 'height') {
       value = Math.round((input.value * numCols) / numRows)
       document.getElementById('width').value = value
-    } else {
-      value = Math.round((document.getElementById('width').value * numRows) / numCols)
+    } else if (height > width) {
+      value = Math.round((width * numRows) / numCols)
       document.getElementById('height').value = value
-      value = Math.round((document.getElementById('height').value * numCols) / numRows)
+    } else if (width >= height) {
+      value = Math.round((height * numCols) / numRows)
       document.getElementById('width').value = value
     }
   }
 }
 
-function submitForm (form) {
-  const params = new URLSearchParams()
-  for (const field of form.elements) {
-    if (field.name && field.value && field.name !== 'submit' && field.name !== 'advanced' && field.name !== 'aspectRatio' && field.name !== 'embed') {
-      params.append(field.name, field.value)
-    }
-    window.location.href = '/collage?' + params.toString()
-  }
-}
+let aspectRatioChecked = document.getElementById('aspectRatio').checked = true
+document.getElementById('aspectRatio').addEventListener('change', function () {
+  aspectRatioChecked = this.checked
+  validate('aspectRatio')
+})
