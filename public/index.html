@@ -58,19 +58,19 @@
             <label for="playcount">Display Play Count</label>
           </div>
           <br>
-          <label for="rows">Number of Rows <span class="nonbold">(max. 20)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="20" value="3" oninput="validate(this)"><br>
-          <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 20)</span></label><br>
-          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="20" value="3" oninput="validate(this)"><br>
+          <label for="rows">Number of Rows <span class="nonbold">(max. 15)</span></label><br>
+          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="15" value="3" oninput="validate(this)"><br>
+          <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 15)</span></label><br>
+          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="15" value="3" oninput="validate(this)"><br>
           <div class="checkbox-wrapper advanced">
             <input value="false" name="advanced" id="advanced" type="checkbox" onclick="toggleAdvancedOptions(this)">
             <label for="advanced">Show Advanced Options</label>
           </div>
           <div id="advanced-options" style="display: none;">
             <label for="height">Generated Image Height <span class="nonbold">(in pixels)</span></label><br>
-            <input inputmode="decimal" type="number" pattern="\d*" id="height" name="height" min="10" max="10000" oninput="validate(this);"><br>
+            <input inputmode="decimal" type="number" pattern="\d*" id="height" name="height" min="10" max="3000" oninput="validate(this);"><br>
             <label  for="width">Generated Image Width <span class="nonbold">(in pixels)</span></label><br>
-            <input inputmode="decimal" type="number" pattern="\d*" id="width" name="width" min="10" max="10000" oninput="validate(this);"><br>
+            <input inputmode="decimal" type="number" pattern="\d*" id="width" name="width" min="10" max="3000" oninput="validate(this);"><br>
             <div class="checkbox-wrapper aspect-ratio">
               <input id="aspectRatio" name="aspectRatio" type="checkbox" onclick="validate(this)">
               <label for="aspectRatio">Maintain Aspect Ratio</label>

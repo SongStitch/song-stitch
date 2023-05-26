@@ -52,15 +52,15 @@ func validatePeriod(fl validator.FieldLevel) bool {
 }
 
 type CollageRequest struct {
-	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=20"`
-	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=20"`
+	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
+	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=15"`
 	Username      string `in:"query=username;required" validate:"required"`
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
-	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=10000"`
-	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=10000"`
+	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
+	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 }
 
 func getCollage(request *CollageRequest) (image.Image, error) {
@@ -68,18 +68,19 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 	imageSize := "extralarge"
 	imageDimension := 300
 	var fontSize float64 = 12
-	if count > 100 {
+	if count > 100 && count <= 1000 {
 		imageSize = "large"
 		imageDimension = 174
 		fontSize = 8
+	} else if count > 1000 && count <= 2000 {
+		imageSize = "medium"
+		imageDimension = 64
+		fontSize = 6
+	} else if count > 2000 {
+		imageSize = "small"
+		imageDimension = 34
+		fontSize = 2
 	}
-	/* TODO
-	if count > 900 {
-			imageSize = "medium"
-			imageDimension = 64
-			fontSize = 6
-		}
-	*/
 
 	period := getPeriodFromStr(request.Period)
 	albums, err := getAlbums(request.Username, period, count, imageSize)
@@ -88,11 +89,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		return nil, err
 	}
 
-	err = downloadImagesForAlbums(albums)
-	if err != nil {
-		// skip the album art if it doesn't exist
-		log.Println(err)
-	}
+	downloadImagesForAlbums(albums)
 
 	displayOptions := DisplayOptions{
 		ArtistName: request.DisplayArtist,

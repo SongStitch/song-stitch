@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"image"
+	"image/gif"
 	"image/jpeg"
 	"io"
 	"log"
@@ -11,7 +12,10 @@ import (
 	"sync"
 )
 
-const jpgFileType = ".jpg"
+const (
+	jpgFileType = ".jpg"
+	gifFileType = ".gif"
+)
 
 type Album struct {
 	Name      string
@@ -42,6 +46,13 @@ func (a *Album) DownloadImage() error {
 
 	if strings.ToLower(extension) == jpgFileType {
 		img, err := jpeg.Decode(ioBody)
+		if err != nil {
+			log.Println(err)
+		}
+		a.Image = img
+		return err
+	} else if strings.ToLower(extension) == gifFileType {
+		img, err := gif.Decode(ioBody)
 		if err != nil {
 			log.Println(err)
 		}
