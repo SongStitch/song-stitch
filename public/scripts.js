@@ -1,314 +1,341 @@
-window.addEventListener('pageshow', () => toggleLoader(false))
+window.addEventListener('pageshow', () => toggleLoader(false));
 
 // Form Submission
-function submitForm (form) {
-  const IGNORED_FIELDS = ['submit', 'advanced', 'aspectRatio', 'embed']
-  const params = new URLSearchParams()
+function submitForm(form) {
+  const IGNORED_FIELDS = ['submit', 'advanced', 'aspectRatio', 'embed'];
+  const params = new URLSearchParams();
 
   Array.from(form.elements)
-    .filter(field => field.name && field.value && !IGNORED_FIELDS.includes(field.name))
-    .forEach(field => params.append(field.name, field.value))
+    .filter(
+      (field) =>
+        field.name && field.value && !IGNORED_FIELDS.includes(field.name)
+    )
+    .forEach((field) => params.append(field.name, field.value));
 
-  window.location.href = '/collage?' + params.toString()
+  window.location.href = '/collage?' + params.toString();
 }
 
-const formElement = document.getElementById('form')
+const formElement = document.getElementById('form');
 if (formElement) {
-  formElement.addEventListener('submit', handleFormSubmit)
+  formElement.addEventListener('submit', handleFormSubmit);
 }
 
 // Event handler for form submit
-function handleFormSubmit (event) {
-  event.preventDefault()
-  toggleLoader(true)
-  submitForm(event.target)
+function handleFormSubmit(event) {
+  event.preventDefault();
+  toggleLoader(true);
+  submitForm(event.target);
 }
 
 /**
  * Toggle the visibility of the loader and associated buttons
  * @param {boolean} isLoading - Whether the loader should be visible
  */
-function toggleLoader (isLoading) {
-  const elementClasses = ['loader-container', 'loader', 'btn-grad', 'btn-grad-embed']
-  const displayValue = isLoading ? ['grid', 'block', 'none', 'none'] : ['none', 'none', 'block', 'block']
+function toggleLoader(isLoading) {
+  const elementClasses = [
+    'loader-container',
+    'loader',
+    'btn-grad',
+    'btn-grad-embed',
+  ];
+  const displayValue = isLoading
+    ? ['grid', 'block', 'none', 'none']
+    : ['none', 'none', 'block', 'block'];
 
   elementClasses.forEach((className, index) => {
-    const element = document.getElementsByClassName(className)[0]
+    const element = document.getElementsByClassName(className)[0];
     if (element) {
-      element.style.display = displayValue[index]
+      element.style.display = displayValue[index];
     } else {
-      console.error(`Element with class ${className} could not be found in the DOM.`)
+      console.error(
+        `Element with class ${className} could not be found in the DOM.`
+      );
     }
-  })
+  });
 }
 
-window.addEventListener('DOMContentLoaded', initializePage)
+window.addEventListener('DOMContentLoaded', initializePage);
 
 // Function to initialize the page after the DOM has been loaded
-function initializePage () {
-  initCheckboxValues()
-  randomizeCredits()
-  handleLocalStorage()
+function initializePage() {
+  initCheckboxValues();
+  randomizeCredits();
+  handleLocalStorage();
 }
 
-function initCheckboxValues () {
-  ['artist', 'album', 'playcount'].forEach(id => {
-    const element = document.getElementById(id)
+function initCheckboxValues() {
+  ['artist', 'album', 'playcount'].forEach((id) => {
+    const element = document.getElementById(id);
     if (element) {
-      element.value = 'true'
+      element.value = 'true';
     }
-  })
-  document.getElementById("compress").value = "false"
+  });
+  document.getElementById('compress').value = 'false';
 }
 
-function randomizeCredits () {
-  const p = document.getElementById('links')
-  const spanArr = Array.from(p.getElementsByTagName('span'))
-  spanArr.sort(() => Math.random() - 0.5)
-  spanArr.forEach(span => p.appendChild(span))
-  const andNode = document.createTextNode(' and ')
+function randomizeCredits() {
+  const p = document.getElementById('links');
+  const spanArr = Array.from(p.getElementsByTagName('span'));
+  spanArr.sort(() => Math.random() - 0.5);
+  spanArr.forEach((span) => p.appendChild(span));
+  const andNode = document.createTextNode(' and ');
   if (p.children[1]) {
-    p.insertBefore(andNode, p.children[1])
+    p.insertBefore(andNode, p.children[1]);
   }
 }
 
-function handleLocalStorage () {
-  const username = document.getElementById('username')
+function handleLocalStorage() {
+  const username = document.getElementById('username');
   if (username && formElement) {
-    username.value = localStorage.getItem('username') || ''
+    username.value = localStorage.getItem('username') || '';
     formElement.addEventListener('submit', () => {
-      localStorage.setItem('username', username.value)
-    })
+      localStorage.setItem('username', username.value);
+    });
   }
 }
 
 // checkbox value
-function updateValue (checkbox) {
-  checkbox.value = checkbox.checked ? 'true' : 'false'
+function updateValue(checkbox) {
+  checkbox.value = checkbox.checked ? 'true' : 'false';
 }
 
 // Embed button and modal
-function embedUrl () {
-  form = document.getElementById('form')
-  action = form.action
-  elems = Array.from(form.elements)
+function embedUrl() {
+  form = document.getElementById('form');
+  action = form.action;
+  elems = Array.from(form.elements);
 
-  const filteredElems = elems.filter(el => {
-    excludedIds = ['fieldset', 'aspectRatio', 'advanced']
-    excludedNames = ['embed']
+  const filteredElems = elems.filter((el) => {
+    excludedIds = ['fieldset', 'aspectRatio', 'advanced'];
+    excludedNames = ['embed'];
     if (document.getElementById('width').value.length == 0) {
-      excludedNames.push('width')
+      excludedNames.push('width');
     }
     if (document.getElementById('height').value.length == 0) {
-      excludedNames.push('height')
+      excludedNames.push('height');
     }
-    if (document.getElementById('compress').value == "false") {
-      excludedNames.push('compress')
+    if (document.getElementById('compress').value == 'false') {
+      excludedNames.push('compress');
     }
-    return !(el.type === 'submit' || excludedIds.includes(el.id) || excludedNames.includes(el.name) || el.value === '')
-  })
+    return !(
+      el.type === 'submit' ||
+      excludedIds.includes(el.id) ||
+      excludedNames.includes(el.name) ||
+      el.value === ''
+    );
+  });
 
-  const query = filteredElems.map(el => `${el.name}=${encodeURIComponent(el.value)}`).join('&')
-  const url = `${action}?${query}`
+  const query = filteredElems
+    .map((el) => `${el.name}=${encodeURIComponent(el.value)}`)
+    .join('&');
+  const url = `${action}?${query}`;
 
-  const embedData = `<img class="songstitch-collage" src="${url}">`
+  const embedData = `<img class="songstitch-collage" src="${url}">`;
 
-  document.getElementById('embedUrl').textContent = embedData
-  displayModal()
+  document.getElementById('embedUrl').textContent = embedData;
+  displayModal();
 
-  return false // prevent the form from submitting
+  return false; // prevent the form from submitting
 }
 
-function displayModal () {
-  const modal = document.getElementById('modal')
-  modal.style.display = 'block'
+function displayModal() {
+  const modal = document.getElementById('modal');
+  modal.style.display = 'block';
 }
 
 // copy to Clipboard
-function copyToClipboard () {
-  const urlText = document.getElementById('embedUrl').textContent
+function copyToClipboard() {
+  const urlText = document.getElementById('embedUrl').textContent;
   navigator.clipboard
     .writeText(urlText)
-    .then(function () {
-    })
+    .then(function () {})
     .catch(function () {
-      console.error('Failed to copy text')
-    })
+      console.error('Failed to copy text');
+    });
 }
 
-const modal = document.getElementById('modal')
-const span = document.getElementsByClassName('close')[0]
+const modal = document.getElementById('modal');
+const span = document.getElementsByClassName('close')[0];
 span.onclick = function () {
-  modal.style.display = 'none'
-}
+  modal.style.display = 'none';
+};
 // close modal when user clicks outside
 window.onclick = function (event) {
   if (event.target == modal) {
-    modal.style.display = 'none'
+    modal.style.display = 'none';
   }
-}
+};
 
 // close modal when ESC key is pressed
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape') {
-    modal.style.display = 'none'
+    modal.style.display = 'none';
   }
-})
+});
 
 /// Copy embed button logic
-function createCopyButton (highlightDiv) {
-  const button = document.createElement('button')
-  button.className = 'copy-code-button'
-  button.type = 'button'
-  button.innerText = 'Copy'
+function createCopyButton(highlightDiv) {
+  const button = document.createElement('button');
+  button.className = 'copy-code-button';
+  button.type = 'button';
+  button.innerText = 'Copy';
   button.addEventListener('click', () =>
     copyCodeToClipboard(button, highlightDiv)
-  )
-  addCopyButtonToDom(button, highlightDiv)
+  );
+  addCopyButtonToDom(button, highlightDiv);
 }
 
-async function copyCodeToClipboard (button, highlightDiv) {
+async function copyCodeToClipboard(button, highlightDiv) {
   const codeToCopy = highlightDiv.querySelector(
     ':last-child > .chroma > code'
-  ).innerText
+  ).innerText;
   try {
-    result = await navigator.permissions.query({ name: 'clipboard-write' })
+    result = await navigator.permissions.query({ name: 'clipboard-write' });
     if (result.state == 'granted' || result.state == 'prompt') {
-      await navigator.clipboard.writeText(codeToCopy)
+      await navigator.clipboard.writeText(codeToCopy);
     } else {
-      copyCodeBlockExecCommand(codeToCopy, highlightDiv)
+      copyCodeBlockExecCommand(codeToCopy, highlightDiv);
     }
   } catch (_) {
-    copyCodeBlockExecCommand(codeToCopy, highlightDiv)
+    copyCodeBlockExecCommand(codeToCopy, highlightDiv);
   } finally {
-    codeWasCopied(button)
+    codeWasCopied(button);
   }
 }
 
-function copyCodeBlockExecCommand (codeToCopy, highlightDiv) {
-  const textArea = document.createElement('textArea')
-  textArea.contentEditable = 'true'
-  textArea.readOnly = 'false'
-  textArea.className = 'copyable-text-area'
-  textArea.value = codeToCopy
-  highlightDiv.insertBefore(textArea, highlightDiv.firstChild)
-  const range = document.createRange()
-  range.selectNodeContents(textArea)
-  const sel = window.getSelection()
-  sel.removeAllRanges()
-  sel.addRange(range)
-  textArea.setSelectionRange(0, 999999)
-  document.execCommand('copy')
-  highlightDiv.removeChild(textArea)
+function copyCodeBlockExecCommand(codeToCopy, highlightDiv) {
+  const textArea = document.createElement('textArea');
+  textArea.contentEditable = 'true';
+  textArea.readOnly = 'false';
+  textArea.className = 'copyable-text-area';
+  textArea.value = codeToCopy;
+  highlightDiv.insertBefore(textArea, highlightDiv.firstChild);
+  const range = document.createRange();
+  range.selectNodeContents(textArea);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  textArea.setSelectionRange(0, 999999);
+  document.execCommand('copy');
+  highlightDiv.removeChild(textArea);
 }
 
-function codeWasCopied (button) {
-  button.blur()
-  button.innerText = 'Copied!'
+function codeWasCopied(button) {
+  button.blur();
+  button.innerText = 'Copied!';
   setTimeout(function () {
-    button.innerText = 'Copy'
-  }, 2000)
+    button.innerText = 'Copy';
+  }, 2000);
 }
 
-function addCopyButtonToDom (button, highlightDiv) {
-  highlightDiv.insertBefore(button, highlightDiv.firstChild)
-  const wrapper = document.createElement('div')
-  wrapper.className = 'highlight-wrapper'
-  highlightDiv.parentNode.insertBefore(wrapper, highlightDiv)
-  wrapper.appendChild(highlightDiv)
+function addCopyButtonToDom(button, highlightDiv) {
+  highlightDiv.insertBefore(button, highlightDiv.firstChild);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'highlight-wrapper';
+  highlightDiv.parentNode.insertBefore(wrapper, highlightDiv);
+  wrapper.appendChild(highlightDiv);
 }
 
-document.querySelectorAll('.highlight').forEach((highlightDiv) => createCopyButton(highlightDiv))
+document
+  .querySelectorAll('.highlight')
+  .forEach((highlightDiv) => createCopyButton(highlightDiv));
 
 // Advanced Options
-function toggleAdvancedOptions (checkBoxElement) {
-  const advancedOptions = document.getElementById('advanced-options')
+function toggleAdvancedOptions(checkBoxElement) {
+  const advancedOptions = document.getElementById('advanced-options');
   if (checkBoxElement.checked) {
-    advancedOptions.style.display = 'block'
-    aspectRatioChecked = document.getElementById('aspectRatio').checked = true
-    validate('aspectRatio')
+    advancedOptions.style.display = 'block';
+    aspectRatioChecked = document.getElementById('aspectRatio').checked = true;
+    validate('aspectRatio');
     if (typeof tempWidth !== 'undefined') {
-      document.getElementById('width').value = tempWidth
+      document.getElementById('width').value = tempWidth;
     } else {
-      document.getElementById('width').value = 1000
+      document.getElementById('width').value = 1000;
     }
     if (typeof tempHeight !== 'undefined') {
-      document.getElementById('height').value = tempHeight
+      document.getElementById('height').value = tempHeight;
     } else {
-      document.getElementById('height').value = 1000
+      document.getElementById('height').value = 1000;
     }
   } else {
-    aspectRatioChecked = document.getElementById('aspectRatio').checked = false
-    validate('aspectRatio')
-    advancedOptions.style.display = 'none'
-    tempWidth = document.getElementById('width').value
-    tempHeight = document.getElementById('height').value
-    document.getElementById('width').value = ''
-    document.getElementById('height').value = ''
+    aspectRatioChecked = document.getElementById('aspectRatio').checked = false;
+    validate('aspectRatio');
+    advancedOptions.style.display = 'none';
+    tempWidth = document.getElementById('width').value;
+    tempHeight = document.getElementById('height').value;
+    document.getElementById('width').value = '';
+    document.getElementById('height').value = '';
   }
 }
 
 // input validation
-maxResolution = document.getElementById('width').getAttribute('max')
-maxGridSize = document.getElementById('rows').getAttribute('max')
+maxResolution = document.getElementById('width').getAttribute('max');
+maxGridSize = document.getElementById('rows').getAttribute('max');
 
-function checkGridValues (inputValue, min = 0) {
+function checkGridValues(inputValue, min = 0) {
   if (inputValue > maxGridSize) {
-    return maxGridSize
+    return maxGridSize;
   } else if (inputValue < min) {
-    return min
+    return min;
   }
-  return inputValue
+  return inputValue;
 }
 
-function checkAspectRatioValues (inputValue, min = 0) {
+function checkAspectRatioValues(inputValue, min = 0) {
   if (inputValue > maxResolution) {
-    return maxResolution
+    return maxResolution;
   } else if (inputValue < min) {
-    return min
+    return min;
   }
-  return inputValue
+  return inputValue;
 }
 
-function updateAndValidateValue (id, checkFunction) {
-  const element = document.getElementById(id)
-  const value = checkFunction(Number(element.value))
-  element.value = value
-  return value
+function updateAndValidateValue(id, checkFunction) {
+  const element = document.getElementById(id);
+  const value = checkFunction(Number(element.value));
+  element.value = value;
+  return value;
 }
 
-function validate (input) {
-  let numCols = updateAndValidateValue('columns', checkGridValues)
-  let numRows = updateAndValidateValue('rows', checkGridValues)
+function validate(input) {
+  let numCols = updateAndValidateValue('columns', checkGridValues);
+  let numRows = updateAndValidateValue('rows', checkGridValues);
 
   if (aspectRatioChecked) {
-    height = updateAndValidateValue('height', checkAspectRatioValues)
-    width = updateAndValidateValue('width', checkAspectRatioValues)
-    numCols = document.getElementById('columns').value
-    numRows = document.getElementById('rows').value
-    height = document.getElementById('height').value
-    width = document.getElementById('width').value
-    if (Math.round(numRows) === 0 || Math.round(numCols) === 0 || Math.round(height) === 0 || Math.round(width) === 0) {
-      return
+    height = updateAndValidateValue('height', checkAspectRatioValues);
+    width = updateAndValidateValue('width', checkAspectRatioValues);
+    numCols = document.getElementById('columns').value;
+    numRows = document.getElementById('rows').value;
+    height = document.getElementById('height').value;
+    width = document.getElementById('width').value;
+    if (
+      Math.round(numRows) === 0 ||
+      Math.round(numCols) === 0 ||
+      Math.round(height) === 0 ||
+      Math.round(width) === 0
+    ) {
+      return;
     }
     if (input.id === 'width') {
-      value = Math.round((input.value * numRows) / numCols)
-      document.getElementById('height').value = value
+      value = Math.round((input.value * numRows) / numCols);
+      document.getElementById('height').value = value;
     } else if (input.id === 'height') {
-      value = Math.round((input.value * numCols) / numRows)
-      document.getElementById('width').value = value
+      value = Math.round((input.value * numCols) / numRows);
+      document.getElementById('width').value = value;
     } else if (height > width) {
-      value = Math.round((width * numRows) / numCols)
-      document.getElementById('height').value = value
+      value = Math.round((width * numRows) / numCols);
+      document.getElementById('height').value = value;
     } else if (width >= height) {
-      value = Math.round((height * numCols) / numRows)
-      document.getElementById('width').value = value
+      value = Math.round((height * numCols) / numRows);
+      document.getElementById('width').value = value;
     }
   }
 }
 
-let aspectRatioChecked = document.getElementById('aspectRatio').checked = false
+let aspectRatioChecked = (document.getElementById(
+  'aspectRatio'
+).checked = false);
 document.getElementById('aspectRatio').addEventListener('change', function () {
-  aspectRatioChecked = this.checked
-  validate('aspectRatio')
-})
+  aspectRatioChecked = this.checked;
+  validate('aspectRatio');
+});

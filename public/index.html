@@ -1,107 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SongStitch</title>
-    <link rel="stylesheet" href="/public/style.css">
+    <link rel="stylesheet" href="/public/style.css" />
     <link rel="author" href="/humans.txt" />
-    <meta name="description" content="Generate an image collage of your most played albums!">
-    <meta name="keywords" content="lastfm, collage, image, music, albums">
+    <meta
+      name="description"
+      content="Generate an image collage of your most played albums!"
+    />
+    <meta name="keywords" content="lastfm, collage, image, music, albums" />
     <!-- Social Media Meta Tags -->
-    <meta property="og:title" content="SongStitch">
-    <meta property="og:description" content="Generate an image collage of your most played albums!">
-    <meta property="og:image" content="/public/logo.png">
-    <meta property="og:url" content="https://songstitch.art/">
+    <meta property="og:title" content="SongStitch" />
+    <meta
+      property="og:description"
+      content="Generate an image collage of your most played albums!"
+    />
+    <meta property="og:image" content="/public/logo.png" />
+    <meta property="og:url" content="https://songstitch.art/" />
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://songstitch.art/">
+    <link rel="canonical" href="https://songstitch.art/" />
     <!-- Favicons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/public/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/public/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/public/apple-touch-icon.png"
+    />
     <!-- manifest -->
     <link rel="manifest" href="/public/site.webmanifest" />
-    <style>
-    </style>
   </head>
   <body>
     <main class="main">
-      <img src="/public/logo.png" class="header-img" alt="SongStitch Logo" width="418" height="100">
+      <img
+        src="/public/logo.png"
+        class="header-img"
+        alt="SongStitch Logo"
+        width="418"
+        height="100"
+      />
       <h1>Last.fm Collage Generator</h1>
-      <p class="subheading">Generate an image collage of your most played albums!</p>
+      <p class="subheading">
+        Generate an image collage of your most played albums!
+      </p>
       <form action="/collage" method="get" id="form">
-        <label for="username">Your Last.fm Username <span class="asterisk">*</span></label>
-        <br>
-        <input required autofocus autocomplete="on" placeholder="Last.fm username" title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'" pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$" type="text" id="username" name="username">
-        <br>
-        <label for="period">Period of Time</label><br>
+        <label for="username"
+          >Your Last.fm Username <span class="asterisk">*</span></label
+        >
+        <br />
+        <input
+          required
+          autofocus
+          autocomplete="on"
+          placeholder="Last.fm username"
+          title="Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'"
+          pattern="^[a-zA-Z][a-zA-Z0-9_-]{1,14}$"
+          type="text"
+          id="username"
+          name="username"
+        />
+        <br />
+        <label for="period">Period of Time</label><br />
         <select name="period" id="period">
           <option value="7day">7 Days</option>
           <option value="1month">1 Month</option>
           <option value="3month">3 Months</option>
           <option value="6month">6 Months</option>
           <option value="12month">1 Year</option>
-          <option value="overall">All Time</option>
-        </select><br>
+          <option value="overall">All Time</option></select
+        ><br />
         <fieldset id="fieldset">
           <legend>Collage Options</legend>
           <div class="checkbox-wrapper">
-            <input checked value="true" name="artist" id="artist" type="checkbox" onclick="updateValue(this)">
+            <input
+              checked
+              value="true"
+              name="artist"
+              id="artist"
+              type="checkbox"
+              onclick="updateValue(this)"
+            />
             <label for="artist">Display Artist Name</label>
           </div>
           <div class="checkbox-wrapper">
-            <input checked value="true" name="album" id="album" type="checkbox" onclick="updateValue(this)">
+            <input
+              checked
+              value="true"
+              name="album"
+              id="album"
+              type="checkbox"
+              onclick="updateValue(this)"
+            />
             <label for="album">Display Album Name</label>
           </div>
           <div class="checkbox-wrapper">
-            <input checked value="true" name="playcount" id="playcount" type="checkbox" onclick="updateValue(this)">
+            <input
+              checked
+              value="true"
+              name="playcount"
+              id="playcount"
+              type="checkbox"
+              onclick="updateValue(this)"
+            />
             <label for="playcount">Display Play Count</label>
           </div>
-          <br>
-          <label for="rows">Number of Rows <span class="nonbold">(max. 15)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="15" value="3" oninput="validate(this)"><br>
-          <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 15)</span></label><br>
-          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="15" value="3" oninput="validate(this)"><br>
+          <br />
+          <label for="rows"
+            >Number of Rows <span class="nonbold">(max. 15)</span></label
+          ><br />
+          <input
+            inputmode="decimal"
+            type="number"
+            pattern="\d*"
+            id="rows"
+            name="rows"
+            min="1"
+            max="15"
+            value="3"
+            oninput="validate(this)"
+          /><br />
+          <label inputmode="decimal" for="columns"
+            >Number of Columns <span class="nonbold">(max. 15)</span></label
+          ><br />
+          <input
+            type="number"
+            pattern="\d*"
+            id="columns"
+            name="columns"
+            min="1"
+            max="15"
+            value="3"
+            oninput="validate(this)"
+          /><br />
           <div class="checkbox-wrapper advanced">
-            <input value="false" name="advanced" id="advanced" type="checkbox" onclick="toggleAdvancedOptions(this)">
+            <input
+              value="false"
+              name="advanced"
+              id="advanced"
+              type="checkbox"
+              onclick="toggleAdvancedOptions(this)"
+            />
             <label for="advanced">Show Advanced Options</label>
           </div>
-          <div id="advanced-options" style="display: none;">
-            <label for="height">Generated Image Height <span class="nonbold">(in pixels)</span></label><br>
-            <input inputmode="decimal" type="number" pattern="\d*" id="height" name="height" min="10" max="3000" oninput="validate(this);"><br>
-            <label  for="width">Generated Image Width <span class="nonbold">(in pixels)</span></label><br>
-            <input inputmode="decimal" type="number" pattern="\d*" id="width" name="width" min="10" max="3000" oninput="validate(this);"><br>
+          <div id="advanced-options" style="display: none">
+            <label for="height"
+              >Generated Image Height
+              <span class="nonbold">(in pixels)</span></label
+            ><br />
+            <input
+              inputmode="decimal"
+              type="number"
+              pattern="\d*"
+              id="height"
+              name="height"
+              min="10"
+              max="3000"
+              oninput="validate(this);"
+            /><br />
+            <label for="width"
+              >Generated Image Width
+              <span class="nonbold">(in pixels)</span></label
+            ><br />
+            <input
+              inputmode="decimal"
+              type="number"
+              pattern="\d*"
+              id="width"
+              name="width"
+              min="10"
+              max="3000"
+              oninput="validate(this);"
+            /><br />
             <div class="checkbox-wrapper aspect-ratio">
-              <input id="aspectRatio" name="aspectRatio" type="checkbox" onclick="validate(this)">
+              <input
+                id="aspectRatio"
+                name="aspectRatio"
+                type="checkbox"
+                onclick="validate(this)"
+              />
               <label for="aspectRatio">Maintain Aspect Ratio</label>
             </div>
             <div class="checkbox-wrapper">
-              <input id="compress" name="compress" type="checkbox" value="" onclick="updateValue(this)">
+              <input
+                id="compress"
+                name="compress"
+                type="checkbox"
+                value=""
+                onclick="updateValue(this)"
+              />
               <label for="compress">Lossy Compress Image</label>
             </div>
+          </div>
         </fieldset>
         <div class="loader-container">
           <div class="loader"></div>
         </div>
-        <input name="submit" class="btn-grad" type="submit" value="Generate">
-        <input name="embed" class="btn-grad-embed" type="button" value="embed" onclick="embedUrl()">
+        <input name="submit" class="btn-grad" type="submit" value="Generate" />
+        <input
+          name="embed"
+          class="btn-grad-embed"
+          type="button"
+          value="embed"
+          onclick="embedUrl()"
+        />
       </form>
       <div id="modal" class="modal">
         <div class="modal-content">
-          <p class="modal-text">Use this HTML code to embed your configured collage. The latest collage will automatically be shown whenever viewed! 🎉</P>
+          <p class="modal-text">
+            Use this HTML code to embed your configured collage. The latest
+            collage will automatically be shown whenever viewed! 🎉
+          </p>
           <span class="close">&times;</span>
           <div class="highlight">
-            <pre class="chroma"><code id="embedUrl" class="language-python"></code></pre>
+            <pre
+              class="chroma"
+            ><code id="embedUrl" class="language-python"></code></pre>
           </div>
         </div>
       </div>
     </main>
-    <div class="footer" >
-      <p id="links">Made with ❤️ by
-        <span><a href="https://github.com/theden" target="_blank" rel="noopener">TheDen</a></span>
-        <span><a href="https://github.com/BradLewis" target="_blank" rel="noopener">BradLewis</a></span>
+    <div class="footer">
+      <p id="links">
+        Made with ❤️ by
+        <span
+          ><a href="https://github.com/theden" target="_blank" rel="noopener"
+            >TheDen</a
+          ></span
+        >
+        <span
+          ><a href="https://github.com/BradLewis" target="_blank" rel="noopener"
+            >BradLewis</a
+          ></span
+        >
       </p>
-      <a class="gh-link" href="https://github.com/SongStitch/song-stitch" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
+      <a
+        class="gh-link"
+        href="https://github.com/SongStitch/song-stitch"
+        target="_blank"
+        rel="noopener"
+        ><svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+          /></svg
+      ></a>
     </div>
     <script src="/public/scripts.js"></script>
   </body>
