@@ -73,29 +73,25 @@ func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x in
 	}
 }
 
-func resizeImage(img image.Image, width uint, height uint) image.Image {
+func resizeImage(img *image.Image, width uint, height uint) image.Image {
 	if width == 0 && height == 0 {
 		log.Println("Unable to resize image, both width and height are 0")
-		return img
+		return *img
 	} else if height == 0 {
-		height = uint(float64(width) * float64(img.Bounds().Dy()) / float64(img.Bounds().Dx()))
+		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
 	} else if width == 0 {
-		width = uint(float64(height) * float64(img.Bounds().Dx()) / float64(img.Bounds().Dy()))
+		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
 	}
-	return resize.Resize(width, height, img, resize.Lanczos3)
+	return resize.Resize(width, height, *img, resize.Lanczos3)
 }
 
-func compressImage(collage image.Image, quality int) (image.Image, error) {
+func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	var buf bytes.Buffer
-	err := jpeg.Encode(&buf, collage, &jpeg.Options{Quality: quality})
+	err := jpeg.Encode(&buf, *collage, &jpeg.Options{Quality: quality})
 	if err != nil {
 		return nil, err
 	}
-	collageCompressed, err := jpeg.Decode(bytes.NewReader(buf.Bytes()))
-	if err != nil {
-		return nil, err
-	}
-	return collageCompressed, nil
+	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
 func createCollage(albums []Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
@@ -121,11 +117,11 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	collage := dc.Image()
 
 	if displayOptions.Resize {
-		collage = resizeImage(collage, displayOptions.Width, displayOptions.Height)
+		collage = resizeImage(&collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	if displayOptions.Compress {
-		collageCompressed, err := compressImage(collage, compressionQuality)
+		collageCompressed, err := compressImage(&collage, compressionQuality)
 		if err != nil {
 			// Just serve the non-compressed image
 			collageCompressed = collage
