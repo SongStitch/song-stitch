@@ -88,7 +88,6 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 
 		// No albums to return
 		if len(lastFMResponse.TopAlbums.Album) == 0 && page == 1 {
-			log.Println("no albums!")
 			return nil, errors.New("No Albums found! Is the username correct?")
 		}
 
