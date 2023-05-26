@@ -17,6 +17,11 @@ a:active {
   color: #f2f2f2;
   background: black;
 } /* selected link */
+
+a.gh-link:hover, a.gh-link:visited, a.gh-link:active, a.gh-link:link {
+  background: none;
+}
+
 html {
   background-color: #ffffff;
   background-image: radial-gradient(#f2f2f2 2px, #ffffff 2px);
