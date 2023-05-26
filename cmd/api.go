@@ -101,7 +101,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		Compress:   request.Compress,
 	}
 
-	collage, _ := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)
+	collage, err := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)
 	return collage, err
 }
 

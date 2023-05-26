@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -64,13 +63,11 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		defer res.Body.Close()
@@ -81,20 +78,17 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
 		var lastFMResponse LastFMResponse
 		err = json.Unmarshal([]byte(body), &lastFMResponse)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
 		totalPages, err := strconv.Atoi(lastFMResponse.TopAlbums.Attr.TotalPages)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 
