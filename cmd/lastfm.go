@@ -88,7 +88,7 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 
 		// No albums to return
 		if len(lastFMResponse.TopAlbums.Album) == 0 && page == 1 {
-			return nil, errors.New("No Albums found! Is the username correct?")
+			return nil, errors.New("no Albums found! Is the username correct?")
 		}
 
 		totalPages, err := strconv.Atoi(lastFMResponse.TopAlbums.Attr.TotalPages)
