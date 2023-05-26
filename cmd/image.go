@@ -104,7 +104,7 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 	dc := gg.NewContext(collageWidth, collageHeight)
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace(fontFile, fontSize)
-	err := dc.LoadFontFace(fontFile, 12)
+	err := dc.LoadFontFace(fontFile, fontSize)
 	if err != nil {
 		panic(err)
 	}
