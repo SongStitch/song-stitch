@@ -59,6 +59,8 @@ type CollageRequest struct {
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
+	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=10000"`
+	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=10000"`
 }
 
 func getCollage(request *CollageRequest) (image.Image, error) {
@@ -71,6 +73,13 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		imageDimension = 174
 		fontSize = 8
 	}
+	/* TODO
+	if count > 900 {
+			imageSize = "medium"
+			imageDimension = 64
+			fontSize = 6
+		}
+	*/
 
 	period := getPeriodFromStr(request.Period)
 	albums, err := getAlbums(request.Username, period, count, imageSize)
@@ -89,6 +98,9 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		ArtistName: request.DisplayArtist,
 		AlbumName:  request.DisplayAlbum,
 		PlayCount:  request.PlayCount,
+		Resize:     request.Width > 0 || request.Height > 0,
+		Width:      request.Width,
+		Height:     request.Height,
 	}
 
 	collage, _ := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SongStitch</title>
     <link rel="stylesheet" href="/public/style.css">
-     <link rel="author" href="/humans.txt" />
+    <link rel="author" href="/humans.txt" />
     <meta name="description" content="Generate an image collage of your most played albums!">
     <meta name="keywords" content="lastfm, collage, image, music, albums">
     <!-- Social Media Meta Tags -->
@@ -59,19 +59,22 @@
           </div>
           <br>
           <label for="rows">Number of Rows <span class="nonbold">(max. 20)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="20" value="3"><br>
+          <input inputmode="decimal" type="number" pattern="\d*" id="rows" name="rows" min="1" max="20" value="3" oninput="validate(this)"><br>
           <label inputmode="decimal" for="columns">Number of Columns <span class="nonbold">(max. 20)</span></label><br>
-          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="20" value="3"><br>
+          <input type="number" pattern="\d*" id="columns" name="columns" min="1" max="20" value="3" oninput="validate(this)"><br>
           <div class="checkbox-wrapper advanced">
             <input value="false" name="advanced" id="advanced" type="checkbox" onclick="toggleAdvancedOptions(this)">
             <label for="advanced">Show Advanced Options</label>
           </div>
           <div id="advanced-options" style="display: none;">
-          <label for="width">Generated Image Width <span class="nonbold">(in pixels)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="width" name="width" min="10" max="10000"><br>
-          <label for="height">Generated Image Height <span class="nonbold">(in pixels)</span></label><br>
-          <input inputmode="decimal" type="number" pattern="\d*" id="height" name="height" min="10" max="10000"><br>
-          </div>
+            <label for="height">Generated Image Height <span class="nonbold">(in pixels)</span></label><br>
+            <input inputmode="decimal" type="number" pattern="\d*" id="height" name="height" min="10" max="10000" oninput="validate(this);"><br>
+            <label  for="width">Generated Image Width <span class="nonbold">(in pixels)</span></label><br>
+            <input inputmode="decimal" type="number" pattern="\d*" id="width" name="width" min="10" max="10000" oninput="validate(this);"><br>
+            <div class="checkbox-wrapper aspect-ratio">
+              <input id="aspectRatio" name="aspectRatio" type="checkbox" onclick="validate(this)">
+              <label for="aspectRatio">Maintain Aspect Ratio</label>
+            </div>
         </fieldset>
         <div class="loader-container">
           <div class="loader"></div>
@@ -79,7 +82,7 @@
         <input name="submit" class="btn-grad" type="submit" value="Generate">
         <input name="embed" class="btn-grad-embed" type="button" value="embed" onclick="embedUrl()">
       </form>
-      <div id="myModal" class="modal">
+      <div id="modal" class="modal">
         <div class="modal-content">
           <p class="modal-text">Use this HTML code to embed your configured collage. The latest collage will automatically be shown whenever viewed! 🎉</P>
           <span class="close">&times;</span>
@@ -95,6 +98,6 @@
         <span><a href="https://github.com/BradLewis" target="_blank" rel="noopener">BradLewis</a></span>
       </p>
     </div>
-     <script src="/public/scripts.js"></script>
+    <script src="/public/scripts.js"></script>
   </body>
 </html>
