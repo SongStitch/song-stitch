@@ -221,6 +221,8 @@ function toggleAdvancedOptions (checkBoxElement) {
   const advancedOptions = document.getElementById('advanced-options')
   if (checkBoxElement.checked) {
     advancedOptions.style.display = 'block'
+    aspectRatioChecked = document.getElementById('aspectRatio').checked = true
+    validate('aspectRatio')
     if (typeof tempWidth !== 'undefined') {
       document.getElementById('width').value = tempWidth
     } else {
@@ -232,6 +234,8 @@ function toggleAdvancedOptions (checkBoxElement) {
       document.getElementById('height').value = 1000
     }
   } else {
+    aspectRatioChecked = document.getElementById('aspectRatio').checked = false
+    validate('aspectRatio')
     advancedOptions.style.display = 'none'
     tempWidth = document.getElementById('width').value
     tempHeight = document.getElementById('height').value
@@ -272,10 +276,10 @@ function updateAndValidateValue (id, checkFunction) {
 function validate (input) {
   let numCols = updateAndValidateValue('columns', checkGridValues)
   let numRows = updateAndValidateValue('rows', checkGridValues)
-  let height = updateAndValidateValue('height', checkAspectRatioValues)
-  let width = updateAndValidateValue('width', checkAspectRatioValues)
 
   if (aspectRatioChecked) {
+    height = updateAndValidateValue('height', checkAspectRatioValues)
+    width = updateAndValidateValue('width', checkAspectRatioValues)
     numCols = document.getElementById('columns').value
     numRows = document.getElementById('rows').value
     height = document.getElementById('height').value
@@ -299,7 +303,7 @@ function validate (input) {
   }
 }
 
-let aspectRatioChecked = document.getElementById('aspectRatio').checked = true
+let aspectRatioChecked = document.getElementById('aspectRatio').checked = false
 document.getElementById('aspectRatio').addEventListener('change', function () {
   aspectRatioChecked = this.checked
   validate('aspectRatio')
