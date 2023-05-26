@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/jpeg"
 	"log"
@@ -132,8 +131,4 @@ func collage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-func status(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "API running")
 }
