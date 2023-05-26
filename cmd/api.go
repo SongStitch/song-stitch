@@ -74,6 +74,11 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		imageDimension = 174
 		fontSize = 8
 	}
+	if count > 120 {
+		imageSize = "medium"
+		imageDimension = 64
+		fontSize = 6
+	}
 
 	period := getPeriodFromStr(request.Period)
 	albums, err := getAlbums(request.Username, period, count, imageSize)
