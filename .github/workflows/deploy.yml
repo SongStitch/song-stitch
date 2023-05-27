@@ -15,10 +15,6 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-  purge:
-    name: Purge cloudflare cache
-    runs-on: ubuntu-latest
-    steps:
       - name: Purge cache
         uses: nathanvaughn/actions-cloudflare-purge@master
         with:
