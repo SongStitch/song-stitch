@@ -1,11 +1,11 @@
 ---
-version: "3"
+version: '3'
 services:
   song-stitch:
-     build:
-       context: .
-     image: songstitch/song-stitch
-     ports:
-       - 8080:8080
-     volumes:
-       - .env:/app/.env
+    build:
+      context: .
+    image: songstitch/song-stitch
+    ports:
+      - 8080:8080
+    volumes:
+      - .env:/app/.env
