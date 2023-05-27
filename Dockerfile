@@ -13,14 +13,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Minify Assets
 # hadolint ignore=DL3008
 RUN apt-get update \
-      && apt-get install -y --no-install-recommends minify \
-      && find ./public -type f \( \
-      -name "*.html" \
-      -o -name '*.js' \
-      -o -name '*.css' \
-      \) \
-      -print0 | \
-      xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
+    && apt-get install -y --no-install-recommends minify \
+    && find ./public -type f \( \
+    -name "*.html" \
+    -o -name '*.js' \
+    -o -name '*.css' \
+    \) \
+    -print0 | \
+    xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
 
 # hadolint ignore=DL3006
@@ -32,6 +32,5 @@ USER nonroot:nonroot
 COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
 COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
 COPY --chown=nonroot:nonroot assets/ /app/assets
-
 
 ENTRYPOINT ["/app/song-stitch"]

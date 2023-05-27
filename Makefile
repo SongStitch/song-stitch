@@ -29,7 +29,7 @@ docker-build:
 	docker-compose build song-stitch
 
 docker-run:
-	docker-compose run song-stitch
+	docker-compose up
 
 clean:
 	rm -rf bin/*
