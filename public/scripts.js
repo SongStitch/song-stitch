@@ -250,12 +250,12 @@ function toggleAdvancedOptions(checkBoxElement) {
     if (typeof tempWidth !== 'undefined') {
       document.getElementById('width').value = tempWidth;
     } else {
-      document.getElementById('width').value = 1000;
+      document.getElementById('width').value = 1500;
     }
     if (typeof tempHeight !== 'undefined') {
       document.getElementById('height').value = tempHeight;
     } else {
-      document.getElementById('height').value = 1000;
+      document.getElementById('height').value = 1500;
     }
   } else {
     aspectRatioChecked = document.getElementById('aspectRatio').checked = false;
