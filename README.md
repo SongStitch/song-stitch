@@ -7,6 +7,7 @@
 <div align="center">
 
 [![Website Status](https://img.shields.io/website?style=flat-square&up_message=UP&url=https%3A%2F%2Fsongstitch.art%2F)](https://songstitch.art/)
+![Go Version](https://img.shields.io/github/go-mod/go-version/SongStitch/song-stitch?style=flat-square)
 [![CI status](https://img.shields.io/github/actions/workflow/status/SongStitch/song-stitch/deploy.yml?branch=main&style=flat-square)](https://github.com/SongStitch/song-stitch/actions?query=branch%3Amain)
 [![License](https://img.shields.io/github/license/SongStitch/song-stitch?style=flat-square)](/LICENSE)
 
@@ -36,7 +37,7 @@ Have a suggestion on how we can make SongStitch better? Feel free to create an i
 
 ## Usage
 
-Below are the instructions on how you can run SongStitch yourself. You can either run it with `go` directly (we're currently using `v1.20.4`), or you can run it with `docker` and `docker-compose`.
+Below are the instructions on how you can run SongStitch yourself. You can either run it with `go` directly, or you can run it with `docker` and `docker-compose`.
 
 1. Clone the repository
 
