@@ -22,7 +22,21 @@ A <em>blazingly fast</em> web application for generating LastFM collages, writte
   <img alt="SongStitch Logo" src="https://raw.githubusercontent.com/SongStitch/song-stitch/main/docs/collage.png" width="300px"/>
 </p>
 
+## About
+
+SongStitch is a free, fast and highly customisable [last.fm]("https://last.fm") collage generator that allows you to create personalised collages of your most played albums. With SongStitch you can easily generate and share your collages in any size you want, displaying only the information you want, and do so amazing quickly. Simply go to [songstitch.art](https://songstitch.art) and enter your username to start!
+
+### Customisation Options
+
+- Dimensions - specify the exact number of rows and columns you would like within your collage.
+- Text - Choose between adding the album name, artist name and playcount to your collage; or any combo you choose.
+- Image size - Know the dimenions of the collage you need? SongStitch allows you to specify the desired collage image dimensions to ensure you only get what you need.
+
+Have a suggestion on how we can make SongStitch better? Feel free to create an issue on [GitHub](https://github.com/SongStitch/song-stitch/issues/new), or submit a PR!
+
 ## Usage
+
+Below are the instructions on how you can run SongStitch yourself. You can either run it with `go` directly (we're currently using `v1.20.4`), or you can run it with `docker` and `docker-compose`.
 
 1. Clone the repository
 
