@@ -86,7 +86,6 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 	period := getPeriodFromStr(request.Period)
 	albums, err := getAlbums(request.Username, period, count, imageSize)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
@@ -102,7 +101,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		Compress:   request.Compress,
 	}
 
-	collage, _ := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)
+	collage, err := createCollage(albums, request.Rows, request.Columns, imageDimension, fontSize, displayOptions)
 	return collage, err
 }
 
@@ -122,7 +121,12 @@ func collage(w http.ResponseWriter, r *http.Request) {
 	response, err := getCollage(request)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		switch {
+		case err == ErrUserNotFound:
+			http.Error(w, "User not found", http.StatusNotFound)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 

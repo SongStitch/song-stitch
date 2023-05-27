@@ -32,7 +32,6 @@ func (a *Album) DownloadImage() error {
 	}
 	resp, err := http.Get(a.ImageUrl)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	ioBody := resp.Body
@@ -40,28 +39,26 @@ func (a *Album) DownloadImage() error {
 
 	extension, err := getExtension(a.ImageUrl)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
 	if strings.ToLower(extension) == jpgFileType {
 		img, err := jpeg.Decode(ioBody)
 		if err != nil {
-			log.Println(err)
+			return err
 		}
 		a.Image = img
 		return err
 	} else if strings.ToLower(extension) == gifFileType {
 		img, err := gif.Decode(ioBody)
 		if err != nil {
-			log.Println(err)
+			return err
 		}
 		a.Image = img
 		return err
 	} else {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Println(err)
 			return err
 		}
 		img, _, err := image.Decode(bytes.NewReader(body))
