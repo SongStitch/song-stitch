@@ -25,7 +25,7 @@ type DisplayOptions struct {
 }
 
 const (
-	fontFile           = "./assets/Hack-Regular.ttf"
+	fontFile           = "./assets/NotoSans-Regular.ttf"
 	compressionQuality = 70
 )
 
