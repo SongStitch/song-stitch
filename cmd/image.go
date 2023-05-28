@@ -112,7 +112,7 @@ func createCollage[T Drawable](albums []T, rows int, columns int, imageDimension
 	for i, album := range albums {
 		x := (i % columns) * imageDimension
 		y := (i / columns) * imageDimension
-		if album.GetImage() != nil {
+		if *album.GetImage() != nil {
 			dc.DrawImage(*album.GetImage(), x, y)
 		}
 		placeText(dc, album, displayOptions, x, y)
