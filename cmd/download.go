@@ -17,38 +17,9 @@ const (
 	gifFileType = ".gif"
 )
 
-type Album struct {
-	Name      string
-	Artist    string
-	Playcount string
-	ImageUrl  string
-	Image     image.Image
-}
-
-type Artist struct {
-	Name      string
-	Playcount string
-	Image     image.Image
-	ImageUrl  string
-}
-
 type Downloadable interface {
 	GetImageUrl() string
-	GetImage() *image.Image
 	SetImage(*image.Image)
-}
-
-func (a *Album) GetImageUrl() string {
-	return a.ImageUrl
-}
-
-func (a *Album) GetImage() *image.Image {
-
-	return &a.Image
-}
-
-func (a *Album) SetImage(img *image.Image) {
-	a.Image = *img
 }
 
 func downloadImage[T Downloadable](a T) error {

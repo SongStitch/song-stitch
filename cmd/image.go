@@ -24,6 +24,11 @@ type DisplayOptions struct {
 	Height     uint
 }
 
+type Drawable interface {
+	GetImage() *image.Image
+	GetParameters() map[string]string
+}
+
 const (
 	fontFile           = "./assets/NotoSans-Regular.ttf"
 	compressionQuality = 70
@@ -48,28 +53,30 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x int, y int) {
+func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x int, y int) {
 	i := 0
+	parameters := drawable.GetParameters()
 	if displayOptions.ArtistName {
 		// Add shadow
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(album.Artist, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(parameters["artist"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(album.Artist, float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(parameters["artist"], float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
 	if displayOptions.AlbumName {
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(album.Name, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(parameters["album"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(album.Name, float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(parameters["album"], float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
-	if displayOptions.PlayCount && len(album.Playcount) > 0 {
+	playcount := parameters["playcount"]
+	if displayOptions.PlayCount && len(playcount) > 0 {
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", playcount), float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
 	}
 }
 
@@ -94,7 +101,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage(albums []*Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage[T Drawable](albums []T, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := imageDimension * columns
 	collageHeight := imageDimension * rows
@@ -105,8 +112,8 @@ func createCollage(albums []*Album, rows int, columns int, imageDimension int, f
 	for i, album := range albums {
 		x := (i % columns) * imageDimension
 		y := (i / columns) * imageDimension
-		if album.Image != nil {
-			dc.DrawImage(album.Image, x, y)
+		if album.GetImage() != nil {
+			dc.DrawImage(*album.GetImage(), x, y)
 		}
 		placeText(dc, album, displayOptions, x, y)
 	}
