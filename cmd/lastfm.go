@@ -10,34 +10,56 @@ import (
 	"strconv"
 )
 
+type LastFMImage struct {
+	Size string `json:"size"`
+	Link string `json:"#text"`
+}
+
+type LastFMUser struct {
+	User       string `json:"user"`
+	TotalPages string `json:"totalPages"`
+	Page       string `json:"page"`
+	PerPage    string `json:"perPage"`
+	Total      string `json:"total"`
+}
+
+type LastFMAlbum struct {
+	Artist struct {
+		URL        string `json:"url"`
+		ArtistName string `json:"name"`
+		Mbid       string `json:"mbid"`
+	} `json:"artist"`
+	Image     []LastFMImage `json:"image"`
+	Mbid      string        `json:"mbid"`
+	URL       string        `json:"url"`
+	Playcount string        `json:"playcount"`
+	Attr      struct {
+		Rank string `json:"rank"`
+	} `json:"@attr"`
+	AlbumName string `json:"name"`
+}
+
+type LastFMArtist struct {
+	Image     []LastFMImage `json:"image"`
+	Mbid      string        `json:"mbid"`
+	URL       string        `json:"url"`
+	Playcount string        `json:"playcount"`
+	Attr      struct {
+		Rank string `json:"rank"`
+	} `json:"@attr"`
+	Name string `json:"name"`
+}
+
 type LastFMResponse struct {
 	TopAlbums struct {
-		Album []struct {
-			Artist struct {
-				URL        string `json:"url"`
-				ArtistName string `json:"name"`
-				Mbid       string `json:"mbid"`
-			} `json:"artist"`
-			Image []struct {
-				Size string `json:"size"`
-				Link string `json:"#text"`
-			} `json:"image"`
-			Mbid      string `json:"mbid"`
-			URL       string `json:"url"`
-			Playcount string `json:"playcount"`
-			Attr      struct {
-				Rank string `json:"rank"`
-			} `json:"@attr"`
-			AlbumName string `json:"name"`
-		} `json:"album"`
-		Attr struct {
-			User       string `json:"user"`
-			TotalPages string `json:"totalPages"`
-			Page       string `json:"page"`
-			PerPage    string `json:"perPage"`
-			Total      string `json:"total"`
-		} `json:"@attr"`
+		Album []LastFMAlbum `json:"album"`
+		Attr  LastFMUser    `json:"@attr"`
 	} `json:"topalbums"`
+
+	TopArtists struct {
+		Artists []LastFMArtist `json:"artist"`
+		Attr    LastFMUser     `json:"@attr"`
+	} `json:"topartists"`
 }
 
 var ErrUserNotFound = errors.New("user not found")
