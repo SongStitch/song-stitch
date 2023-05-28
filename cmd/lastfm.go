@@ -64,7 +64,18 @@ type LastFMResponse struct {
 
 var ErrUserNotFound = errors.New("user not found")
 
-func getAlbums(username string, period Period, count int, imageSize string) ([]Album, error) {
+func getMethodForCollageType(collageType CollageType) string {
+	switch collageType {
+	case ALBUM:
+		return "gettopalbums"
+	case ARTIST:
+		return "gettopartists"
+	default:
+		return ""
+	}
+}
+
+func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]Album, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -81,7 +92,8 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 			limit = maxPerPage
 		}
 
-		url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, username, period, limit, page, key)
+		method := getMethodForCollageType(collageType)
+		url := fmt.Sprintf("%s?method=user.%s&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, method, username, period, limit, page, key)
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
