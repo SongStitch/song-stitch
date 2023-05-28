@@ -70,7 +70,7 @@ function initCheckboxValues() {
       element.value = 'true';
     }
   });
-  document.getElementById('compress').value = 'false';
+  document.getElementById('compress').value = '';
 }
 
 function randomizeCredits() {
