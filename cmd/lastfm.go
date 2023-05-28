@@ -75,7 +75,7 @@ func getMethodForCollageType(collageType CollageType) string {
 	}
 }
 
-func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]Album, error) {
+func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]*Album, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -83,7 +83,7 @@ func getAlbums(collageType CollageType, username string, period Period, count in
 	const maxPerPage = 500
 	var totalFetched = 0
 	var page = 1
-	var albums []Album
+	var albums []*Album
 
 	for count > totalFetched {
 		// Determine the limit for this request
@@ -132,7 +132,7 @@ func getAlbums(collageType CollageType, username string, period Period, count in
 		}
 
 		for _, album := range lastFMResponse.TopAlbums.Album {
-			newAlbum := Album{
+			newAlbum := &Album{
 				Name:      album.AlbumName,
 				Artist:    album.Artist.ArtistName,
 				Playcount: album.Playcount,

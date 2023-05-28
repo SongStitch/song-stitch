@@ -96,7 +96,7 @@ func getCollage(request *CollageRequest) (image.Image, error) {
 		return nil, err
 	}
 
-	downloadImagesForAlbums(albums)
+	downloadImages(albums)
 
 	displayOptions := DisplayOptions{
 		ArtistName: request.DisplayArtist,

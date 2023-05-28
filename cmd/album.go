@@ -32,20 +32,10 @@ type Artist struct {
 	ImageUrl  string
 }
 
-type TopResponse interface {
-	GetName() string
-	GetPlaycount() string
+type Downloadable interface {
 	GetImageUrl() string
 	GetImage() *image.Image
 	SetImage(*image.Image)
-}
-
-func (a *Album) GetName() string {
-	return a.Name
-}
-
-func (a *Album) GetPlaycount() string {
-	return a.Playcount
 }
 
 func (a *Album) GetImageUrl() string {
@@ -53,6 +43,7 @@ func (a *Album) GetImageUrl() string {
 }
 
 func (a *Album) GetImage() *image.Image {
+
 	return &a.Image
 }
 
@@ -60,19 +51,20 @@ func (a *Album) SetImage(img *image.Image) {
 	a.Image = *img
 }
 
-func DownloadImage(a TopResponse) error {
-	if len(a.GetImageUrl()) == 0 {
+func downloadImage[T Downloadable](a T) error {
+	url := a.GetImageUrl()
+	if len(url) == 0 {
 		// Skip album art if it doesn't exist
 		return nil
 	}
-	resp, err := http.Get(a.GetImageUrl())
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	ioBody := resp.Body
 	defer resp.Body.Close()
 
-	extension, err := getExtension(a.GetImageUrl())
+	extension, err := getExtension(url)
 	if err != nil {
 		return err
 	}
@@ -99,23 +91,25 @@ func DownloadImage(a TopResponse) error {
 		img, _, err := image.Decode(bytes.NewReader(body))
 		a.SetImage(&img)
 		return err
+
 	}
 }
 
-func downloadImagesForAlbums(albums []Album) error {
-	var wg sync.WaitGroup
-	wg.Add(len(albums))
+func downloadImages[T Downloadable](entities []T) error {
 
-	for i := range albums {
-		album := &albums[i]
+	var wg sync.WaitGroup
+	wg.Add(len(entities))
+
+	for i := range entities {
+		entity := &entities[i]
 		// download each image in a separate goroutine
-		go func(album *Album) {
+		func(entity *T) {
 			defer wg.Done()
-			err := DownloadImage(album)
+			err := downloadImage(*entity)
 			if err != nil {
 				log.Println(err)
 			}
-		}(album)
+		}(entity)
 	}
 
 	// wait for all downloads to finish

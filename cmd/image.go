@@ -94,7 +94,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage(albums []Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage(albums []*Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := imageDimension * columns
 	collageHeight := imageDimension * rows
@@ -108,7 +108,7 @@ func createCollage(albums []Album, rows int, columns int, imageDimension int, fo
 		if album.Image != nil {
 			dc.DrawImage(album.Image, x, y)
 		}
-		placeText(dc, &album, displayOptions, x, y)
+		placeText(dc, album, displayOptions, x, y)
 	}
 	collage := dc.Image()
 
