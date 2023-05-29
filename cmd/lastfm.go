@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,16 +51,41 @@ type LastFMArtist struct {
 	Name string `json:"name"`
 }
 
-type LastFMResponse struct {
+type LastFMTopAlbums struct {
 	TopAlbums struct {
 		Album []LastFMAlbum `json:"album"`
 		Attr  LastFMUser    `json:"@attr"`
 	} `json:"topalbums"`
+}
 
+func (a *LastFMTopAlbums) Append(l LastFMResponse) {
+	if albums, ok := l.(*LastFMTopAlbums); ok {
+		a.TopAlbums.Album = append(a.TopAlbums.Album, albums.TopAlbums.Album...)
+		return
+	}
+	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
+}
+
+func (a *LastFMTopAlbums) GetTotalPages() int {
+	totalPages, _ := strconv.Atoi(a.TopAlbums.Attr.TotalPages)
+	return totalPages
+}
+
+func (a *LastFMTopAlbums) GetTotalFetched() int {
+	return len(a.TopAlbums.Album)
+}
+
+type LastFMTopArtists struct {
 	TopArtists struct {
 		Artists []LastFMArtist `json:"artist"`
 		Attr    LastFMUser     `json:"@attr"`
 	} `json:"topartists"`
+}
+
+type LastFMResponse interface {
+	Append(l LastFMResponse)
+	GetTotalPages() int
+	GetTotalFetched() int
 }
 
 var ErrUserNotFound = errors.New("user not found")
@@ -75,7 +101,7 @@ func getMethodForCollageType(collageType CollageType) string {
 	}
 }
 
-func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]*Album, error) {
+func getLastFmResponse[T LastFMResponse](collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -83,7 +109,9 @@ func getAlbums(collageType CollageType, username string, period Period, count in
 	const maxPerPage = 500
 	var totalFetched = 0
 	var page = 1
-	var albums []*Album
+
+	var result T
+	initialised := false
 
 	for count > totalFetched {
 		// Determine the limit for this request
@@ -115,46 +143,50 @@ func getAlbums(collageType CollageType, username string, period Period, count in
 			return nil, err
 		}
 
-		var lastFMResponse LastFMResponse
-		err = json.Unmarshal([]byte(body), &lastFMResponse)
+		var response T
+		err = json.Unmarshal([]byte(body), &response)
 		if err != nil {
 			return nil, err
 		}
-
-		totalPages, err := strconv.Atoi(lastFMResponse.TopAlbums.Attr.TotalPages)
-		if err != nil {
-			return nil, err
+		if !initialised {
+			result = response
+			initialised = true
+		} else {
+			result.Append(response)
 		}
-
-		// No more pages to fetch
-		if page > totalPages {
+		totalFetched = result.GetTotalFetched()
+		totalPages := result.GetTotalPages()
+		if totalPages == page {
 			break
 		}
+		page++
+	}
+	return &result, nil // No more pages to fetch
+}
 
-		for _, album := range lastFMResponse.TopAlbums.Album {
-			newAlbum := &Album{
-				Name:      album.AlbumName,
-				Artist:    album.Artist.ArtistName,
-				Playcount: album.Playcount,
-			}
+func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]*Album, error) {
 
-			for _, image := range album.Image {
-				if image.Size == imageSize {
-					newAlbum.ImageUrl = image.Link
-				}
-			}
+	result, err := getLastFmResponse[*LastFMTopAlbums](collageType, username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
+	r := *result
 
-			albums = append(albums, newAlbum)
+	albums := make([]*Album, len(r.TopAlbums.Album))
+	for i, album := range r.TopAlbums.Album {
+		newAlbum := &Album{
+			Name:      album.AlbumName,
+			Artist:    album.Artist.ArtistName,
+			Playcount: album.Playcount,
+		}
 
-			totalFetched += 1
-			if totalFetched >= count {
-				return albums, nil
+		for _, image := range album.Image {
+			if image.Size == imageSize {
+				newAlbum.ImageUrl = image.Link
 			}
 		}
 
-		// Move to next page
-		page++
+		albums[i] = newAlbum
 	}
-
 	return albums, nil
 }
