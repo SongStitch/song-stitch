@@ -74,7 +74,7 @@ func downloadImages[T Downloadable](entities []T) error {
 	for i := range entities {
 		entity := &entities[i]
 		// download each image in a separate goroutine
-		func(entity *T) {
+		go func(entity *T) {
 			defer wg.Done()
 			err := downloadImage(*entity)
 			if err != nil {
