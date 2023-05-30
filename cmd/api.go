@@ -85,7 +85,7 @@ type CollageRequest struct {
 }
 
 func generateCollageForAlbum(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
-	albums, err := getAlbums(ALBUM, username, period, count, imageSize)
+	albums, err := getAlbums(username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

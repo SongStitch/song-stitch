@@ -12,7 +12,7 @@ type LastFMAlbum struct {
 		ArtistName string `json:"name"`
 		Mbid       string `json:"mbid"`
 	} `json:"artist"`
-	Image     []LastFMImage `json:"image"`
+	Images    []LastFMImage `json:"image"`
 	Mbid      string        `json:"mbid"`
 	URL       string        `json:"url"`
 	Playcount string        `json:"playcount"`
@@ -24,14 +24,14 @@ type LastFMAlbum struct {
 
 type LastFMTopAlbums struct {
 	TopAlbums struct {
-		Album []LastFMAlbum `json:"album"`
-		Attr  LastFMUser    `json:"@attr"`
+		Albums []LastFMAlbum `json:"album"`
+		Attr   LastFMUser    `json:"@attr"`
 	} `json:"topalbums"`
 }
 
 func (a *LastFMTopAlbums) Append(l LastFMResponse) {
 	if albums, ok := l.(*LastFMTopAlbums); ok {
-		a.TopAlbums.Album = append(a.TopAlbums.Album, albums.TopAlbums.Album...)
+		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
 		return
 	}
 	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
@@ -43,26 +43,26 @@ func (a *LastFMTopAlbums) GetTotalPages() int {
 }
 
 func (a *LastFMTopAlbums) GetTotalFetched() int {
-	return len(a.TopAlbums.Album)
+	return len(a.TopAlbums.Albums)
 }
 
-func getAlbums(collageType CollageType, username string, period Period, count int, imageSize string) ([]*Album, error) {
+func getAlbums(username string, period Period, count int, imageSize string) ([]*Album, error) {
 
-	result, err := getLastFmResponse[*LastFMTopAlbums](collageType, username, period, count, imageSize)
+	result, err := getLastFmResponse[*LastFMTopAlbums](ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
 	r := *result
 
-	albums := make([]*Album, len(r.TopAlbums.Album))
-	for i, album := range r.TopAlbums.Album {
+	albums := make([]*Album, len(r.TopAlbums.Albums))
+	for i, album := range r.TopAlbums.Albums {
 		newAlbum := &Album{
 			Name:      album.AlbumName,
 			Artist:    album.Artist.ArtistName,
 			Playcount: album.Playcount,
 		}
 
-		for _, image := range album.Image {
+		for _, image := range album.Images {
 			if image.Size == imageSize {
 				newAlbum.ImageUrl = image.Link
 			}
