@@ -1,21 +1,77 @@
 package main
 
 import (
-	"bytes"
 	"image"
-	"image/gif"
-	"image/jpeg"
-	"io"
 	"log"
-	"net/http"
-	"strings"
-	"sync"
+	"strconv"
 )
 
-const (
-	jpgFileType = ".jpg"
-	gifFileType = ".gif"
-)
+type LastFMAlbum struct {
+	Artist struct {
+		URL        string `json:"url"`
+		ArtistName string `json:"name"`
+		Mbid       string `json:"mbid"`
+	} `json:"artist"`
+	Images    []LastFMImage `json:"image"`
+	Mbid      string        `json:"mbid"`
+	URL       string        `json:"url"`
+	Playcount string        `json:"playcount"`
+	Attr      struct {
+		Rank string `json:"rank"`
+	} `json:"@attr"`
+	AlbumName string `json:"name"`
+}
+
+type LastFMTopAlbums struct {
+	TopAlbums struct {
+		Albums []LastFMAlbum `json:"album"`
+		Attr   LastFMUser    `json:"@attr"`
+	} `json:"topalbums"`
+}
+
+func (a *LastFMTopAlbums) Append(l LastFMResponse) {
+	if albums, ok := l.(*LastFMTopAlbums); ok {
+		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
+		return
+	}
+	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
+}
+
+func (a *LastFMTopAlbums) GetTotalPages() int {
+	totalPages, _ := strconv.Atoi(a.TopAlbums.Attr.TotalPages)
+	return totalPages
+}
+
+func (a *LastFMTopAlbums) GetTotalFetched() int {
+	return len(a.TopAlbums.Albums)
+}
+
+func getAlbums(username string, period Period, count int, imageSize string) ([]*Album, error) {
+
+	result, err := getLastFmResponse[*LastFMTopAlbums](ALBUM, username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
+	r := *result
+
+	albums := make([]*Album, len(r.TopAlbums.Albums))
+	for i, album := range r.TopAlbums.Albums {
+		newAlbum := &Album{
+			Name:      album.AlbumName,
+			Artist:    album.Artist.ArtistName,
+			Playcount: album.Playcount,
+		}
+
+		for _, image := range album.Images {
+			if image.Size == imageSize {
+				newAlbum.ImageUrl = image.Link
+			}
+		}
+
+		albums[i] = newAlbum
+	}
+	return albums, nil
+}
 
 type Album struct {
 	Name      string
@@ -25,66 +81,22 @@ type Album struct {
 	Image     image.Image
 }
 
-func (a *Album) DownloadImage() error {
-	if len(a.ImageUrl) == 0 {
-		// Skip album art if it doesn't exist
-		return nil
-	}
-	resp, err := http.Get(a.ImageUrl)
-	if err != nil {
-		return err
-	}
-	ioBody := resp.Body
-	defer resp.Body.Close()
-
-	extension, err := getExtension(a.ImageUrl)
-	if err != nil {
-		return err
-	}
-
-	if strings.ToLower(extension) == jpgFileType {
-		img, err := jpeg.Decode(ioBody)
-		if err != nil {
-			return err
-		}
-		a.Image = img
-		return err
-	} else if strings.ToLower(extension) == gifFileType {
-		img, err := gif.Decode(ioBody)
-		if err != nil {
-			return err
-		}
-		a.Image = img
-		return err
-	} else {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		img, _, err := image.Decode(bytes.NewReader(body))
-		a.Image = img
-		return err
-	}
+func (a *Album) GetImageUrl() string {
+	return a.ImageUrl
 }
 
-func downloadImagesForAlbums(albums []Album) error {
-	var wg sync.WaitGroup
-	wg.Add(len(albums))
+func (a *Album) SetImage(img *image.Image) {
+	a.Image = *img
+}
 
-	for i := range albums {
-		album := &albums[i]
-		// download each image in a separate goroutine
-		go func(album *Album) {
-			defer wg.Done()
-			err := album.DownloadImage()
-			if err != nil {
-				log.Println(err)
-			}
-		}(album)
+func (a *Album) GetImage() *image.Image {
+	return &a.Image
+}
+
+func (a *Album) GetParameters() map[string]string {
+	return map[string]string{
+		"artist":    a.Artist,
+		"album":     a.Name,
+		"playcount": a.Playcount,
 	}
-
-	// wait for all downloads to finish
-	wg.Wait()
-
-	return nil
 }

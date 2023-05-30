@@ -15,13 +15,23 @@ import (
 )
 
 type DisplayOptions struct {
-	ArtistName bool
-	AlbumName  bool
-	PlayCount  bool
-	Compress   bool
-	Resize     bool
-	Width      uint
-	Height     uint
+	ArtistName     bool
+	AlbumName      bool
+	TrackName      bool
+	PlayCount      bool
+	Compress       bool
+	Resize         bool
+	Width          uint
+	Height         uint
+	FontSize       float64
+	Rows           int
+	Columns        int
+	ImageDimension int
+}
+
+type Drawable interface {
+	GetImage() *image.Image
+	GetParameters() map[string]string
 }
 
 const (
@@ -29,7 +39,7 @@ const (
 	compressionQuality = 70
 )
 
-var textLocation = [3]int{20, 35, 50}
+var textLocation = [4]int{20, 35, 50, 65}
 
 func getExtension(u string) (string, error) {
 	parsedURL, err := url.Parse(u)
@@ -48,28 +58,38 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func placeText(dc *gg.Context, album *Album, displayOptions DisplayOptions, x int, y int) {
+func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x int, y int) {
 	i := 0
+	parameters := drawable.GetParameters()
+	if displayOptions.TrackName {
+
+		dc.SetRGB(0, 0, 0)
+		dc.DrawStringAnchored(parameters["track"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.SetRGB(1, 1, 1)
+		dc.DrawStringAnchored(parameters["track"], float64(x+10), float64(y+textLocation[i]), 0, 0)
+		i++
+	}
 	if displayOptions.ArtistName {
 		// Add shadow
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(album.Artist, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(parameters["artist"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(album.Artist, float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(parameters["artist"], float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
 	if displayOptions.AlbumName {
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(album.Name, float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(parameters["album"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(album.Name, float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(parameters["album"], float64(x+10), float64(y+textLocation[i]), 0, 0)
 		i++
 	}
-	if displayOptions.PlayCount && len(album.Playcount) > 0 {
+	playcount := parameters["playcount"]
+	if displayOptions.PlayCount && len(playcount) > 0 {
 		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", playcount), float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", album.Playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
+		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", playcount), float64(x+10), float64(y+textLocation[i]), 0, 0)
 	}
 }
 
@@ -94,21 +114,21 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage(albums []Album, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage[T Drawable](albums []T, displayOptions DisplayOptions) (image.Image, error) {
 
-	collageWidth := imageDimension * columns
-	collageHeight := imageDimension * rows
+	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
+	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
 	dc := gg.NewContext(collageWidth, collageHeight)
 	dc.SetRGB(0, 0, 0)
-	dc.LoadFontFace(fontFile, fontSize)
+	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
 	for i, album := range albums {
-		x := (i % columns) * imageDimension
-		y := (i / columns) * imageDimension
-		if album.Image != nil {
-			dc.DrawImage(album.Image, x, y)
+		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
+		if *album.GetImage() != nil {
+			dc.DrawImage(*album.GetImage(), x, y)
 		}
-		placeText(dc, &album, displayOptions, x, y)
+		placeText(dc, album, displayOptions, x, y)
 	}
 	collage := dc.Image()
 

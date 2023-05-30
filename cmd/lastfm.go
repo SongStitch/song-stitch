@@ -7,42 +7,43 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 )
 
-type LastFMResponse struct {
-	TopAlbums struct {
-		Album []struct {
-			Artist struct {
-				URL        string `json:"url"`
-				ArtistName string `json:"name"`
-				Mbid       string `json:"mbid"`
-			} `json:"artist"`
-			Image []struct {
-				Size string `json:"size"`
-				Link string `json:"#text"`
-			} `json:"image"`
-			Mbid      string `json:"mbid"`
-			URL       string `json:"url"`
-			Playcount string `json:"playcount"`
-			Attr      struct {
-				Rank string `json:"rank"`
-			} `json:"@attr"`
-			AlbumName string `json:"name"`
-		} `json:"album"`
-		Attr struct {
-			User       string `json:"user"`
-			TotalPages string `json:"totalPages"`
-			Page       string `json:"page"`
-			PerPage    string `json:"perPage"`
-			Total      string `json:"total"`
-		} `json:"@attr"`
-	} `json:"topalbums"`
+type LastFMImage struct {
+	Size string `json:"size"`
+	Link string `json:"#text"`
+}
+
+type LastFMUser struct {
+	User       string `json:"user"`
+	TotalPages string `json:"totalPages"`
+	Page       string `json:"page"`
+	PerPage    string `json:"perPage"`
+	Total      string `json:"total"`
+}
+
+type LastFMResponse interface {
+	Append(l LastFMResponse)
+	GetTotalPages() int
+	GetTotalFetched() int
 }
 
 var ErrUserNotFound = errors.New("user not found")
 
-func getAlbums(username string, period Period, count int, imageSize string) ([]Album, error) {
+func getMethodForCollageType(collageType CollageType) string {
+	switch collageType {
+	case ALBUM:
+		return "gettopalbums"
+	case ARTIST:
+		return "gettopartists"
+	case TRACK:
+		return "gettoptracks"
+	default:
+		return ""
+	}
+}
+
+func getLastFmResponse[T LastFMResponse](collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -50,8 +51,11 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 	const maxPerPage = 500
 	var totalFetched = 0
 	var page = 1
-	var albums []Album
 
+	var result T
+	initialised := false
+
+	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
 		// Determine the limit for this request
 		limit := count - totalFetched
@@ -59,7 +63,7 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 			limit = maxPerPage
 		}
 
-		url := fmt.Sprintf("%s?method=user.gettopalbums&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, username, period, limit, page, key)
+		url := fmt.Sprintf("%s?method=user.%s&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, method, username, period, limit, page, key)
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -81,46 +85,23 @@ func getAlbums(username string, period Period, count int, imageSize string) ([]A
 			return nil, err
 		}
 
-		var lastFMResponse LastFMResponse
-		err = json.Unmarshal([]byte(body), &lastFMResponse)
+		var response T
+		err = json.Unmarshal([]byte(body), &response)
 		if err != nil {
 			return nil, err
 		}
-
-		totalPages, err := strconv.Atoi(lastFMResponse.TopAlbums.Attr.TotalPages)
-		if err != nil {
-			return nil, err
+		if !initialised {
+			result = response
+			initialised = true
+		} else {
+			result.Append(response)
 		}
-
-		// No more pages to fetch
-		if page > totalPages {
+		totalFetched = result.GetTotalFetched()
+		totalPages := result.GetTotalPages()
+		if totalPages == page {
 			break
 		}
-
-		for _, album := range lastFMResponse.TopAlbums.Album {
-			newAlbum := Album{
-				Name:      album.AlbumName,
-				Artist:    album.Artist.ArtistName,
-				Playcount: album.Playcount,
-			}
-
-			for _, image := range album.Image {
-				if image.Size == imageSize {
-					newAlbum.ImageUrl = image.Link
-				}
-			}
-
-			albums = append(albums, newAlbum)
-
-			totalFetched += 1
-			if totalFetched >= count {
-				return albums, nil
-			}
-		}
-
-		// Move to next page
 		page++
 	}
-
-	return albums, nil
+	return &result, nil // No more pages to fetch
 }
