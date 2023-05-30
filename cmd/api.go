@@ -95,6 +95,17 @@ func generateCollageForAlbum(username string, period Period, count int, imageSiz
 	return createCollage(albums, displayOptions)
 }
 
+func generateCollageForArtist(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+	artists, err := getArtists(username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadImages(artists)
+
+	return createCollage(artists, displayOptions)
+}
+
 func generateCollage(request *CollageRequest) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
@@ -133,6 +144,8 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 	switch method {
 	case ALBUM:
 		return generateCollageForAlbum(request.Username, period, count, imageSize, displayOptions)
+	case ARTIST:
+		return generateCollageForArtist(request.Username, period, count, imageSize, displayOptions)
 	default:
 		return nil, errors.New("invalid collage type")
 	}

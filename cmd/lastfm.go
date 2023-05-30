@@ -22,24 +22,6 @@ type LastFMUser struct {
 	Total      string `json:"total"`
 }
 
-type LastFMArtist struct {
-	Image     []LastFMImage `json:"image"`
-	Mbid      string        `json:"mbid"`
-	URL       string        `json:"url"`
-	Playcount string        `json:"playcount"`
-	Attr      struct {
-		Rank string `json:"rank"`
-	} `json:"@attr"`
-	Name string `json:"name"`
-}
-
-type LastFMTopArtists struct {
-	TopArtists struct {
-		Artists []LastFMArtist `json:"artist"`
-		Attr    LastFMUser     `json:"@attr"`
-	} `json:"topartists"`
-}
-
 type LastFMResponse interface {
 	Append(l LastFMResponse)
 	GetTotalPages() int
