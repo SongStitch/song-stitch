@@ -55,6 +55,7 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 	var result T
 	initialised := false
 
+	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
 		// Determine the limit for this request
 		limit := count - totalFetched
@@ -62,7 +63,6 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 			limit = maxPerPage
 		}
 
-		method := getMethodForCollageType(collageType)
 		url := fmt.Sprintf("%s?method=user.%s&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, method, username, period, limit, page, key)
 
 		req, err := http.NewRequest("GET", url, nil)
