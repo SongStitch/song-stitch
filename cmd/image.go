@@ -15,13 +15,17 @@ import (
 )
 
 type DisplayOptions struct {
-	ArtistName bool
-	AlbumName  bool
-	PlayCount  bool
-	Compress   bool
-	Resize     bool
-	Width      uint
-	Height     uint
+	ArtistName     bool
+	AlbumName      bool
+	PlayCount      bool
+	Compress       bool
+	Resize         bool
+	Width          uint
+	Height         uint
+	FontSize       float64
+	Rows           int
+	Columns        int
+	ImageDimension int
 }
 
 type Drawable interface {
@@ -101,17 +105,17 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage[T Drawable](albums []T, rows int, columns int, imageDimension int, fontSize float64, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage[T Drawable](albums []T, displayOptions DisplayOptions) (image.Image, error) {
 
-	collageWidth := imageDimension * columns
-	collageHeight := imageDimension * rows
+	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
+	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
 	dc := gg.NewContext(collageWidth, collageHeight)
 	dc.SetRGB(0, 0, 0)
-	dc.LoadFontFace(fontFile, fontSize)
+	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
 	for i, album := range albums {
-		x := (i % columns) * imageDimension
-		y := (i / columns) * imageDimension
+		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		if *album.GetImage() != nil {
 			dc.DrawImage(*album.GetImage(), x, y)
 		}
