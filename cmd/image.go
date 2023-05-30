@@ -17,6 +17,7 @@ import (
 type DisplayOptions struct {
 	ArtistName     bool
 	AlbumName      bool
+	TrackName      bool
 	PlayCount      bool
 	Compress       bool
 	Resize         bool
@@ -38,7 +39,7 @@ const (
 	compressionQuality = 70
 )
 
-var textLocation = [3]int{20, 35, 50}
+var textLocation = [4]int{20, 35, 50, 65}
 
 func getExtension(u string) (string, error) {
 	parsedURL, err := url.Parse(u)
@@ -60,6 +61,14 @@ func getExtension(u string) (string, error) {
 func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x int, y int) {
 	i := 0
 	parameters := drawable.GetParameters()
+	if displayOptions.TrackName {
+
+		dc.SetRGB(0, 0, 0)
+		dc.DrawStringAnchored(parameters["track"], float64(x+10)+1, float64(y+textLocation[i])+1, 0, 0)
+		dc.SetRGB(1, 1, 1)
+		dc.DrawStringAnchored(parameters["track"], float64(x+10), float64(y+textLocation[i]), 0, 0)
+		i++
+	}
 	if displayOptions.ArtistName {
 		// Add shadow
 		dc.SetRGB(0, 0, 0)

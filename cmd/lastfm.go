@@ -36,6 +36,8 @@ func getMethodForCollageType(collageType CollageType) string {
 		return "gettopalbums"
 	case ARTIST:
 		return "gettopartists"
+	case TRACK:
+		return "gettoptracks"
 	default:
 		return ""
 	}
