@@ -348,7 +348,6 @@ function checkCollageValue() {
       '#fieldset > div.checkbox-wrapper.album-checkbox'
     ).style.display = 'none';
   } else {
-    console.log('Artist not selected');
     document.querySelector(
       '#fieldset > div.checkbox-wrapper.album-checkbox'
     ).style.display = 'block';
