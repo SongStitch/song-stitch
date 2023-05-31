@@ -56,6 +56,10 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 		// that means it is pointing to the most played album
 		key := album.Artist.Mbid
 		if album.Artist.Mbid == "" {
+			// If an artist name is already in the map, then we know if had a higher playcount
+			if _, ok := artistImageMap[album.Artist.ArtistName]; ok {
+				continue
+			}
 			log.Println("Artist", album.Artist.ArtistName, "has no mbid, using name instead")
 			key = album.Artist.ArtistName
 		}
