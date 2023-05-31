@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 )
 
 type LastFMImage struct {
@@ -33,11 +34,11 @@ var ErrUserNotFound = errors.New("user not found")
 func getMethodForCollageType(collageType CollageType) string {
 	switch collageType {
 	case ALBUM:
-		return "gettopalbums"
+		return "user.gettopalbums"
 	case ARTIST:
-		return "gettopartists"
+		return "user.gettopartists"
 	case TRACK:
-		return "gettoptracks"
+		return "user.gettoptracks"
 	default:
 		return ""
 	}
@@ -62,10 +63,22 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 		if limit > maxPerPage {
 			limit = maxPerPage
 		}
+		u, err := url.Parse(endpoint)
+		if err != nil {
+			panic(err)
+		}
 
-		url := fmt.Sprintf("%s?method=user.%s&user=%s&period=%s&limit=%d&page=%d&api_key=%s&format=json", endpoint, method, username, period, limit, page, key)
+		q := u.Query()
+		q.Set("user", username)
+		q.Set("method", method)
+		q.Set("period", string(period))
+		q.Set("limit", strconv.Itoa(limit))
+		q.Set("page", strconv.Itoa(page))
+		q.Set("api_key", key)
+		q.Set("format", "json")
+		u.RawQuery = q.Encode()
 
-		req, err := http.NewRequest("GET", url, nil)
+		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
 			return nil, err
 		}
