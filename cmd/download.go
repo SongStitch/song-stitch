@@ -71,6 +71,8 @@ func downloadImages[T Downloadable](entities []T) error {
 	var wg sync.WaitGroup
 	wg.Add(len(entities))
 
+	log.Println("Downloading images for", len(entities), "entities")
+
 	for i := range entities {
 		entity := &entities[i]
 		// download each image in a separate goroutine

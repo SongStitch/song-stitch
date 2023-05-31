@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -57,6 +58,8 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 	initialised := false
 
 	method := getMethodForCollageType(collageType)
+	log.Println("Fetching last.fm data with method", method, "for username", username, "period", period, "count", count, "imageSize", imageSize)
+
 	for count > totalFetched {
 		// Determine the limit for this request
 		limit := count - totalFetched
