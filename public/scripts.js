@@ -339,3 +339,18 @@ document.getElementById('aspectRatio').addEventListener('change', function () {
   aspectRatioChecked = this.checked;
   validate('aspectRatio');
 });
+
+function checkCollageValue() {
+  var selectBox = document.getElementById('method');
+  var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+  if (selectedValue === 'artist' || selectedValue === 'track') {
+    document.querySelector(
+      '#fieldset > div.checkbox-wrapper.album-checkbox'
+    ).style.display = 'none';
+  } else {
+    console.log('Artist not selected');
+    document.querySelector(
+      '#fieldset > div.checkbox-wrapper.album-checkbox'
+    ).style.display = 'block';
+  }
+}

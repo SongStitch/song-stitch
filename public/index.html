@@ -53,7 +53,8 @@
       />
       <h1>Last.fm Collage Generator</h1>
       <p class="subheading">
-        Generate an image collage of your most played albums!
+        Generate an image collage of your most played albums, artists, or
+        tracks!
       </p>
       <form action="/collage" method="get" id="form">
         <label for="username"
@@ -72,6 +73,12 @@
           name="username"
         />
         <br />
+        <label for="method">Type of Collage</label><br />
+        <select name="method" id="method" onchange="checkCollageValue()">
+          <option value="album">Top Albums</option>
+          <option value="artist">Top Artists</option>
+          <option value="track">Top Tracks</option></select
+        ><br />
         <label for="period">Period of Time</label><br />
         <select name="period" id="period">
           <option value="7day">7 Days</option>
@@ -94,7 +101,7 @@
             />
             <label for="artist">Display Artist Name</label>
           </div>
-          <div class="checkbox-wrapper">
+          <div class="checkbox-wrapper album-checkbox">
             <input
               checked
               value="true"
