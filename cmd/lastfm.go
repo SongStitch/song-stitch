@@ -121,3 +121,58 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 	}
 	return &result, nil // No more pages to fetch
 }
+
+type ArtistSearchResponse struct {
+	Results struct {
+		ArtistMatches struct {
+			Artists []struct {
+				Name string `json:"name"`
+				Mbid string `json:"mbid"`
+			} `json:"artist"`
+		} `json:"artistmatches"`
+	} `json:"results"`
+}
+
+func searchArtist(name string) (*ArtistSearchResponse, error) {
+
+	endpoint := os.Getenv("LASTFM_ENDPOINT")
+	key := os.Getenv("LASTFM_API_KEY")
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		panic(err)
+	}
+
+	q := u.Query()
+	q.Set("method", "artist.search")
+	q.Set("artist", name)
+	q.Set("api_key", key)
+	q.Set("format", "json")
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return nil, ErrUserNotFound
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response ArtistSearchResponse
+	err = json.Unmarshal([]byte(body), &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}

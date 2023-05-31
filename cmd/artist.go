@@ -52,15 +52,17 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 	albums := *albumResult
 	artistImageMap := make(map[string]string)
 	for _, album := range albums.TopAlbums.Albums {
-		if album.Artist.Mbid == "" {
-			continue
-		}
 		// Since the order if albumResult is by playcount, we can assume if the artist is already in the map
 		// that means it is pointing to the most played album
-		if _, ok := artistImageMap[album.Artist.Mbid]; !ok {
+		key := album.Artist.Mbid
+		if album.Artist.Mbid == "" {
+			log.Println("Artist", album.Artist.ArtistName, "has no mbid, using name instead")
+			key = album.Artist.ArtistName
+		}
+		if _, ok := artistImageMap[key]; !ok {
 			for _, image := range album.Images {
 				if image.Size == imageSize {
-					artistImageMap[album.Artist.Mbid] = image.Link
+					artistImageMap[key] = image.Link
 				}
 			}
 		}
@@ -79,12 +81,31 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 			Playcount: artist.Playcount,
 		}
 
-		val, ok := artistImageMap[artist.Mbid]
-		newArtist.ImageUrl = val
-		if !ok {
-			log.Println("No image found for artist:", artist.Name, "with mbid", artist.Mbid)
+		if artist.Mbid == "" {
+			log.Println("Artist", artist.Name, "has no mbid, searching for it")
+			artistsFromSearch, err := searchArtist(artist.Name)
+			if err != nil {
+				log.Println("Error searching for artist", artist.Name, ":", err)
+			} else {
+				for _, artistFromSearch := range artistsFromSearch.Results.ArtistMatches.Artists {
+					log.Println("Found artist:", artistFromSearch.Name, "with mbid", artistFromSearch.Mbid)
+					if artistFromSearch.Name == artist.Name {
+						artist.Mbid = artistFromSearch.Mbid
+						break
+					}
+				}
+			}
 		}
+		val, ok := artistImageMap[artist.Mbid]
+		if !ok {
+			log.Println("No image found for artist", artist.Name, "with mbid", artist.Mbid, "trying with name")
+			val, ok = artistImageMap[artist.Name]
+			if !ok {
+				log.Println("No image found for artist", artist.Name, "with mbid", artist.Mbid)
+			}
 
+		}
+		newArtist.ImageUrl = val
 		artists[i] = newArtist
 	}
 	return artists, nil
