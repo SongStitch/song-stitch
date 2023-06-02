@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -117,4 +118,65 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 		page++
 	}
 	return &result, nil // No more pages to fetch
+}
+
+type GetTrackInfoResponse struct {
+	Track struct {
+		Album struct {
+			Images []LastFMImage `json:"image"`
+		} `json:"Album"`
+	} `json:"track"`
+}
+
+func getImageUrlForTrack(trackName string, artistName string, imageSize string) (string, error) {
+
+	endpoint := os.Getenv("LASTFM_ENDPOINT")
+	key := os.Getenv("LASTFM_API_KEY")
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		panic(err)
+	}
+
+	q := u.Query()
+	q.Set("track", trackName)
+	q.Set("artist", artistName)
+	q.Set("method", "track.getInfo")
+	q.Set("api_key", key)
+	q.Set("format", "json")
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return "", ErrUserNotFound
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var response GetTrackInfoResponse
+	err = json.Unmarshal([]byte(body), &response)
+	if err != nil {
+		return "", err
+	}
+
+	for _, image := range response.Track.Album.Images {
+		if image.Size == imageSize {
+			return image.Link, nil
+		}
+	}
+	log.Println("No image found for track ", trackName, " and artist ", artistName, " and size ", imageSize)
+	return "", nil
+
 }
