@@ -139,6 +139,11 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 		fontSize = 2
 	}
 
+	// set DisplayAlbum to false if the method isn't for albums
+	if request.Method == "artist" || request.Method == "track" {
+		request.DisplayAlbum = false
+	}
+
 	displayOptions := DisplayOptions{
 		ArtistName:     request.DisplayArtist,
 		AlbumName:      request.DisplayAlbum,
