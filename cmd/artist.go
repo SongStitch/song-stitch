@@ -56,11 +56,7 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 			Playcount: artist.Playcount,
 		}
 
-		for _, image := range artist.Images {
-			if image.Size == imageSize {
-				newArtist.ImageUrl = image.Link
-			}
-		}
+		newArtist.ImageUrl, err = getImageUrlForArtist(artist.URL)
 
 		artists[i] = newArtist
 	}
