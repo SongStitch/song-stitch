@@ -126,12 +126,13 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 type GetTrackInfoResponse struct {
 	Track struct {
 		Album struct {
-			Images []LastFMImage `json:"image"`
+			Images    []LastFMImage `json:"image"`
+			AlbumName string        `json:"title"`
 		} `json:"Album"`
 	} `json:"track"`
 }
 
-func getImageUrlForTrack(trackName string, artistName string, imageSize string) (string, error) {
+func getAlbumAndImageUrlForTrack(trackName string, artistName string, imageSize string) (string, string, error) {
 
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -150,37 +151,37 @@ func getImageUrlForTrack(trackName string, artistName string, imageSize string) 
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return "", ErrUserNotFound
+		return "", "", ErrUserNotFound
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var response GetTrackInfoResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return image.Link, nil
+			return response.Track.Album.AlbumName, image.Link, nil
 		}
 	}
 	log.Println("No image found for track ", trackName, " and artist ", artistName, " and size ", imageSize)
-	return "", nil
+	return "", "", nil
 
 }
 
