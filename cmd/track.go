@@ -68,13 +68,13 @@ func getTracks(username string, period Period, count int, imageSize string) ([]*
 
 		go func(trackName string, artistName string) {
 			defer wg.Done()
-			albumName, imageUrl, err := getAlbumAndImageUrlForTrack(trackName, artistName, imageSize)
+			trackInfo, err := getTrackInfo(trackName, artistName, imageSize)
 			if err != nil {
 				log.Println("Error getting image url for track", trackName, artistName, err)
 				return
 			}
-			newTrack.ImageUrl = imageUrl
-			newTrack.Album = albumName
+			newTrack.ImageUrl = trackInfo.ImageUrl
+			newTrack.Album = trackInfo.AlbumName
 		}(track.Name, track.Artist.Name)
 
 		tracks[i] = newTrack
