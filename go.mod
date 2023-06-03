@@ -5,7 +5,7 @@ go 1.20
 require github.com/joho/godotenv v1.5.1
 
 require (
-	github.com/anaskhan96/soup v1.2.5
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.10.1
 	github.com/go-playground/validator/v10 v10.14.0
@@ -14,7 +14,6 @@ require (
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
 
-	"github.com/anaskhan96/soup"
+	"github.com/PuerkitoBio/goquery"
 )
 
 type LastFMImage struct {
@@ -187,23 +187,12 @@ func getImageUrlForTrack(trackName string, artistName string, imageSize string) 
 func getImageUrlForArtist(artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	log.Println("Getting image for artist ", url)
-	resp, err := soup.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+	defer resp.Body.Close()
 
-	doc := soup.HTMLParse(resp)
-	elements := doc.FindAll("class", "image-list-item-wrapper")
-	if len(elements) == 0 {
-		log.Fatal("No elements with class image-list-item-wrapper found")
-	}
-
-	links := elements[0].FindAll("a")
-	if len(links) == 0 {
-		log.Fatal("No links found in the first element with class image-list-item-wrapper")
-	}
-
-	fmt.Println(links[0].Attrs()["href"])
-	return links[0].Attrs()["href"], nil
-
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	return path.Base(doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")), nil
 }

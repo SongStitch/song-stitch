@@ -4,6 +4,7 @@ import (
 	"image"
 	"log"
 	"strconv"
+	"sync"
 )
 
 type LastFMArtist struct {
@@ -50,16 +51,26 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 	r := *result
 
 	artists := make([]*Artist, len(r.TopArtists.Artists))
+	var wg sync.WaitGroup
+	wg.Add(len(artists))
 	for i, artist := range r.TopArtists.Artists {
 		newArtist := &Artist{
 			Name:      artist.Name,
 			Playcount: artist.Playcount,
 		}
 
-		newArtist.ImageUrl, err = getImageUrlForArtist(artist.URL)
-
+		go func(url string) {
+			defer wg.Done()
+			id, err := getImageUrlForArtist(url)
+			if err != nil {
+				log.Println("Error getting image url for artist", artist.Name, err)
+				return
+			}
+			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
+		}(artist.URL)
 		artists[i] = newArtist
 	}
+	wg.Wait()
 	return artists, nil
 }
 
