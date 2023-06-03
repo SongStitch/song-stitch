@@ -100,6 +100,7 @@ func generateCollageForAlbum(username string, period Period, count int, imageSiz
 }
 
 func generateCollageForArtist(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+	displayOptions.DisplayAlbum = false
 	artists, err := getArtists(username, period, count, imageSize)
 	if err != nil {
 		return nil, err
@@ -111,6 +112,7 @@ func generateCollageForArtist(username string, period Period, count int, imageSi
 }
 
 func generateCollageForTrack(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+	displayOptions.DisplayAlbum = false
 	tracks, err := getTracks(username, period, count, imageSize)
 	if err != nil {
 		return nil, err
@@ -137,11 +139,6 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 		imageSize = "small"
 		imageDimension = 34
 		fontSize = 2
-	}
-
-	// set DisplayAlbum to false if the method isn't for albums
-	if request.Method == "artist" || request.Method == "track" {
-		request.DisplayAlbum = false
 	}
 
 	displayOptions := DisplayOptions{
