@@ -340,16 +340,36 @@ document.getElementById('aspectRatio').addEventListener('change', function () {
   validate('aspectRatio');
 });
 
+const maxForArtist = 10;
+const maxForTrack = 15;
+const maxForAlbum = 15;
+
+function setInputValues(max) {
+  document.querySelector('#rows').max = max;
+  document.querySelector('#columns').max = max;
+  maxText = document.getElementsByClassName('maxvalues');
+  for (let i = 0; i < maxText.length; i++) {
+    maxText[i].innerHTML = '(max. ' + max + ')';
+  }
+}
+
 function checkCollageValue() {
   var selectBox = document.getElementById('method');
   var selectedValue = selectBox.options[selectBox.selectedIndex].value;
-  if (selectedValue === 'artist' || selectedValue === 'track') {
+  if (selectedValue === 'artist') {
     document.querySelector(
       '#fieldset > div.checkbox-wrapper.album-checkbox'
     ).style.display = 'none';
+    setInputValues(maxForArtist);
+  } else if (selectedValue === 'track') {
+    document.querySelector(
+      '#fieldset > div.checkbox-wrapper.album-checkbox'
+    ).style.display = 'block';
+    setInputValues(maxForTrack);
   } else {
     document.querySelector(
       '#fieldset > div.checkbox-wrapper.album-checkbox'
     ).style.display = 'block';
+    setInputValues(maxForAlbum);
   }
 }
