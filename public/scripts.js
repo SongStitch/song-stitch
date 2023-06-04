@@ -341,7 +341,7 @@ document.getElementById('aspectRatio').addEventListener('change', function () {
 });
 
 const maxForArtist = 10;
-const maxForTrack = 15;
+const maxForTrack = 5;
 const maxForAlbum = 15;
 
 function setInputValues(max) {
