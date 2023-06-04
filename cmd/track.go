@@ -4,6 +4,7 @@ import (
 	"image"
 	"log"
 	"strconv"
+	"sync"
 )
 
 type LastFMTrack struct {
@@ -55,6 +56,9 @@ func getTracks(username string, period Period, count int, imageSize string) ([]*
 	r := *result
 
 	tracks := make([]*Track, len(r.TopTracks.Tracks))
+
+	var wg sync.WaitGroup
+	wg.Add(len(r.TopTracks.Tracks))
 	for i, track := range r.TopTracks.Tracks {
 		newTrack := &Track{
 			Name:      track.Name,
@@ -62,14 +66,19 @@ func getTracks(username string, period Period, count int, imageSize string) ([]*
 			Playcount: track.Playcount,
 		}
 
-		for _, image := range track.Images {
-			if image.Size == imageSize {
-				newTrack.ImageUrl = image.Link
+		go func(trackName string, artistName string) {
+			defer wg.Done()
+			imageUrl, err := getImageUrlForTrack(trackName, artistName, imageSize)
+			if err != nil {
+				log.Println("Error getting image url for track", trackName, artistName, err)
+				return
 			}
-		}
+			newTrack.ImageUrl = imageUrl
+		}(track.Name, track.Artist.Name)
 
 		tracks[i] = newTrack
 	}
+	wg.Wait()
 	return tracks, nil
 }
 
