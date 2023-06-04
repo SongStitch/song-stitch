@@ -59,9 +59,10 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 			Playcount: artist.Playcount,
 		}
 
+		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
 		go func(url string) {
 			defer wg.Done()
-			id, err := getImageUrlForArtist(url)
+			id, err := getImageIdForArtist(url)
 			if err != nil {
 				log.Println("Error getting image url for artist", artist.Name, err)
 				return

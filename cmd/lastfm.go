@@ -189,7 +189,7 @@ func getTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 }
 
-func getImageUrlForArtist(artistUrl string) (string, error) {
+func getImageIdForArtist(artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	log.Println("Getting image for artist ", url)
 	resp, err := http.Get(url)
@@ -202,5 +202,10 @@ func getImageUrlForArtist(artistUrl string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return path.Base(doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")), nil
+	href := (doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", ""))
+	if href == "" {
+		return "", errors.New("no image found")
+	}
+	return path.Base(href), nil
+
 }
