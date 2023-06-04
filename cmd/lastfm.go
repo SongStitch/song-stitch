@@ -8,7 +8,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type LastFMImage struct {
@@ -123,12 +126,18 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 type GetTrackInfoResponse struct {
 	Track struct {
 		Album struct {
-			Images []LastFMImage `json:"image"`
+			Images    []LastFMImage `json:"image"`
+			AlbumName string        `json:"title"`
 		} `json:"Album"`
 	} `json:"track"`
 }
 
-func getImageUrlForTrack(trackName string, artistName string, imageSize string) (string, error) {
+type TrackInfo struct {
+	AlbumName string
+	ImageUrl  string
+}
+
+func getTrackInfo(trackName string, artistName string, imageSize string) (*TrackInfo, error) {
 
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -147,36 +156,56 @@ func getImageUrlForTrack(trackName string, artistName string, imageSize string) 
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return "", ErrUserNotFound
+		return nil, errors.New("track not found")
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var response GetTrackInfoResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return image.Link, nil
+			return &TrackInfo{response.Track.Album.AlbumName, image.Link}, nil
 		}
 	}
-	log.Println("No image found for track ", trackName, " and artist ", artistName, " and size ", imageSize)
-	return "", nil
+	return nil, errors.New("no image found")
+
+}
+
+func getImageIdForArtist(artistUrl string) (string, error) {
+	url := artistUrl + "/+images"
+	log.Println("Getting image for artist ", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	href := (doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", ""))
+	if href == "" {
+		return "", errors.New("no image found")
+	}
+	return path.Base(href), nil
 
 }
