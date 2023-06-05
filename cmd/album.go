@@ -1,8 +1,9 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"image"
-	"log"
 	"strconv"
 )
 
@@ -29,12 +30,12 @@ type LastFMTopAlbums struct {
 	} `json:"topalbums"`
 }
 
-func (a *LastFMTopAlbums) Append(l LastFMResponse) {
+func (a *LastFMTopAlbums) Append(l LastFMResponse) error {
 	if albums, ok := l.(*LastFMTopAlbums); ok {
 		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
-		return
+		return nil
 	}
-	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
+	return errors.New("type LastFMResponse is not a LastFMTopAlbums")
 }
 
 func (a *LastFMTopAlbums) GetTotalPages() int {
@@ -46,9 +47,8 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func getAlbums(username string, period Period, count int, imageSize string) ([]*Album, error) {
-
-	result, err := getLastFmResponse[*LastFMTopAlbums](ALBUM, username, period, count, imageSize)
+func getAlbums(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Album, error) {
+	result, err := getLastFmResponse[*LastFMTopAlbums](ctx, ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

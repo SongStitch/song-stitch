@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rs/zerolog"
 )
 
 type LastFMImage struct {
@@ -28,7 +29,7 @@ type LastFMUser struct {
 }
 
 type LastFMResponse interface {
-	Append(l LastFMResponse)
+	Append(l LastFMResponse) error
 	GetTotalPages() int
 	GetTotalFetched() int
 }
@@ -48,7 +49,7 @@ func getMethodForCollageType(collageType CollageType) string {
 	}
 }
 
-func getLastFmResponse[T LastFMResponse](collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
+func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -60,8 +61,11 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 	var result T
 	initialised := false
 
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Msg("Fetching LastFM data")
 	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
+		logger.Info().Int("page", page).Int("totalFetched", totalFetched).Int("count", count).Msg("Fetching page")
 		// Determine the limit for this request
 		limit := count - totalFetched
 		if limit > maxPerPage {
@@ -97,6 +101,10 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 			return nil, ErrUserNotFound
 		}
 
+		if res.StatusCode != http.StatusOK {
+			return nil, errors.New("unexpected status code")
+		}
+
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
@@ -111,7 +119,10 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 			result = response
 			initialised = true
 		} else {
-			result.Append(response)
+			err = result.Append(response)
+			if err != nil {
+				return nil, err
+			}
 		}
 		totalFetched = result.GetTotalFetched()
 		totalPages := result.GetTotalPages()
@@ -189,12 +200,12 @@ func getTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 }
 
-func getImageIdForArtist(artistUrl string) (string, error) {
+func getImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
-	log.Println("Getting image for artist ", url)
+	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 

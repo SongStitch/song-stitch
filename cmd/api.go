@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"image"
 	"image/jpeg"
-	"log"
 	"net/http"
 
 	"github.com/ggicci/httpin"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog"
 )
 
 type Period string
@@ -91,45 +92,45 @@ type CollageRequest struct {
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
 }
 
-func generateCollageForAlbum(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
-	albums, err := getAlbums(username, period, count, imageSize)
+func generateCollageForAlbum(ctx context.Context, username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+	albums, err := getAlbums(ctx, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	downloadImages(albums)
+	downloadImages(ctx, albums)
 
-	return createCollage(albums, displayOptions)
+	return createCollage(ctx, albums, displayOptions)
 }
 
-func generateCollageForArtist(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+func generateCollageForArtist(ctx context.Context, username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
 	if count > 100 {
 		return nil, ErrTooManyImages
 	}
-	artists, err := getArtists(username, period, count, imageSize)
+	artists, err := getArtists(ctx, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	downloadImages(artists)
+	downloadImages(ctx, artists)
 
-	return createCollage(artists, displayOptions)
+	return createCollage(ctx, artists, displayOptions)
 }
 
-func generateCollageForTrack(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
+func generateCollageForTrack(ctx context.Context, username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
 	if count > 25 {
 		return nil, ErrTooManyImages
 	}
-	tracks, err := getTracks(username, period, count, imageSize)
+	tracks, err := getTracks(ctx, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	downloadImages(tracks)
+	downloadImages(ctx, tracks)
 
-	return createCollage(tracks, displayOptions)
+	return createCollage(ctx, tracks, displayOptions)
 }
-func generateCollage(request *CollageRequest) (image.Image, error) {
+func generateCollage(ctx context.Context, request *CollageRequest, logger *zerolog.Logger) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -163,32 +164,35 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 	method := getCollageTypeFromStr(request.Method)
 	switch method {
 	case ALBUM:
-		return generateCollageForAlbum(request.Username, period, count, imageSize, displayOptions)
+		return generateCollageForAlbum(ctx, request.Username, period, count, imageSize, displayOptions)
 	case ARTIST:
-		return generateCollageForArtist(request.Username, period, count, imageSize, displayOptions)
+		return generateCollageForArtist(ctx, request.Username, period, count, imageSize, displayOptions)
 	case TRACK:
-		return generateCollageForTrack(request.Username, period, count, imageSize, displayOptions)
+		return generateCollageForTrack(ctx, request.Username, period, count, imageSize, displayOptions)
 	default:
 		return nil, errors.New("invalid collage type")
 	}
 }
 
 func collage(w http.ResponseWriter, r *http.Request) {
-	request := r.Context().Value(httpin.Input).(*CollageRequest)
+	ctx := r.Context()
+	request := ctx.Value(httpin.Input).(*CollageRequest)
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Msg("Received request")
 
 	validate := validator.New()
 	validate.RegisterValidation("validatePeriod", validatePeriod)
 
 	err := validate.Struct(request)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred parsing request")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	response, err := generateCollage(request)
+	response, err := generateCollage(ctx, request, logger)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred generating collage")
 		switch {
 		case err == ErrUserNotFound:
 			http.Error(w, "User not found", http.StatusNotFound)
@@ -203,7 +207,7 @@ func collage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/jpeg")
 	err = jpeg.Encode(w, response, nil)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred encoding collage")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

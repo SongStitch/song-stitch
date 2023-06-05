@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"image"
-	"log"
 	"strconv"
 	"sync"
+
+	"github.com/rs/zerolog"
 )
 
 type LastFMTrack struct {
@@ -31,12 +34,12 @@ type LastFMTopTracks struct {
 	} `json:"toptracks"`
 }
 
-func (a *LastFMTopTracks) Append(l LastFMResponse) {
+func (a *LastFMTopTracks) Append(l LastFMResponse) error {
 	if tracks, ok := l.(*LastFMTopTracks); ok {
 		a.TopTracks.Tracks = append(a.TopTracks.Tracks, tracks.TopTracks.Tracks...)
-		return
+		return nil
 	}
-	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
+	return errors.New("type LastFMResponse is not a LastFMTopAlbums")
 }
 
 func (a *LastFMTopTracks) GetTotalPages() int {
@@ -48,8 +51,8 @@ func (a *LastFMTopTracks) GetTotalFetched() int {
 	return len(a.TopTracks.Tracks)
 }
 
-func getTracks(username string, period Period, count int, imageSize string) ([]*Track, error) {
-	result, err := getLastFmResponse[*LastFMTopTracks](TRACK, username, period, count, imageSize)
+func getTracks(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Track, error) {
+	result, err := getLastFmResponse[*LastFMTopTracks](ctx, TRACK, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +73,7 @@ func getTracks(username string, period Period, count int, imageSize string) ([]*
 			defer wg.Done()
 			trackInfo, err := getTrackInfo(trackName, artistName, imageSize)
 			if err != nil {
-				log.Println("Error getting image url for track", trackName, artistName, err)
+				zerolog.Ctx(ctx).Err(err).Str("artistName", track.Name).Msg("Error getting image url for track")
 				return
 			}
 			newTrack.ImageUrl = trackInfo.ImageUrl

@@ -2,14 +2,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -66,7 +68,7 @@ func downloadImage[T Downloadable](a T) error {
 	}
 }
 
-func downloadImages[T Downloadable](entities []T) error {
+func downloadImages[T Downloadable](ctx context.Context, entities []T) error {
 
 	var wg sync.WaitGroup
 	wg.Add(len(entities))
@@ -78,7 +80,7 @@ func downloadImages[T Downloadable](entities []T) error {
 			defer wg.Done()
 			err := downloadImage(*entity)
 			if err != nil {
-				log.Println(err)
+				zerolog.Ctx(ctx).Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
 			}
 		}(entity)
 	}

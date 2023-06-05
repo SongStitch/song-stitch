@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"image"
-	"log"
 	"strconv"
 	"sync"
+
+	"github.com/rs/zerolog"
 )
 
 type LastFMArtist struct {
@@ -25,13 +28,13 @@ type LastFMTopArtists struct {
 	} `json:"topartists"`
 }
 
-func (a *LastFMTopArtists) Append(l LastFMResponse) {
+func (a *LastFMTopArtists) Append(l LastFMResponse) error {
 
 	if artists, ok := l.(*LastFMTopArtists); ok {
 		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
-		return
+		return nil
 	}
-	log.Println("Error: LastFMResponse is not a LastFMTopArtists")
+	return errors.New("type LastFMResponse is not a LastFMTopArtists")
 }
 func (a *LastFMTopArtists) GetTotalPages() int {
 	totalPages, _ := strconv.Atoi(a.TopArtists.Attr.TotalPages)
@@ -42,9 +45,9 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func getArtists(username string, period Period, count int, imageSize string) ([]*Artist, error) {
+func getArtists(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Artist, error) {
 
-	result, err := getLastFmResponse[*LastFMTopArtists](ARTIST, username, period, count, imageSize)
+	result, err := getLastFmResponse[*LastFMTopArtists](ctx, ARTIST, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +65,9 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
 		go func(url string) {
 			defer wg.Done()
-			id, err := getImageIdForArtist(url)
+			id, err := getImageIdForArtist(ctx, url)
 			if err != nil {
-				log.Println("Error getting image url for artist", artist.Name, err)
+				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
