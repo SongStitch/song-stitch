@@ -21,6 +21,7 @@ RUN apt-get update \
     \) \
     -print0 | \
     xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
+
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
 
 # hadolint ignore=DL3006

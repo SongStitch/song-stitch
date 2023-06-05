@@ -1,14 +1,29 @@
 window.addEventListener('pageshow', () => toggleLoader(false));
 
+const EXCLUDED_FIELDS = [
+  'fieldset',
+  'submit',
+  'advanced',
+  'aspectRatio',
+  'embed',
+  'image-resolution',
+  'fontsize-checkbox',
+];
+const ADVANCED_OPTIONS_FIELDS = ['compress', 'width', 'height', 'fontsize'];
+
 // Form Submission
 function submitForm(form) {
-  const IGNORED_FIELDS = ['submit', 'advanced', 'aspectRatio', 'embed'];
+  excludedFields = EXCLUDED_FIELDS;
+  if (!document.getElementById('advanced').checked) {
+    excludedFields = excludedFields.concat(ADVANCED_OPTIONS_FIELDS);
+  }
+
   const params = new URLSearchParams();
 
   Array.from(form.elements)
     .filter(
       (field) =>
-        field.name && field.value && !IGNORED_FIELDS.includes(field.name)
+        field.name && field.value && !excludedFields.includes(field.name)
     )
     .forEach((field) => params.append(field.name, field.value));
 
@@ -106,7 +121,11 @@ function embedUrl() {
   elems = Array.from(form.elements);
 
   const filteredElems = elems.filter((el) => {
-    excludedIds = ['fieldset', 'aspectRatio', 'advanced'];
+    excludedFields = EXCLUDED_FIELDS;
+    if (!document.getElementById('advanced').checked) {
+      excludedFields = excludedFields.concat(ADVANCED_OPTIONS_FIELDS);
+    }
+    // Hide if default values are set
     excludedNames = ['embed'];
     if (document.getElementById('width').value.length == 0) {
       excludedNames.push('width');
@@ -117,11 +136,15 @@ function embedUrl() {
     if (document.getElementById('compress').value == 'false') {
       excludedNames.push('compress');
     }
+    if (document.getElementById('fontsize').value == '12') {
+      excludedNames.push('fontsize');
+    }
     return !(
       el.type === 'submit' ||
-      excludedIds.includes(el.id) ||
-      excludedNames.includes(el.name) ||
-      el.value === ''
+      excludedNames.includes(el.id) ||
+      excludedFields.includes(el.name) ||
+      el.value === '' ||
+      el.name === ''
     );
   });
 
@@ -245,6 +268,15 @@ function toggleAdvancedOptions(checkBoxElement) {
   const advancedOptions = document.getElementById('advanced-options');
   if (checkBoxElement.checked) {
     advancedOptions.style.display = 'block';
+  } else {
+    advancedOptions.style.display = 'none';
+  }
+}
+
+function toggleImageResolution(checkBoxElement) {
+  imageResolutionsOptions = document.getElementById('image-resolution-options');
+  if (checkBoxElement.checked) {
+    imageResolutionsOptions.style.display = 'block';
     aspectRatioChecked = document.getElementById('aspectRatio').checked = true;
     validate('aspectRatio');
     if (typeof tempWidth !== 'undefined') {
@@ -260,11 +292,21 @@ function toggleAdvancedOptions(checkBoxElement) {
   } else {
     aspectRatioChecked = document.getElementById('aspectRatio').checked = false;
     validate('aspectRatio');
-    advancedOptions.style.display = 'none';
+    imageResolutionsOptions.style.display = 'none';
     tempWidth = document.getElementById('width').value;
     tempHeight = document.getElementById('height').value;
     document.getElementById('width').value = '';
     document.getElementById('height').value = '';
+  }
+}
+
+function toggleFontSize(checkBoxElement) {
+  fontsizeOptions = document.getElementById('fontsize-options');
+  if (checkBoxElement.checked) {
+    fontsizeOptions.style.display = 'block';
+  } else {
+    fontsizeOptions.style.display = 'none';
+    document.getElementById('fontsize').value = '12'; // default value
   }
 }
 
