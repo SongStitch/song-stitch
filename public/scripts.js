@@ -143,7 +143,8 @@ function embedUrl() {
       el.type === 'submit' ||
       excludedNames.includes(el.id) ||
       excludedFields.includes(el.name) ||
-      el.value === ''
+      el.value === '' ||
+      el.name === ''
     );
   });
 
