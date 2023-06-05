@@ -2,7 +2,7 @@ FROM golang:1.20 AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum Makefile scripts/hashfiles.sh ./
+COPY go.mod go.sum Makefile ./
 COPY vendor ./vendor
 COPY cmd ./cmd
 COPY assets ./assets
@@ -14,7 +14,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends minify \
-    && ./hashfiles.sh \
     && find ./public -type f \( \
     -name "*.html" \
     -o -name '*.js' \
