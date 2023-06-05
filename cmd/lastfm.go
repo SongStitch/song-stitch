@@ -97,6 +97,10 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 			return nil, ErrUserNotFound
 		}
 
+		if res.StatusCode != http.StatusOK {
+			return nil, errors.New("unexpected status code")
+		}
+
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
