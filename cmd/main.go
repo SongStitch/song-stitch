@@ -13,12 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type key int
-
-const (
-	requestIDKey key = 0
-)
-
 func runServer() {
 	log := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	c := alice.New()

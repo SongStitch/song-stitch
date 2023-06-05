@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -48,7 +49,7 @@ func getMethodForCollageType(collageType CollageType) string {
 	}
 }
 
-func getLastFmResponse[T LastFMResponse](collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
+func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -193,7 +194,7 @@ func getTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 }
 
-func getImageIdForArtist(artistUrl string) (string, error) {
+func getImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	log.Println("Getting image for artist ", url)
 	resp, err := http.Get(url)

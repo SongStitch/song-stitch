@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -66,7 +67,7 @@ func downloadImage[T Downloadable](a T) error {
 	}
 }
 
-func downloadImages[T Downloadable](entities []T) error {
+func downloadImages[T Downloadable](ctx context.Context, entities []T) error {
 
 	var wg sync.WaitGroup
 	wg.Add(len(entities))

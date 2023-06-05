@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"image"
 	"log"
 	"strconv"
@@ -42,9 +43,9 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func getArtists(username string, period Period, count int, imageSize string) ([]*Artist, error) {
+func getArtists(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Artist, error) {
 
-	result, err := getLastFmResponse[*LastFMTopArtists](ARTIST, username, period, count, imageSize)
+	result, err := getLastFmResponse[*LastFMTopArtists](ctx, ARTIST, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func getArtists(username string, period Period, count int, imageSize string) ([]
 		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
 		go func(url string) {
 			defer wg.Done()
-			id, err := getImageIdForArtist(url)
+			id, err := getImageIdForArtist(ctx, url)
 			if err != nil {
 				log.Println("Error getting image url for artist", artist.Name, err)
 				return

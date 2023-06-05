@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"image"
 	"log"
 	"strconv"
@@ -46,9 +47,8 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func getAlbums(username string, period Period, count int, imageSize string) ([]*Album, error) {
-
-	result, err := getLastFmResponse[*LastFMTopAlbums](ALBUM, username, period, count, imageSize)
+func getAlbums(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Album, error) {
+	result, err := getLastFmResponse[*LastFMTopAlbums](ctx, ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

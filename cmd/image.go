@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -90,7 +91,7 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 	}
 }
 
-func resizeImage(img *image.Image, width uint, height uint) image.Image {
+func resizeImage(ctx context.Context, img *image.Image, width uint, height uint) image.Image {
 	if width == 0 && height == 0 {
 		log.Println("Unable to resize image, both width and height are 0")
 		return *img
@@ -111,7 +112,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage[T Drawable](albums []T, displayOptions DisplayOptions) (image.Image, error) {
+func createCollage[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
@@ -130,7 +131,7 @@ func createCollage[T Drawable](albums []T, displayOptions DisplayOptions) (image
 	collage := dc.Image()
 
 	if displayOptions.Resize {
-		collage = resizeImage(&collage, displayOptions.Width, displayOptions.Height)
+		collage = resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	if displayOptions.Compress {
