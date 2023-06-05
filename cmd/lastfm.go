@@ -61,9 +61,11 @@ func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType Collag
 	var result T
 	initialised := false
 
-	zerolog.Ctx(ctx).Info().Msg("Fetching LastFM data")
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Msg("Fetching LastFM data")
 	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
+		logger.Info().Int("page", page).Int("totalFetched", totalFetched).Int("count", count).Msg("Fetching page")
 		// Determine the limit for this request
 		limit := count - totalFetched
 		if limit > maxPerPage {
