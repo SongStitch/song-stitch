@@ -7,6 +7,7 @@ const EXCLUDED_FIELDS = [
   'aspectRatio',
   'embed',
   'image-resolution',
+  'fontsize-checkbox',
 ];
 const ADVANCED_OPTIONS_FIELDS = ['compress', 'width', 'height', 'fontsize'];
 
@@ -120,14 +121,7 @@ function embedUrl() {
   elems = Array.from(form.elements);
 
   const filteredElems = elems.filter((el) => {
-    excludedFields = [
-      'fieldset',
-      'submit',
-      'advanced',
-      'aspectRatio',
-      'embed',
-      'image-resolution',
-    ];
+    excludedFields = EXCLUDED_FIELDS
     if (!document.getElementById('advanced').checked) {
       excludedFields = excludedFields.concat(ADVANCED_OPTIONS_FIELDS);
     }
@@ -305,6 +299,16 @@ function toggleImageResolution(checkBoxElement) {
     document.getElementById('height').value = '';
   }
 }
+
+function toggleFontSize(checkBoxElement) {
+  fontsizeOptions = document.getElementById('fontsize-options');
+  if (checkBoxElement.checked) {
+    fontsizeOptions.style.display = 'block'
+  } else {
+      fontsizeOptions.style.display = 'none'
+    document.getElementById('fontsize').value = '12' // default value
+    }
+  }
 
 // input validation
 maxResolution = document.getElementById('width').getAttribute('max');

@@ -164,7 +164,17 @@
             <label for="advanced">Show Advanced Options</label>
           </div>
           <div id="advanced-options" style="display: none">
-            <div id="fontsize-option">
+            <div class="checkbox-wrapper fontsize-checkbox">
+              <input
+                value="false"
+                name="fontsize-checkbox"
+                id="fontsize-checkbox"
+                type="checkbox"
+                onclick="toggleFontSize(this)"
+                />
+              <label for="fontsize-checkbox">Set Text Font Size </label>
+            </div>
+            <div id="fontsize-options" style="display: none">
               <label for="fontsize">Text Font Size</label><br />
               <select name="fontsize" id="fontsize">
                 <option selected value="12">Small (default)</option>
