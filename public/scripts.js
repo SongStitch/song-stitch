@@ -121,7 +121,7 @@ function embedUrl() {
   elems = Array.from(form.elements);
 
   const filteredElems = elems.filter((el) => {
-    excludedFields = EXCLUDED_FIELDS
+    excludedFields = EXCLUDED_FIELDS;
     if (!document.getElementById('advanced').checked) {
       excludedFields = excludedFields.concat(ADVANCED_OPTIONS_FIELDS);
     }
@@ -269,7 +269,6 @@ function toggleAdvancedOptions(checkBoxElement) {
     advancedOptions.style.display = 'block';
   } else {
     advancedOptions.style.display = 'none';
-    // resetAdvancedOptions()
   }
 }
 
@@ -303,12 +302,12 @@ function toggleImageResolution(checkBoxElement) {
 function toggleFontSize(checkBoxElement) {
   fontsizeOptions = document.getElementById('fontsize-options');
   if (checkBoxElement.checked) {
-    fontsizeOptions.style.display = 'block'
+    fontsizeOptions.style.display = 'block';
   } else {
-      fontsizeOptions.style.display = 'none'
-    document.getElementById('fontsize').value = '12' // default value
-    }
+    fontsizeOptions.style.display = 'none';
+    document.getElementById('fontsize').value = '12'; // default value
   }
+}
 
 // input validation
 maxResolution = document.getElementById('width').getAttribute('max');
