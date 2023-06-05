@@ -484,3 +484,8 @@ a.lastfm-link {
 .gh-footer {
   margin-bottom: 0;
 }
+
+#fontsize-options {
+  padding-left: 1em;
+  padding-top: 1em;
+}
