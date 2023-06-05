@@ -88,6 +88,7 @@ type CollageRequest struct {
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
+	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
 }
 
 func generateCollageForAlbum(username string, period Period, count int, imageSize string, displayOptions DisplayOptions) (image.Image, error) {
@@ -132,19 +133,15 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
-	var fontSize float64 = 12
 	if count > 100 && count <= 1000 {
 		imageSize = "large"
 		imageDimension = 174
-		fontSize = 8
 	} else if count > 1000 && count <= 2000 {
 		imageSize = "medium"
 		imageDimension = 64
-		fontSize = 6
 	} else if count > 2000 {
 		imageSize = "small"
-		imageDimension = 34
-		fontSize = 2
+		imageDimension = 3
 	}
 
 	displayOptions := DisplayOptions{
@@ -157,7 +154,7 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 		Height:         request.Height,
 		Compress:       request.Compress,
 		ImageDimension: imageDimension,
-		FontSize:       fontSize,
+		FontSize:       float64(request.FontSize),
 		Rows:           request.Rows,
 		Columns:        request.Columns,
 	}
