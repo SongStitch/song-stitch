@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
-	"log"
 	"net/url"
 	"path/filepath"
 	"strings"
 
 	"github.com/fogleman/gg"
 	"github.com/nfnt/resize"
+	"github.com/rs/zerolog"
 )
 
 type DisplayOptions struct {
@@ -93,7 +93,7 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 
 func resizeImage(ctx context.Context, img *image.Image, width uint, height uint) image.Image {
 	if width == 0 && height == 0 {
-		log.Println("Unable to resize image, both width and height are 0")
+		zerolog.Ctx(ctx).Info().Msg("Unable to resize image, both width and height are 0")
 		return *img
 	} else if height == 0 {
 		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
@@ -138,7 +138,7 @@ func createCollage[T Drawable](ctx context.Context, albums []T, displayOptions D
 		collageCompressed, err := compressImage(&collage, compressionQuality)
 		if err != nil {
 			// Skip and just serve the non-compressed image
-			log.Println(err)
+			zerolog.Ctx(ctx).Err(err).Msg("Unable to compress image")
 		} else {
 			collage = collageCompressed
 		}

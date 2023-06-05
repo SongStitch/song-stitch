@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rs/zerolog"
 )
 
 type LastFMImage struct {
@@ -29,7 +29,7 @@ type LastFMUser struct {
 }
 
 type LastFMResponse interface {
-	Append(l LastFMResponse)
+	Append(l LastFMResponse) error
 	GetTotalPages() int
 	GetTotalFetched() int
 }
@@ -61,6 +61,7 @@ func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType Collag
 	var result T
 	initialised := false
 
+	zerolog.Ctx(ctx).Info().Msg("Fetching LastFM data")
 	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
 		// Determine the limit for this request
@@ -116,7 +117,10 @@ func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType Collag
 			result = response
 			initialised = true
 		} else {
-			result.Append(response)
+			err = result.Append(response)
+			if err != nil {
+				return nil, err
+			}
 		}
 		totalFetched = result.GetTotalFetched()
 		totalPages := result.GetTotalPages()
@@ -196,10 +200,10 @@ func getTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 func getImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
-	log.Println("Getting image for artist ", url)
+	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 

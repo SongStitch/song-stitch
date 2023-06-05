@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"image"
-	"log"
 	"strconv"
 	"sync"
+
+	"github.com/rs/zerolog"
 )
 
 type LastFMArtist struct {
@@ -26,13 +28,13 @@ type LastFMTopArtists struct {
 	} `json:"topartists"`
 }
 
-func (a *LastFMTopArtists) Append(l LastFMResponse) {
+func (a *LastFMTopArtists) Append(l LastFMResponse) error {
 
 	if artists, ok := l.(*LastFMTopArtists); ok {
 		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
-		return
+		return nil
 	}
-	log.Println("Error: LastFMResponse is not a LastFMTopArtists")
+	return errors.New("type LastFMResponse is not a LastFMTopArtists")
 }
 func (a *LastFMTopArtists) GetTotalPages() int {
 	totalPages, _ := strconv.Atoi(a.TopArtists.Attr.TotalPages)
@@ -65,7 +67,7 @@ func getArtists(ctx context.Context, username string, period Period, count int, 
 			defer wg.Done()
 			id, err := getImageIdForArtist(ctx, url)
 			if err != nil {
-				log.Println("Error getting image url for artist", artist.Name, err)
+				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id

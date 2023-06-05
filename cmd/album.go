@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
 	"image"
-	"log"
 	"strconv"
 )
 
@@ -30,12 +30,12 @@ type LastFMTopAlbums struct {
 	} `json:"topalbums"`
 }
 
-func (a *LastFMTopAlbums) Append(l LastFMResponse) {
+func (a *LastFMTopAlbums) Append(l LastFMResponse) error {
 	if albums, ok := l.(*LastFMTopAlbums); ok {
 		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
-		return
+		return nil
 	}
-	log.Println("Error: LastFMResponse is not a LastFMTopAlbums")
+	return errors.New("type LastFMResponse is not a LastFMTopAlbums")
 }
 
 func (a *LastFMTopAlbums) GetTotalPages() int {
