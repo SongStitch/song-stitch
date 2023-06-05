@@ -115,7 +115,7 @@ func getLastFmResponse[T LastFMResponse](collageType CollageType, username strin
 		}
 		totalFetched = result.GetTotalFetched()
 		totalPages := result.GetTotalPages()
-		if totalPages == page {
+		if totalPages == page || totalPages == 0 {
 			break
 		}
 		page++
