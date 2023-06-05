@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -11,6 +8,9 @@ import (
 	"github.com/ggicci/httpin"
 	"github.com/joho/godotenv"
 	"github.com/justinas/alice"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog/log"
 )
 
 type key int
@@ -19,42 +19,32 @@ const (
 	requestIDKey key = 0
 )
 
-func logging(logger *log.Logger) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID, ok := r.Context().Value(requestIDKey).(string)
-			if !ok {
-				requestID = "unknown"
-			}
-			logger.Println(requestID, r.Method, r.URL.Path, r.URL.RawQuery)
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID := r.Header.Get("X-Request-Id")
-			if requestID == "" {
-				requestID = nextRequestID()
-			}
-			ctx := context.WithValue(r.Context(), requestIDKey, requestID)
-			w.Header().Set("X-Request-Id", requestID)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
-}
-
 func runServer() {
+	log := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	c := alice.New()
+	c = c.Append(hlog.NewHandler(log))
+	c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
+		hlog.FromRequest(r).Info().
+			Str("method", r.Method).
+			Stringer("url", r.URL).
+			Int("status", status).
+			Int("size", size).
+			Dur("duration", duration).
+			Msg("")
+	}))
+	c = c.Append(hlog.RemoteAddrHandler("ip"))
+	c = c.Append(hlog.UserAgentHandler("user_agent"))
+	c = c.Append(hlog.RefererHandler("referer"))
+	c = c.Append(hlog.RequestIDHandler("req_id", "Request-Id"))
+	h := c.
+		Append(httpin.NewInput(CollageRequest{})).
+		ThenFunc(collage)
+
 	router := http.NewServeMux()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "public/index.html")
 	})
-	router.Handle("/collage", alice.New(
-		httpin.NewInput(CollageRequest{}),
-	).ThenFunc(collage))
+	router.Handle("/collage", h)
 
 	// serve files from public folder
 	fs := http.FileServer(http.Dir("public"))
@@ -70,25 +60,24 @@ func runServer() {
 		http.ServeFile(w, r, "public/humans.txt")
 	})
 
-	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-
-	nextRequestID := func() string {
-		return fmt.Sprintf("%d", time.Now().UnixNano())
-	}
+	// nextRequestID := func() string {
+	// 	return fmt.Sprintf("%d", time.Now().UnixNano())
+	// }
 
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: alice.New(tracing(nextRequestID), logging(logger)).Then(router),
+		Handler: router,
 	}
-
-	logger.Println("Starting server...")
-	logger.Fatal(server.ListenAndServe())
+	log.Info().Msg("Starting server...")
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal().Err(err).Msg("Startup failed")
+	}
 }
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Error loading .env file")
+		log.Info().Msg("Error loading .env file")
 	}
 
 	runServer()

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"image"
 	"image/jpeg"
-	"log"
 	"net/http"
 
 	"github.com/ggicci/httpin"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog"
 )
 
 type Period string
@@ -129,7 +129,7 @@ func generateCollageForTrack(username string, period Period, count int, imageSiz
 
 	return createCollage(tracks, displayOptions)
 }
-func generateCollage(request *CollageRequest) (image.Image, error) {
+func generateCollage(request *CollageRequest, logger *zerolog.Logger) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -175,20 +175,22 @@ func generateCollage(request *CollageRequest) (image.Image, error) {
 
 func collage(w http.ResponseWriter, r *http.Request) {
 	request := r.Context().Value(httpin.Input).(*CollageRequest)
+	logger := zerolog.Ctx(r.Context())
+	logger.Info().Msg("Received request")
 
 	validate := validator.New()
 	validate.RegisterValidation("validatePeriod", validatePeriod)
 
 	err := validate.Struct(request)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred parsing request")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	response, err := generateCollage(request)
+	response, err := generateCollage(request, logger)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred generating collage")
 		switch {
 		case err == ErrUserNotFound:
 			http.Error(w, "User not found", http.StatusNotFound)
@@ -203,7 +205,7 @@ func collage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/jpeg")
 	err = jpeg.Encode(w, response, nil)
 	if err != nil {
-		log.Println(err)
+		logger.Error().Err(err).Msg("Error occurred encoding collage")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
