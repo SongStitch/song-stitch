@@ -9,16 +9,16 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/SongStitch/song-stitch/internal/clients"
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/generator"
 	"github.com/SongStitch/song-stitch/internal/session"
 )
 
 type LastFMArtist struct {
-	Images    []clients.LastFMImage `json:"image"`
-	Mbid      string                `json:"mbid"`
-	URL       string                `json:"url"`
-	Playcount string                `json:"playcount"`
+	Images    []lastfm.LastFMImage `json:"image"`
+	Mbid      string               `json:"mbid"`
+	URL       string               `json:"url"`
+	Playcount string               `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
@@ -27,12 +27,12 @@ type LastFMArtist struct {
 
 type LastFMTopArtists struct {
 	TopArtists struct {
-		Artists []LastFMArtist     `json:"artist"`
-		Attr    clients.LastFMUser `json:"@attr"`
+		Artists []LastFMArtist    `json:"artist"`
+		Attr    lastfm.LastFMUser `json:"@attr"`
 	} `json:"topartists"`
 }
 
-func (a *LastFMTopArtists) Append(l clients.LastFMResponse) error {
+func (a *LastFMTopArtists) Append(l lastfm.LastFMResponse) error {
 
 	if artists, ok := l.(*LastFMTopArtists); ok {
 		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
@@ -65,7 +65,7 @@ func GenerateCollageForArtist(ctx context.Context, username string, period sessi
 
 func getArtists(ctx context.Context, username string, period session.Period, count int, imageSize string) ([]*Artist, error) {
 
-	result, err := clients.GetLastFmResponse[*LastFMTopArtists](ctx, session.ARTIST, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, session.ARTIST, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func getArtists(ctx context.Context, username string, period session.Period, cou
 		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
 		go func(url string) {
 			defer wg.Done()
-			id, err := clients.GetImageIdForArtist(ctx, url)
+			id, err := lastfm.GetImageIdForArtist(ctx, url)
 			if err != nil {
 				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
 				return

@@ -6,7 +6,7 @@ import (
 	"image"
 	"strconv"
 
-	"github.com/SongStitch/song-stitch/internal/clients"
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/generator"
 	"github.com/SongStitch/song-stitch/internal/session"
 )
@@ -17,10 +17,10 @@ type LastFMAlbum struct {
 		ArtistName string `json:"name"`
 		Mbid       string `json:"mbid"`
 	} `json:"artist"`
-	Images    []clients.LastFMImage `json:"image"`
-	Mbid      string                `json:"mbid"`
-	URL       string                `json:"url"`
-	Playcount string                `json:"playcount"`
+	Images    []lastfm.LastFMImage `json:"image"`
+	Mbid      string               `json:"mbid"`
+	URL       string               `json:"url"`
+	Playcount string               `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
@@ -29,12 +29,12 @@ type LastFMAlbum struct {
 
 type LastFMTopAlbums struct {
 	TopAlbums struct {
-		Albums []LastFMAlbum      `json:"album"`
-		Attr   clients.LastFMUser `json:"@attr"`
+		Albums []LastFMAlbum     `json:"album"`
+		Attr   lastfm.LastFMUser `json:"@attr"`
 	} `json:"topalbums"`
 }
 
-func (a *LastFMTopAlbums) Append(l clients.LastFMResponse) error {
+func (a *LastFMTopAlbums) Append(l lastfm.LastFMResponse) error {
 	if albums, ok := l.(*LastFMTopAlbums); ok {
 		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
 		return nil
@@ -63,7 +63,7 @@ func GenerateCollageForAlbum(ctx context.Context, username string, period sessio
 }
 
 func getAlbums(ctx context.Context, username string, period session.Period, count int, imageSize string) ([]*Album, error) {
-	result, err := clients.GetLastFmResponse[*LastFMTopAlbums](ctx, session.ALBUM, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, session.ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

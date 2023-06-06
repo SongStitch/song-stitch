@@ -9,15 +9,15 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/SongStitch/song-stitch/internal/clients"
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/generator"
 	"github.com/SongStitch/song-stitch/internal/session"
 )
 
 type LastFMTrack struct {
-	Mbid   string                `json:"mbid"`
-	Name   string                `json:"name"`
-	Images []clients.LastFMImage `json:"image"`
+	Mbid   string               `json:"mbid"`
+	Name   string               `json:"name"`
+	Images []lastfm.LastFMImage `json:"image"`
 	Artist struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
@@ -33,12 +33,12 @@ type LastFMTrack struct {
 
 type LastFMTopTracks struct {
 	TopTracks struct {
-		Tracks []LastFMTrack      `json:"track"`
-		Attr   clients.LastFMUser `json:"@attr"`
+		Tracks []LastFMTrack     `json:"track"`
+		Attr   lastfm.LastFMUser `json:"@attr"`
 	} `json:"toptracks"`
 }
 
-func (a *LastFMTopTracks) Append(l clients.LastFMResponse) error {
+func (a *LastFMTopTracks) Append(l lastfm.LastFMResponse) error {
 	if tracks, ok := l.(*LastFMTopTracks); ok {
 		a.TopTracks.Tracks = append(a.TopTracks.Tracks, tracks.TopTracks.Tracks...)
 		return nil
@@ -70,7 +70,7 @@ func GenerateCollageForTrack(ctx context.Context, username string, period sessio
 }
 
 func getTracks(ctx context.Context, username string, period session.Period, count int, imageSize string) ([]*Track, error) {
-	result, err := clients.GetLastFmResponse[*LastFMTopTracks](ctx, session.TRACK, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, session.TRACK, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func getTracks(ctx context.Context, username string, period session.Period, coun
 
 		go func(trackName string, artistName string) {
 			defer wg.Done()
-			trackInfo, err := clients.GetTrackInfo(trackName, artistName, imageSize)
+			trackInfo, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
 			if err != nil {
 				zerolog.Ctx(ctx).Err(err).Str("artistName", track.Name).Msg("Error getting image url for track")
 				return

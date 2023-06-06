@@ -1,4 +1,4 @@
-package clients
+package lastfm
 
 import (
 	"context"
