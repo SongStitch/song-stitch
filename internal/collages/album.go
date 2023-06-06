@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
-	"github.com/SongStitch/song-stitch/internal/session"
 )
 
 type LastFMAlbum struct {
@@ -51,7 +51,7 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func GenerateCollageForAlbum(ctx context.Context, username string, period session.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
 	albums, err := getAlbums(ctx, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
@@ -62,8 +62,8 @@ func GenerateCollageForAlbum(ctx context.Context, username string, period sessio
 	return generator.CreateCollage(ctx, albums, displayOptions)
 }
 
-func getAlbums(ctx context.Context, username string, period session.Period, count int, imageSize string) ([]*Album, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, session.ALBUM, username, period, count, imageSize)
+func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

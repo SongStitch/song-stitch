@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
-	"github.com/SongStitch/song-stitch/internal/session"
 )
 
 type LastFMTrack struct {
@@ -55,9 +55,9 @@ func (a *LastFMTopTracks) GetTotalFetched() int {
 	return len(a.TopTracks.Tracks)
 }
 
-func GenerateCollageForTrack(ctx context.Context, username string, period session.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
 	if count > 25 {
-		return nil, session.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	tracks, err := getTracks(ctx, username, period, count, imageSize)
 	if err != nil {
@@ -69,8 +69,8 @@ func GenerateCollageForTrack(ctx context.Context, username string, period sessio
 	return generator.CreateCollage(ctx, tracks, displayOptions)
 }
 
-func getTracks(ctx context.Context, username string, period session.Period, count int, imageSize string) ([]*Track, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, session.TRACK, username, period, count, imageSize)
+func getTracks(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Track, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}

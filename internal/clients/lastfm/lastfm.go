@@ -14,7 +14,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
 
-	"github.com/SongStitch/song-stitch/internal/session"
+	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
 type LastFMImage struct {
@@ -30,20 +30,20 @@ type LastFMUser struct {
 	Total      string `json:"total"`
 }
 
-func getMethodForCollageType(collageType session.CollageType) string {
+func getMethodForCollageType(collageType constants.CollageType) string {
 	switch collageType {
-	case session.ALBUM:
+	case constants.ALBUM:
 		return "user.gettopalbums"
-	case session.ARTIST:
+	case constants.ARTIST:
 		return "user.gettopartists"
-	case session.TRACK:
+	case constants.TRACK:
 		return "user.gettoptracks"
 	default:
 		return ""
 	}
 }
 
-func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType session.CollageType, username string, period session.Period, count int, imageSize string) (*T, error) {
+func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -92,7 +92,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType sessio
 		defer res.Body.Close()
 
 		if res.StatusCode == http.StatusNotFound {
-			return nil, session.ErrUserNotFound
+			return nil, constants.ErrUserNotFound
 		}
 
 		if res.StatusCode != http.StatusOK {
