@@ -34,7 +34,7 @@ type CollageRequest struct {
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
 }
 
-func generateCollage(ctx context.Context, request *CollageRequest, logger *zerolog.Logger) (image.Image, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -94,7 +94,23 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := generateCollage(ctx, request, logger)
+	logger.Info().
+		Str("username", request.Username).
+		Int("rows", request.Rows).
+		Int("columns", request.Columns).
+		Str("period", request.Period).
+		Bool("artist", request.DisplayArtist).
+		Bool("album", request.DisplayAlbum).
+		Bool("track", request.DisplayTrack).
+		Bool("playcount", request.PlayCount).
+		Bool("compress", request.Compress).
+		Uint("width", request.Width).
+		Uint("height", request.Height).
+		Str("method", request.Method).
+		Int("fontsize", request.FontSize).
+		Msg("Generating collage")
+
+	response, err := generateCollage(ctx, request)
 	if err != nil {
 		logger.Error().Err(err).Msg("Error occurred generating collage")
 		switch {
