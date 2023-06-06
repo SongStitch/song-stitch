@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"bytes"
@@ -18,11 +18,6 @@ const (
 	jpgFileType = ".jpg"
 	gifFileType = ".gif"
 )
-
-type Downloadable interface {
-	GetImageUrl() string
-	SetImage(*image.Image)
-}
 
 func downloadImage[T Downloadable](a T) error {
 	url := a.GetImageUrl()
@@ -68,7 +63,7 @@ func downloadImage[T Downloadable](a T) error {
 	}
 }
 
-func downloadImages[T Downloadable](ctx context.Context, entities []T) error {
+func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 
 	var wg sync.WaitGroup
 	wg.Add(len(entities))

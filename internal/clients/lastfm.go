@@ -1,4 +1,4 @@
-package main
+package clients
 
 import (
 	"context"
@@ -13,6 +13,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
+
+	"github.com/SongStitch/song-stitch/internal/session"
 )
 
 type LastFMImage struct {
@@ -28,28 +30,20 @@ type LastFMUser struct {
 	Total      string `json:"total"`
 }
 
-type LastFMResponse interface {
-	Append(l LastFMResponse) error
-	GetTotalPages() int
-	GetTotalFetched() int
-}
-
-var ErrUserNotFound = errors.New("user not found")
-
-func getMethodForCollageType(collageType CollageType) string {
+func getMethodForCollageType(collageType session.CollageType) string {
 	switch collageType {
-	case ALBUM:
+	case session.ALBUM:
 		return "user.gettopalbums"
-	case ARTIST:
+	case session.ARTIST:
 		return "user.gettopartists"
-	case TRACK:
+	case session.TRACK:
 		return "user.gettoptracks"
 	default:
 		return ""
 	}
 }
 
-func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType CollageType, username string, period Period, count int, imageSize string) (*T, error) {
+func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType session.CollageType, username string, period session.Period, count int, imageSize string) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
@@ -98,7 +92,7 @@ func getLastFmResponse[T LastFMResponse](ctx context.Context, collageType Collag
 		defer res.Body.Close()
 
 		if res.StatusCode == http.StatusNotFound {
-			return nil, ErrUserNotFound
+			return nil, session.ErrUserNotFound
 		}
 
 		if res.StatusCode != http.StatusOK {
@@ -148,7 +142,7 @@ type TrackInfo struct {
 	ImageUrl  string
 }
 
-func getTrackInfo(trackName string, artistName string, imageSize string) (*TrackInfo, error) {
+func GetTrackInfo(trackName string, artistName string, imageSize string) (*TrackInfo, error) {
 
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -200,7 +194,7 @@ func getTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 }
 
-func getImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
+func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
 	resp, err := http.Get(url)
