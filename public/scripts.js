@@ -395,23 +395,28 @@ function setInputValues(max) {
   }
 }
 
+function checkboxTrigger(type, display, checked, value) {
+  query = `#fieldset > div.checkbox-wrapper.${type}-checkbox`;
+  document.querySelector(query).style.display = display;
+  checkboxElem = document.getElementById('track');
+  checkboxElem.value = value;
+  checkboxElem.checked = value;
+}
+
 function checkCollageValue() {
   var selectBox = document.getElementById('method');
   var selectedValue = selectBox.options[selectBox.selectedIndex].value;
   if (selectedValue === 'artist') {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'none';
+    checkboxTrigger('album', 'none', 'false', '');
     setInputValues(maxForArtist);
+    checkboxTrigger('track', 'none', false, '');
   } else if (selectedValue === 'track') {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'block';
+    checkboxTrigger('album', 'block', true, true);
     setInputValues(maxForTrack);
+    checkboxTrigger('track', 'block', true, true);
   } else {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'block';
+    checkboxTrigger('album', 'block', true, true);
     setInputValues(maxForAlbum);
+    checkboxTrigger('track', 'none', false, '');
   }
 }
