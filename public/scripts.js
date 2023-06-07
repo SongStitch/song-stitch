@@ -395,23 +395,36 @@ function setInputValues(max) {
   }
 }
 
+function trackViewTrigger(display, checked, value) {
+  document.querySelector(
+    '#fieldset > div.checkbox-wrapper.track-checkbox'
+  ).style.display = display;
+  document.getElementById('track').value = value;
+  document.getElementById('track').checked = value;
+}
+
+function albumCheckboxTrigger(display, checked, value) {
+  document.querySelector(
+    '#fieldset > div.checkbox-wrapper.album-checkbox'
+  ).style.display = display;
+  document.getElementById('album').value = value;
+  document.getElementById('album').checked = value;
+}
+
 function checkCollageValue() {
   var selectBox = document.getElementById('method');
   var selectedValue = selectBox.options[selectBox.selectedIndex].value;
   if (selectedValue === 'artist') {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'none';
+    albumCheckboxTrigger('none', 'false', '');
     setInputValues(maxForArtist);
+    trackViewTrigger('none', false, '');
   } else if (selectedValue === 'track') {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'block';
+    albumCheckboxTrigger('block', true, true);
     setInputValues(maxForTrack);
+    trackViewTrigger('block', true, true);
   } else {
-    document.querySelector(
-      '#fieldset > div.checkbox-wrapper.album-checkbox'
-    ).style.display = 'block';
+    albumCheckboxTrigger('block', true, true);
     setInputValues(maxForAlbum);
+    trackViewTrigger('none', false, '');
   }
 }
