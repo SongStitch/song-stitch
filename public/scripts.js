@@ -400,7 +400,7 @@ function checkboxTrigger(type, display, checked, value) {
   document.querySelector(query).style.display = display;
   checkboxElem = document.getElementById('track');
   checkboxElem.value = value;
-  checkboxElem.checked = value;
+  checkboxElem.checked = checked;
 }
 
 function checkCollageValue() {
