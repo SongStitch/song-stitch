@@ -1,4 +1,4 @@
-package main
+package collages
 
 import (
 	"context"
@@ -8,13 +8,17 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog"
+
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/constants"
+	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type LastFMArtist struct {
-	Images    []LastFMImage `json:"image"`
-	Mbid      string        `json:"mbid"`
-	URL       string        `json:"url"`
-	Playcount string        `json:"playcount"`
+	Images    []lastfm.LastFMImage `json:"image"`
+	Mbid      string               `json:"mbid"`
+	URL       string               `json:"url"`
+	Playcount string               `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
@@ -23,12 +27,12 @@ type LastFMArtist struct {
 
 type LastFMTopArtists struct {
 	TopArtists struct {
-		Artists []LastFMArtist `json:"artist"`
-		Attr    LastFMUser     `json:"@attr"`
+		Artists []LastFMArtist    `json:"artist"`
+		Attr    lastfm.LastFMUser `json:"@attr"`
 	} `json:"topartists"`
 }
 
-func (a *LastFMTopArtists) Append(l LastFMResponse) error {
+func (a *LastFMTopArtists) Append(l lastfm.LastFMResponse) error {
 
 	if artists, ok := l.(*LastFMTopArtists); ok {
 		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
@@ -45,9 +49,23 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func getArtists(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Artist, error) {
+func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+	if count > 100 {
+		return nil, constants.ErrTooManyImages
+	}
+	artists, err := getArtists(ctx, username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
 
-	result, err := getLastFmResponse[*LastFMTopArtists](ctx, ARTIST, username, period, count, imageSize)
+	generator.DownloadImages(ctx, artists)
+
+	return generator.CreateCollage(ctx, artists, displayOptions)
+}
+
+func getArtists(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Artist, error) {
+
+	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, constants.ARTIST, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +83,7 @@ func getArtists(ctx context.Context, username string, period Period, count int, 
 		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
 		go func(url string) {
 			defer wg.Done()
-			id, err := getImageIdForArtist(ctx, url)
+			id, err := lastfm.GetImageIdForArtist(ctx, url)
 			if err != nil {
 				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
 				return

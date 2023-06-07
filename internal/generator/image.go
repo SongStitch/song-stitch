@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"bytes"
@@ -28,11 +28,6 @@ type DisplayOptions struct {
 	Rows           int
 	Columns        int
 	ImageDimension int
-}
-
-type Drawable interface {
-	GetImage() *image.Image
-	GetParameters() map[string]string
 }
 
 const (
@@ -112,7 +107,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func createCollage[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows

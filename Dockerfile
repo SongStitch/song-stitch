@@ -5,6 +5,7 @@ WORKDIR /app
 COPY go.mod go.sum Makefile ./
 COPY vendor ./vendor
 COPY cmd ./cmd
+COPY internal ./internal
 COPY assets ./assets
 COPY public ./public
 

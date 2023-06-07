@@ -1,4 +1,4 @@
-package main
+package collages
 
 import (
 	"context"
@@ -8,12 +8,16 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog"
+
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/constants"
+	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type LastFMTrack struct {
-	Mbid   string        `json:"mbid"`
-	Name   string        `json:"name"`
-	Images []LastFMImage `json:"image"`
+	Mbid   string               `json:"mbid"`
+	Name   string               `json:"name"`
+	Images []lastfm.LastFMImage `json:"image"`
 	Artist struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
@@ -29,12 +33,12 @@ type LastFMTrack struct {
 
 type LastFMTopTracks struct {
 	TopTracks struct {
-		Tracks []LastFMTrack `json:"track"`
-		Attr   LastFMUser    `json:"@attr"`
+		Tracks []LastFMTrack     `json:"track"`
+		Attr   lastfm.LastFMUser `json:"@attr"`
 	} `json:"toptracks"`
 }
 
-func (a *LastFMTopTracks) Append(l LastFMResponse) error {
+func (a *LastFMTopTracks) Append(l lastfm.LastFMResponse) error {
 	if tracks, ok := l.(*LastFMTopTracks); ok {
 		a.TopTracks.Tracks = append(a.TopTracks.Tracks, tracks.TopTracks.Tracks...)
 		return nil
@@ -51,8 +55,22 @@ func (a *LastFMTopTracks) GetTotalFetched() int {
 	return len(a.TopTracks.Tracks)
 }
 
-func getTracks(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Track, error) {
-	result, err := getLastFmResponse[*LastFMTopTracks](ctx, TRACK, username, period, count, imageSize)
+func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+	if count > 25 {
+		return nil, constants.ErrTooManyImages
+	}
+	tracks, err := getTracks(ctx, username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	generator.DownloadImages(ctx, tracks)
+
+	return generator.CreateCollage(ctx, tracks, displayOptions)
+}
+
+func getTracks(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Track, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +89,7 @@ func getTracks(ctx context.Context, username string, period Period, count int, i
 
 		go func(trackName string, artistName string) {
 			defer wg.Done()
-			trackInfo, err := getTrackInfo(trackName, artistName, imageSize)
+			trackInfo, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
 			if err != nil {
 				zerolog.Ctx(ctx).Err(err).Str("artistName", track.Name).Msg("Error getting image url for track")
 				return

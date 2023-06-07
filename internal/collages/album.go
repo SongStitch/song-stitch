@@ -1,10 +1,14 @@
-package main
+package collages
 
 import (
 	"context"
 	"errors"
 	"image"
 	"strconv"
+
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/constants"
+	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type LastFMAlbum struct {
@@ -13,10 +17,10 @@ type LastFMAlbum struct {
 		ArtistName string `json:"name"`
 		Mbid       string `json:"mbid"`
 	} `json:"artist"`
-	Images    []LastFMImage `json:"image"`
-	Mbid      string        `json:"mbid"`
-	URL       string        `json:"url"`
-	Playcount string        `json:"playcount"`
+	Images    []lastfm.LastFMImage `json:"image"`
+	Mbid      string               `json:"mbid"`
+	URL       string               `json:"url"`
+	Playcount string               `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
@@ -25,12 +29,12 @@ type LastFMAlbum struct {
 
 type LastFMTopAlbums struct {
 	TopAlbums struct {
-		Albums []LastFMAlbum `json:"album"`
-		Attr   LastFMUser    `json:"@attr"`
+		Albums []LastFMAlbum     `json:"album"`
+		Attr   lastfm.LastFMUser `json:"@attr"`
 	} `json:"topalbums"`
 }
 
-func (a *LastFMTopAlbums) Append(l LastFMResponse) error {
+func (a *LastFMTopAlbums) Append(l lastfm.LastFMResponse) error {
 	if albums, ok := l.(*LastFMTopAlbums); ok {
 		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
 		return nil
@@ -47,8 +51,19 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func getAlbums(ctx context.Context, username string, period Period, count int, imageSize string) ([]*Album, error) {
-	result, err := getLastFmResponse[*LastFMTopAlbums](ctx, ALBUM, username, period, count, imageSize)
+func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+	albums, err := getAlbums(ctx, username, period, count, imageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	generator.DownloadImages(ctx, albums)
+
+	return generator.CreateCollage(ctx, albums, displayOptions)
+}
+
+func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
 	}
