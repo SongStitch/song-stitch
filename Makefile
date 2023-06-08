@@ -10,10 +10,10 @@ lint:
 	prettier -w public/*{.js,.html,.css}
 	hadolint Dockerfile
 
-run: lint
+run:
 	go run cmd/*.go
 
-run-debug: lint
+run-debug:
 	GODEBUG=gctrace=1 go run cmd/*.go
 
 build: lint
