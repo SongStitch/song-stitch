@@ -13,8 +13,17 @@ import (
 	"github.com/SongStitch/song-stitch/internal/api"
 )
 
+func getLogger() zerolog.Logger {
+	if env, ok := os.LookupEnv("APP_ENV"); ok && env == "development" {
+		output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+		return zerolog.New(output).With().Timestamp().Logger()
+	} else {
+		return zerolog.New(os.Stdout).With().Timestamp().Logger()
+	}
+}
+
 func RunServer() {
-	log := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	log := getLogger()
 	c := alice.New()
 	c = c.Append(hlog.NewHandler(log))
 	c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
