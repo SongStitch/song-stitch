@@ -5,13 +5,18 @@ mod:
 	go mod tidy
 	go mod vendor
 
+lint:
+	gofmt -s -w cmd/ internal/
+	prettier -w public/*{.js,.html,.css}
+	hadolint Dockerfile
+
 run:
 	go run cmd/*.go
 
 run-debug:
 	GODEBUG=gctrace=1 go run cmd/*.go
 
-build:
+build: lint
 	go build -o bin/${BINARY_NAME} cmd/*.go
 
 darwin:
@@ -25,7 +30,7 @@ linux-arm64:
 linux-amd64:
 	env GOOS=linux GOARCH=amd64 go build  -o bin/${BINARY_NAME}_linux_amd64 cmd/*.go
 
-docker-build:
+docker-build: lint
 	docker-compose build song-stitch
 
 docker-run:
