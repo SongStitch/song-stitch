@@ -14,6 +14,11 @@ run-debug:
 build:
 	go build -o bin/${BINARY_NAME} cmd/*.go
 
+lint:
+	gofmt -s -w cmd/ internal/
+	prettier -w public/*{.js,.html,.css}
+	hadolint Dockerfile
+
 darwin:
 	env GOOS=darwin GOARCH=arm64 go build -o bin/${BINARY_NAME}_darwin_arm64 cmd/*.go
 	env GOOS=darwin GOARCH=amd64 go build -o bin/${BINARY_NAME}_darwin_amd64 cmd/*.go
