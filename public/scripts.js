@@ -367,9 +367,12 @@ function updateAndValidateValue(id, checkFunction) {
 }
 
 function validate(input) {
+  if (input.id == 'aspectRatio') {
+    inputElement = document.getElementById(input.id);
+    setCheckBoxText(inputElement.nextElementSibling, String(input.checked));
+  }
   let numCols = updateAndValidateValue('columns', checkGridValues);
   let numRows = updateAndValidateValue('rows', checkGridValues);
-
   if (aspectRatioChecked) {
     height = updateAndValidateValue('height', checkAspectRatioValues);
     width = updateAndValidateValue('width', checkAspectRatioValues);
