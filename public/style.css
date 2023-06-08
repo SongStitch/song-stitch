@@ -495,8 +495,12 @@ pre {
   place-items: center;
   display: none;
 }
-.advanced {
+.advanced > label,
+.fontsize-checkbox > label,
+.image-resolution > label,
+.compress > label {
   color: darkgrey;
+  font-weight: 400;
 }
 #advanced-options {
   padding-top: 1em;

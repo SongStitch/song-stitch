@@ -109,9 +109,21 @@ function handleLocalStorage() {
   }
 }
 
+function setCheckBoxText(labelElement, value) {
+  if (value == 'true') {
+    labelElement.style.fontWeight = 700;
+    labelElement.style.color = 'black';
+  } else {
+    labelElement.style.fontWeight = 400;
+    labelElement.style.color = 'darkgrey';
+  }
+}
+
 // checkbox value
 function updateValue(checkbox) {
   checkbox.value = checkbox.checked ? 'true' : 'false';
+  inputElement = document.getElementById(checkbox.id);
+  setCheckBoxText(inputElement.nextElementSibling, checkbox.value);
 }
 
 // Embed button and modal
@@ -271,6 +283,11 @@ function toggleAdvancedOptions(checkBoxElement) {
   } else {
     advancedOptions.style.display = 'none';
   }
+  inputElement = document.getElementById(checkBoxElement.id);
+  setCheckBoxText(
+    inputElement.nextElementSibling,
+    String(checkBoxElement.checked)
+  );
 }
 
 function toggleImageResolution(checkBoxElement) {
@@ -298,6 +315,11 @@ function toggleImageResolution(checkBoxElement) {
     document.getElementById('width').value = '';
     document.getElementById('height').value = '';
   }
+  inputElement = document.getElementById(checkBoxElement.id);
+  setCheckBoxText(
+    inputElement.nextElementSibling,
+    String(checkBoxElement.checked)
+  );
 }
 
 function toggleFontSize(checkBoxElement) {
@@ -308,6 +330,11 @@ function toggleFontSize(checkBoxElement) {
     fontsizeOptions.style.display = 'none';
     document.getElementById('fontsize').value = '12'; // default value
   }
+  inputElement = document.getElementById(checkBoxElement.id);
+  setCheckBoxText(
+    inputElement.nextElementSibling,
+    String(checkBoxElement.checked)
+  );
 }
 
 // input validation
