@@ -51,11 +51,13 @@ form {
 input[type='text'],
 select,
 input[type='number'] {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
-  border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
   font-size: 1em;
@@ -67,7 +69,6 @@ input[type='number'] {
   min-height: 28px;
   border: 2px solid transparent;
   box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
-  background: white;
   transition: all 0.1s ease 0s;
   :focus {
     border: 2px solid rgb(124, 138, 255);
