@@ -263,6 +263,34 @@ h1 {
   .checkbox-wrapper input[type='checkbox']:not(.switch):checked {
     --r: 43deg;
   }
+  .checkbox-wrapper input[type='checkbox'].switch {
+    width: 38px;
+    border-radius: 11px;
+  }
+  .checkbox-wrapper input[type='checkbox'].switch:after {
+    left: 2px;
+    top: 2px;
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    background: var(--ab, var(--border));
+    transform: translateX(var(--x, 0));
+  }
+  .checkbox-wrapper input[type='checkbox'].switch:checked {
+    --ab: var(--active-inner);
+    --x: 17px;
+  }
+  .checkbox-wrapper input[type='checkbox'].switch:disabled:not(:checked):after {
+    opacity: 0.6;
+  }
+}
+
+.checkbox-wrapper * {
+  box-sizing: inherit;
+}
+.checkbox-wrapper *:before,
+.checkbox-wrapper *:after {
+  box-sizing: inherit;
 }
 .checkbox-wrapper * {
   box-sizing: inherit;
