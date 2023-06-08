@@ -14,7 +14,7 @@ import (
 )
 
 func getLogger() zerolog.Logger {
-	if env, ok := os.LookupEnv("ENVIRONMENT"); ok && env == "development" {
+	if env, ok := os.LookupEnv("APP_ENV"); ok && env == "development" {
 		output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 		return zerolog.New(output).With().Timestamp().Logger()
 	} else {
