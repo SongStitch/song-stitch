@@ -111,10 +111,8 @@ function handleLocalStorage() {
 
 function setCheckBoxText(labelElement, value) {
   if (value == 'true') {
-    labelElement.style.fontWeight = 700;
     labelElement.style.color = 'black';
   } else {
-    labelElement.style.fontWeight = 400;
     labelElement.style.color = 'darkgrey';
   }
 }

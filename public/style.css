@@ -1,8 +1,11 @@
 @font-face {
-  font-family: 'Secular One';
-  src: url('/public/SecularOne-Regular.ttf') format('truetype');
+  font-family: 'Poppins';
+  src: url('/public/poppins-semibold.woff2') format('woff2'),
+    url('/public/poppins-semibold.woff') format('woff'),
+    url('/public/poppins-semibold.ttf') format('truetype');
   font-display: swap;
 }
+
 a:link {
   color: black;
 }
@@ -34,7 +37,7 @@ input[type='text'] {
   display: grid;
   place-items: center;
   min-height: 100%;
-  font-family: 'Secular One', avenir, Helvetica, sans-serif;
+  font-family: 'Poppins', avenir, Helvetica, sans-serif;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -44,7 +47,7 @@ form {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
-  font-family: 'Secular One';
+  font-family: 'Poppins';
   margin: auto;
 }
 #username,
@@ -64,7 +67,7 @@ input[type='number'] {
   background-color: white;
   background: none;
   color: black;
-  font-family: 'Secular One';
+  font-family: 'Poppins';
   line-height: 20px;
   min-height: 28px;
   border: 2px solid transparent;
@@ -86,7 +89,7 @@ select {
 }
 input[type='submit'],
 input[type='button'] {
-  font-family: 'Secular One';
+  font-family: 'Poppins';
 }
 input[type='submit'],
 input[type='button'] {
@@ -135,7 +138,7 @@ h1 {
   input[type='button'] {
     padding: 10px 15px;
     font-size: 1em;
-    font-family: 'Secular One';
+    font-family: 'Poppins';
   }
   h2,
   h1 {
@@ -510,7 +513,6 @@ pre {
 .image-resolution > label,
 .compress > label {
   color: darkgrey;
-  font-weight: 400;
 }
 #advanced-options {
   padding-top: 1em;
