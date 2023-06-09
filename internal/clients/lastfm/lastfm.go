@@ -80,26 +80,35 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 		q.Set("format", "json")
 		u.RawQuery = q.Encode()
 
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
+		// We use an anonymous function here since the defer is running within a loop
+		body, err := func() ([]byte, error) {
+			req, err := http.NewRequest("GET", u.String(), nil)
+			if err != nil {
+				return nil, err
+			}
 
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer res.Body.Close()
+			res, err := http.DefaultClient.Do(req)
+			if res != nil {
+				defer res.Body.Close()
+			}
+			if err != nil {
+				return nil, err
+			}
 
-		if res.StatusCode == http.StatusNotFound {
-			return nil, constants.ErrUserNotFound
-		}
+			if res.StatusCode == http.StatusNotFound {
+				return nil, constants.ErrUserNotFound
+			}
 
-		if res.StatusCode != http.StatusOK {
-			return nil, errors.New("unexpected status code")
-		}
+			if res.StatusCode != http.StatusOK {
+				return nil, errors.New("unexpected status code")
+			}
 
-		body, err := io.ReadAll(res.Body)
+			body, err := io.ReadAll(res.Body)
+			if err != nil {
+				return nil, err
+			}
+			return body, nil
+		}()
 		if err != nil {
 			return nil, err
 		}
