@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -115,13 +114,13 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 	}
 
 	for _, item := range response.Track.Items {
-		fmt.Println(item.Artists[0].Name, ":", artistName)
 		if strings.EqualFold(item.Artists[0].Name, artistName) {
 			for _, image := range item.Album.Images {
 				if image.Height == 300 {
 					return &models.TrackInfo{ImageUrl: image.URL, AlbumName: item.Album.Name}, nil
 				}
 			}
+			// if no images 300x300, just return the first image
 			return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
 		}
 	}
