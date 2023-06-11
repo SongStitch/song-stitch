@@ -1,28 +1,28 @@
 package spotify
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-type SpotifyAuthRequest struct {
-	grant_type    string
-	client_id     string
-	client_secret string
-}
-
 type SpotifyAuthResponse struct {
-	access_token string
-	token_type   string
-	expires_in   int
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"` // seconds
 }
 
 type SpotifyClient struct {
-	token string
+	Token    string
+	Endpoint string
 }
 
 func NewSpotifyClient() (*SpotifyClient, error) {
@@ -33,19 +33,13 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 		return nil, errors.New("spotify credentials not set")
 	}
 
-	url := "https://accounts.spotify.com/api/token"
-	requestBody := SpotifyAuthRequest{
-		grant_type:    "client_credentials",
-		client_id:     client_id,
-		client_secret: client_secret,
-	}
+	u := "https://accounts.spotify.com/api/token"
+	data := url.Values{}
+	data.Set("grant_type", "client_credentials")
+	data.Set("client_id", client_id)
+	data.Set("client_secret", client_secret)
 
-	marshalled, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(marshalled))
+	req, err := http.NewRequest(http.MethodPost, u, strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +53,7 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
+		log.Info().Int("status", res.StatusCode).Msg("Spotify authentication failed")
 		return nil, errors.New("spotify authentication failed")
 	}
 
@@ -73,5 +68,66 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 		return nil, err
 	}
 
-	return &SpotifyClient{token: response.access_token}, nil
+	return &SpotifyClient{Token: response.AccessToken, Endpoint: "https://api.spotify.com/v1/search"}, nil
+}
+
+var spotifyMarkets = [5]string{"US", "AU", "CA", "GB", "JP"}
+
+type SpotifyTrack struct {
+	ImageUrl string
+}
+
+func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, artistName string) (*SpotifyTrack, error) {
+
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Str("track", trackName).Str("artist", artistName).Msg("Fetching Spotify data")
+	u, err := url.Parse(c.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	q := u.Query()
+	q.Set("q", "track:"+trackName+" artist:"+artistName)
+	q.Set("type", "track")
+	q.Set("market", spotifyMarkets[0])
+	q.Set("limit", "10")
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.Token)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		logger.Warn().Int("status", res.StatusCode).Msg("Spotify returned non-200 status")
+		return &SpotifyTrack{}, nil
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response TracksResponse
+	err = json.Unmarshal([]byte(body), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range response.Track.Items {
+		if strings.EqualFold(item.Name, trackName) && strings.EqualFold(item.Artists[0].Name, artistName) {
+			for _, image := range item.Album.Images {
+				if image.Height == 300 {
+					return &SpotifyTrack{ImageUrl: item.Album.Images[0].URL}, nil
+				}
+			}
+		}
+	}
+	return &SpotifyTrack{}, nil
 }
