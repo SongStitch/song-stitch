@@ -83,6 +83,8 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	spotifyClient, err := spotify.NewSpotifyClient()
 	if err != nil {
 		logger.Warn().Err(err).Msg("Error creating spotify client")
+		// Ensure the spotify client is nil to avoid any weird exceptions
+		spotifyClient = nil
 	}
 
 	var wg sync.WaitGroup
@@ -96,16 +98,12 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 		go func(trackName string, artistName string) {
 			defer wg.Done()
-			trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
-			if err != nil {
-				logger.Warn().Err(err).Msg("Error getting track info from lastfm")
-				trackInfo, err = getTrackInfoFromSpotify(ctx, spotifyClient, trackName, artistName)
-				if err != nil {
-					logger.Warn().Err(err).Msg("Error getting track info from spotify")
-					return
-				}
-			}
 
+			trackInfo, err := getTrackInfo(ctx, spotifyClient, trackName, artistName, imageSize)
+			if err != nil {
+				logger.Warn().Err(err).Msg("Error getting track info")
+				return
+			}
 			newTrack.ImageUrl = trackInfo.ImageUrl
 			newTrack.Album = trackInfo.AlbumName
 		}(track.Name, track.Artist.Name)
@@ -114,6 +112,22 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	}
 	wg.Wait()
 	return tracks, nil
+}
+
+func getTrackInfo(ctx context.Context, spotifyClient *spotify.SpotifyClient, trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+	logger := zerolog.Ctx(ctx)
+
+	trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
+	if err == nil {
+		return trackInfo, nil
+	}
+	logger.Warn().Err(err).Msg("Error getting track info from lastfm")
+	trackInfo, err = getTrackInfoFromSpotify(ctx, spotifyClient, trackName, artistName)
+	if err == nil {
+		return trackInfo, nil
+	}
+	logger.Warn().Err(err).Msg("Error getting track info from spotify")
+	return nil, constants.ErrNoImageFound
 }
 
 func getTrackInfoFromLastFm(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
