@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
-	"github.com/rs/zerolog"
 	"github.com/SongStitch/song-stitch/internal/models"
+	"github.com/rs/zerolog"
 )
 
 type SpotifyAuthResponse struct {
@@ -72,7 +73,6 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 
 var spotifyMarkets = [5]string{"US", "AU", "CA", "GB", "JP"}
 
-
 func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, artistName string, market string) (*models.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
 	u, err := url.Parse(c.Endpoint)
@@ -80,9 +80,9 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 		return nil, err
 	}
 	q := u.Query()
-	q.Set("q", "track:"+trackName+" artist:"+artistName)
+	q.Set("q", "track: "+trackName+" artist: "+artistName)
 	q.Set("type", "track")
-	q.Set("market", spotifyMarkets[0])
+	q.Set("market", market)
 	q.Set("limit", "10")
 	u.RawQuery = q.Encode()
 
@@ -115,12 +115,14 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 	}
 
 	for _, item := range response.Track.Items {
-		if strings.EqualFold(item.Name, trackName) && strings.EqualFold(item.Artists[0].Name, artistName) {
+		fmt.Println(item.Artists[0].Name, ":", artistName)
+		if strings.EqualFold(item.Artists[0].Name, artistName) {
 			for _, image := range item.Album.Images {
 				if image.Height == 300 {
 					return &models.TrackInfo{ImageUrl: image.URL, AlbumName: item.Album.Name}, nil
 				}
 			}
+			return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
 		}
 	}
 	return nil, errors.New("track not found in market")
