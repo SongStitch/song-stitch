@@ -118,7 +118,7 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 		if strings.EqualFold(item.Name, trackName) && strings.EqualFold(item.Artists[0].Name, artistName) {
 			for _, image := range item.Album.Images {
 				if image.Height == 300 {
-					return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
+					return &models.TrackInfo{ImageUrl: image.URL, AlbumName: item.Album.Name}, nil
 				}
 			}
 		}
