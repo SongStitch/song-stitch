@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
 )
@@ -77,6 +78,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	r := *result
 
 	tracks := make([]*Track, len(r.TopTracks.Tracks))
+	spotifyClient, err := spotify.NewSpotifyClient()
 
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopTracks.Tracks))
@@ -91,9 +93,21 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 			defer wg.Done()
 			trackInfo, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Err(err).Str("artistName", track.Name).Msg("Error getting image url for track")
-				return
+				zerolog.Ctx(ctx).Err(err).Str("track", track.Name).Msg("Error getting image url for track from lastfm")
+				trackInfo, err = spotifyClient.GetTrackInfo(ctx, trackName, artistName)
+				if err != nil {
+					zerolog.Ctx(ctx).Err(err).Str("track", track.Name).Msg("Error getting image url for track from spotify")
+					return
+				}
 			}
+			if trackInfo.ImageUrl == "" {
+				trackInfo, err = spotifyClient.GetTrackInfo(ctx, trackName, artistName)
+				if err != nil {
+					zerolog.Ctx(ctx).Err(err).Str("track", track.Name).Msg("Error getting image url for track from spotify")
+					return
+				}
+			}
+
 			newTrack.ImageUrl = trackInfo.ImageUrl
 			newTrack.Album = trackInfo.AlbumName
 		}(track.Name, track.Artist.Name)

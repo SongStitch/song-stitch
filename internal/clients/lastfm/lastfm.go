@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/SongStitch/song-stitch/internal/constants"
+	"github.com/SongStitch/song-stitch/internal/models"
 )
 
 type LastFMImage struct {
@@ -146,12 +147,7 @@ type GetTrackInfoResponse struct {
 	} `json:"track"`
 }
 
-type TrackInfo struct {
-	AlbumName string
-	ImageUrl  string
-}
-
-func GetTrackInfo(trackName string, artistName string, imageSize string) (*TrackInfo, error) {
+func GetTrackInfo(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
 
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
@@ -196,7 +192,7 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*Track
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return &TrackInfo{response.Track.Album.AlbumName, image.Link}, nil
+			return &models.TrackInfo{response.Track.Album.AlbumName, image.Link}, nil
 		}
 	}
 	return nil, errors.New("no image found")

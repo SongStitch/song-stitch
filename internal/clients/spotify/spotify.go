@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/SongStitch/song-stitch/internal/models"
 )
 
 type SpotifyAuthResponse struct {
@@ -53,7 +53,6 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		log.Info().Int("status", res.StatusCode).Msg("Spotify authentication failed")
 		return nil, errors.New("spotify authentication failed")
 	}
 
@@ -73,14 +72,9 @@ func NewSpotifyClient() (*SpotifyClient, error) {
 
 var spotifyMarkets = [5]string{"US", "AU", "CA", "GB", "JP"}
 
-type SpotifyTrack struct {
-	ImageUrl string
-}
 
-func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, artistName string) (*SpotifyTrack, error) {
-
+func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, artistName string, market string) (*models.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
-	logger.Info().Str("track", trackName).Str("artist", artistName).Msg("Fetching Spotify data")
 	u, err := url.Parse(c.Endpoint)
 	if err != nil {
 		return nil, err
@@ -106,7 +100,7 @@ func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, arti
 
 	if res.StatusCode != http.StatusOK {
 		logger.Warn().Int("status", res.StatusCode).Msg("Spotify returned non-200 status")
-		return &SpotifyTrack{}, nil
+		return &models.TrackInfo{}, nil
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -124,10 +118,27 @@ func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, arti
 		if strings.EqualFold(item.Name, trackName) && strings.EqualFold(item.Artists[0].Name, artistName) {
 			for _, image := range item.Album.Images {
 				if image.Height == 300 {
-					return &SpotifyTrack{ImageUrl: item.Album.Images[0].URL}, nil
+					return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
 				}
 			}
 		}
 	}
-	return &SpotifyTrack{}, nil
+	return nil, errors.New("track not found in market")
+}
+
+func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, artistName string) (*models.TrackInfo, error) {
+
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Str("track", trackName).Str("artist", artistName).Msg("Fetching Spotify data")
+	for _, market := range spotifyMarkets {
+		track, err := c.doTrackRequest(ctx, trackName, artistName, market)
+		if err != nil {
+			logger.Warn().Err(err).Str("track", trackName).Str("artist", artistName).Str("market", market).Msg("Error fetching track info in market")
+			continue
+		}
+		if track.ImageUrl != "" {
+			return track, nil
+		}
+	}
+	return nil, errors.New("track not found in any market")
 }
