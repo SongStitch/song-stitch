@@ -123,7 +123,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		img := collageElement.GetImage()
-		if img != nil {
+		if *img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
 		}
