@@ -175,7 +175,9 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 				}
 			}
 			// if no images 300x300, just return the first image
-			return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
+			if len(item.Album.Images) > 0 {
+				return &models.TrackInfo{ImageUrl: item.Album.Images[0].URL, AlbumName: item.Album.Name}, nil
+			}
 		}
 	}
 	return nil, errors.New("track not found in market")
