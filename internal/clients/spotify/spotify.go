@@ -161,6 +161,9 @@ func (c *SpotifyClient) doRequest(ctx context.Context, requestType string, query
 
 func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, artistName string, market string) (*models.TrackInfo, error) {
 	body, err := c.doRequest(ctx, "track", map[string]string{"track": trackName, "artist": artistName}, market)
+	if err != nil {
+		return nil, err
+	}
 	var response TracksResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
@@ -201,6 +204,9 @@ func (c *SpotifyClient) GetTrackInfo(ctx context.Context, trackName string, arti
 
 func (c *SpotifyClient) doAlbumRequest(ctx context.Context, albumName string, artistName string, market string) (*models.AlbumInfo, error) {
 	body, err := c.doRequest(ctx, "album", map[string]string{"album": albumName, "artist": artistName}, market)
+	if err != nil {
+		return nil, err
+	}
 	var response AlbumResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
