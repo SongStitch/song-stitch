@@ -1,12 +1,16 @@
 package spotify
 
 type TracksResponse struct {
-	Track Track `json:"tracks"`
+	SearchResult SearchResult[TrackItem] `json:"tracks"`
 }
 
-type Track struct {
+type AlbumResponse struct {
+	SearchResult SearchResult[AlbumItem] `json:"albums"`
+}
+
+type SearchResult[T any] struct {
 	Href     string `json:"href"`
-	Items    []Item `json:"items"`
+	Items    []T    `json:"items"`
 	Limit    int    `json:"limit"`
 	Next     string `json:"next"`
 	Offset   int    `json:"offset"`
@@ -14,7 +18,7 @@ type Track struct {
 	Total    int    `json:"total"`
 }
 
-type Item struct {
+type TrackItem struct {
 	Album            Album       `json:"album"`
 	Artists          []Artist    `json:"artists"`
 	AvailableMarkets []string    `json:"available_markets"`
@@ -71,4 +75,20 @@ type Image struct {
 	Height int    `json:"height"`
 	URL    string `json:"url"`
 	Width  int    `json:"width"`
+}
+
+type AlbumItem struct {
+	AlbumType            string      `json:"album_type"`
+	Artists              []Artist    `json:"artists"`
+	ExternalURLs         ExternalURL `json:"external_urls"`
+	Href                 string      `json:"href"`
+	ID                   string      `json:"id"`
+	Images               []Image     `json:"images"`
+	IsPlayable           bool        `json:"is_playable"`
+	Name                 string      `json:"name"`
+	ReleaseDate          string      `json:"release_date"`
+	ReleaseDatePrecision string      `json:"release_date_precision"`
+	TotalTracks          int         `json:"total_tracks"`
+	Type                 string      `json:"type"`
+	URI                  string      `json:"uri"`
 }

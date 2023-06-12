@@ -5,10 +5,14 @@ import (
 	"errors"
 	"image"
 	"strconv"
+	"sync"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
+	"github.com/SongStitch/song-stitch/internal/models"
+	"github.com/rs/zerolog"
 )
 
 type LastFMAlbum struct {
@@ -70,22 +74,48 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 	r := *result
 
 	albums := make([]*Album, len(r.TopAlbums.Albums))
+
+	var wg sync.WaitGroup
+	wg.Add(len(r.TopAlbums.Albums))
 	for i, album := range r.TopAlbums.Albums {
-		newAlbum := &Album{
-			Name:      album.AlbumName,
-			Artist:    album.Artist.ArtistName,
-			Playcount: album.Playcount,
-		}
-
-		for _, image := range album.Images {
-			if image.Size == imageSize {
-				newAlbum.ImageUrl = image.Link
+		go func(i int, album LastFMAlbum) {
+			defer wg.Done()
+			newAlbum := &Album{
+				Name:      album.AlbumName,
+				Artist:    album.Artist.ArtistName,
+				Playcount: album.Playcount,
 			}
-		}
-
-		albums[i] = newAlbum
+			albums[i] = newAlbum
+			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
+			if err != nil {
+				zerolog.Ctx(ctx).Warn().Err(err).Msg("error getting album info")
+				return
+			}
+			albums[i].ImageUrl = albumInfo.ImageUrl
+		}(i, album)
 	}
+	wg.Wait()
 	return albums, nil
+}
+
+func getAlbumInfo(ctx context.Context, album LastFMAlbum, imageSize string) (*models.AlbumInfo, error) {
+	logger := zerolog.Ctx(ctx)
+	for _, image := range album.Images {
+		if image.Size == imageSize && image.Link != "" {
+			return &models.AlbumInfo{ImageUrl: image.Link}, nil
+		}
+	}
+	client, err := spotify.GetSpotifyClient()
+	if err != nil {
+		logger.Error().Err(err).Msg("error getting spotify client")
+		return nil, err
+	}
+	albumInfo, err := client.GetAlbumInfo(ctx, album.AlbumName, album.Artist.ArtistName)
+	if err != nil {
+		logger.Error().Err(err).Msg("error getting album info from spotify")
+		return nil, err
+	}
+	return albumInfo, nil
 }
 
 type Album struct {
