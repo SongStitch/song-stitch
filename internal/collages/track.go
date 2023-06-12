@@ -10,8 +10,10 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
+	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
+	"github.com/SongStitch/song-stitch/internal/models"
 )
 
 type LastFMTrack struct {
@@ -75,6 +77,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 		return nil, err
 	}
 	r := *result
+	logger := zerolog.Ctx(ctx)
 
 	tracks := make([]*Track, len(r.TopTracks.Tracks))
 
@@ -89,9 +92,10 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 		go func(trackName string, artistName string) {
 			defer wg.Done()
-			trackInfo, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
+
+			trackInfo, err := getTrackInfo(ctx, trackName, artistName, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Err(err).Str("artistName", track.Name).Msg("Error getting image url for track")
+				logger.Warn().Err(err).Msg("Error getting track info")
 				return
 			}
 			newTrack.ImageUrl = trackInfo.ImageUrl
@@ -102,6 +106,54 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	}
 	wg.Wait()
 	return tracks, nil
+}
+
+func getTrackInfo(ctx context.Context, trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+	logger := zerolog.Ctx(ctx)
+
+	trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
+	if err == nil {
+		return trackInfo, nil
+	}
+	logger.Warn().Err(err).Msg("Error getting track info from lastfm")
+	trackInfo, err = getTrackInfoFromSpotify(ctx, trackName, artistName)
+	if err == nil {
+		return trackInfo, nil
+	}
+	logger.Warn().Err(err).Msg("Error getting track info from spotify")
+	return nil, constants.ErrNoImageFound
+}
+
+func getTrackInfoFromLastFm(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+	result, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, constants.ErrNoImageFound
+	}
+	if result.ImageUrl == "" {
+		return nil, constants.ErrNoImageFound
+	}
+	return result, nil
+}
+
+func getTrackInfoFromSpotify(ctx context.Context, trackName string, artistName string) (*models.TrackInfo, error) {
+	client, err := spotify.GetSpotifyClient()
+	if err != nil {
+		return nil, err
+	}
+	result, err := client.GetTrackInfo(ctx, trackName, artistName)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, constants.ErrNoImageFound
+	}
+	if result.ImageUrl == "" {
+		return nil, constants.ErrNoImageFound
+	}
+	return result, nil
 }
 
 type Track struct {

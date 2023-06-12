@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/hlog"
 
 	"github.com/SongStitch/song-stitch/internal/api"
+	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 )
 
 func getLogger() zerolog.Logger {
@@ -67,6 +68,7 @@ func RunServer() {
 		Addr:    ":8080",
 		Handler: router,
 	}
+	spotify.InitSpotifyClient(log)
 	log.Info().Msg("Starting server...")
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal().Err(err).Msg("Startup failed")

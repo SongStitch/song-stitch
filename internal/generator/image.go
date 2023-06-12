@@ -86,16 +86,20 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 	}
 }
 
-func resizeImage(ctx context.Context, img *image.Image, width uint, height uint) image.Image {
+func resizeImage(ctx context.Context, img *image.Image, width uint, height uint) *image.Image {
 	if width == 0 && height == 0 {
 		zerolog.Ctx(ctx).Info().Msg("Unable to resize image, both width and height are 0")
-		return *img
+		return img
+	} else if int(width) == (*img).Bounds().Dx() && int(height) == (*img).Bounds().Dy() {
+		return img
 	} else if height == 0 {
+
 		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
 	} else if width == 0 {
 		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
 	}
-	return resize.Resize(width, height, *img, resize.Lanczos3)
+	result := resize.Resize(width, height, *img, resize.Lanczos3)
+	return &result
 }
 
 func compressImage(collage *image.Image, quality int) (image.Image, error) {
@@ -107,7 +111,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func CreateCollage[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
@@ -115,18 +119,20 @@ func CreateCollage[T Drawable](ctx context.Context, albums []T, displayOptions D
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
-	for i, album := range albums {
+	for i, collageElement := range collageElements {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		if *album.GetImage() != nil {
-			dc.DrawImage(*album.GetImage(), x, y)
+		img := collageElement.GetImage()
+		if *img != nil {
+			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
+			dc.DrawImage(*img, x, y)
 		}
-		placeText(dc, album, displayOptions, x, y)
+		placeText(dc, collageElement, displayOptions, x, y)
 	}
 	collage := dc.Image()
 
 	if displayOptions.Resize {
-		collage = resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
+		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	if displayOptions.Compress {
