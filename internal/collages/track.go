@@ -80,12 +80,6 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	logger := zerolog.Ctx(ctx)
 
 	tracks := make([]*Track, len(r.TopTracks.Tracks))
-	spotifyClient, err := spotify.NewSpotifyClient()
-	if err != nil {
-		logger.Warn().Err(err).Msg("Error creating spotify client")
-		// Ensure the spotify client is nil to avoid any weird exceptions
-		spotifyClient = nil
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopTracks.Tracks))
@@ -99,7 +93,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 		go func(trackName string, artistName string) {
 			defer wg.Done()
 
-			trackInfo, err := getTrackInfo(ctx, spotifyClient, trackName, artistName, imageSize)
+			trackInfo, err := getTrackInfo(ctx, trackName, artistName, imageSize)
 			if err != nil {
 				logger.Warn().Err(err).Msg("Error getting track info")
 				return
@@ -114,7 +108,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 	return tracks, nil
 }
 
-func getTrackInfo(ctx context.Context, spotifyClient *spotify.SpotifyClient, trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+func getTrackInfo(ctx context.Context, trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
 
 	trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
@@ -122,7 +116,7 @@ func getTrackInfo(ctx context.Context, spotifyClient *spotify.SpotifyClient, tra
 		return trackInfo, nil
 	}
 	logger.Warn().Err(err).Msg("Error getting track info from lastfm")
-	trackInfo, err = getTrackInfoFromSpotify(ctx, spotifyClient, trackName, artistName)
+	trackInfo, err = getTrackInfoFromSpotify(ctx, trackName, artistName)
 	if err == nil {
 		return trackInfo, nil
 	}
@@ -144,7 +138,11 @@ func getTrackInfoFromLastFm(trackName string, artistName string, imageSize strin
 	return result, nil
 }
 
-func getTrackInfoFromSpotify(ctx context.Context, client *spotify.SpotifyClient, trackName string, artistName string) (*models.TrackInfo, error) {
+func getTrackInfoFromSpotify(ctx context.Context, trackName string, artistName string) (*models.TrackInfo, error) {
+	client, err := spotify.GetSpotifyClient()
+	if err != nil {
+		return nil, err
+	}
 	result, err := client.GetTrackInfo(ctx, trackName, artistName)
 	if err != nil {
 		return nil, err

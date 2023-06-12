@@ -111,7 +111,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func CreateCollage[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (image.Image, error) {
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
@@ -119,15 +119,15 @@ func CreateCollage[T Drawable](ctx context.Context, albums []T, displayOptions D
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
-	for i, album := range albums {
+	for i, collageElement := range collageElements {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		img := album.GetImage()
+		img := collageElement.GetImage()
 		if img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
 		}
-		placeText(dc, album, displayOptions, x, y)
+		placeText(dc, collageElement, displayOptions, x, y)
 	}
 	collage := dc.Image()
 

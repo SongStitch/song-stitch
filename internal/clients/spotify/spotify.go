@@ -9,7 +9,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/models"
 	"github.com/rs/zerolog"
 )
@@ -20,61 +22,105 @@ type SpotifyAuthResponse struct {
 	ExpiresIn   int    `json:"expires_in"` // seconds
 }
 
-type SpotifyClient struct {
-	Token    string
-	Endpoint string
+type Token struct {
+	AccessToken string
+	ExpiresIn   int
+	client      *http.Client
+	endpoint    string
 }
 
-func NewSpotifyClient() (*SpotifyClient, error) {
+func (t *Token) Refresh() error {
 	client_id := os.Getenv("SPOTIFY_CLIENT_ID")
 	client_secret := os.Getenv("SPOTIFY_CLIENT_SECRET")
 
 	if client_id == "" || client_secret == "" {
-		return nil, errors.New("spotify credentials not set")
+		return errors.New("spotify credentials not set")
 	}
 
-	u := "https://accounts.spotify.com/api/token"
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", client_id)
 	data.Set("client_secret", client_secret)
 
-	req, err := http.NewRequest(http.MethodPost, u, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, t.endpoint, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := t.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("spotify authentication failed")
+		return errors.New("spotify authentication failed")
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var response SpotifyAuthResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	t.AccessToken = response.AccessToken
+	t.ExpiresIn = response.ExpiresIn
+	return nil
+}
 
-	return &SpotifyClient{Token: response.AccessToken, Endpoint: "https://api.spotify.com/v1/search"}, nil
+func (t *Token) KeepAlive(log zerolog.Logger) {
+	for {
+		log.Info().Msg("refreshing spotify token...")
+		err := t.Refresh()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to refresh spotify token")
+		}
+		// Wait until 5 minutes before expiration and then refresh again
+		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
+	}
+}
+
+type SpotifyClient struct {
+	token    *Token
+	endpoint string
+	client   *http.Client
+}
+
+var spotifyClient *SpotifyClient
+
+func GetSpotifyClient() (*SpotifyClient, error) {
+	if spotifyClient == nil {
+		return nil, constants.ErrSpotifyClientNotInitialized
+	}
+	return spotifyClient, nil
+}
+
+func InitSpotifyClient(log zerolog.Logger) {
+	token := &Token{
+		client:   http.DefaultClient,
+		endpoint: "https://accounts.spotify.com/api/token",
+	}
+	err := token.Refresh()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get spotify token, not using spotify client")
+		return
+	}
+	go token.KeepAlive(log)
+	client := &SpotifyClient{token: token, endpoint: "https://api.spotify.com/v1/search", client: http.DefaultClient}
+	spotifyClient = client
 }
 
 var spotifyMarkets = [5]string{"US", "AU", "CA", "GB", "JP"}
 
 func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, artistName string, market string) (*models.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
-	u, err := url.Parse(c.Endpoint)
+	u, err := url.Parse(c.endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +135,7 @@ func (c *SpotifyClient) doTrackRequest(ctx context.Context, trackName string, ar
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.Token)
+	req.Header.Set("Authorization", "Bearer "+c.token.AccessToken)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
