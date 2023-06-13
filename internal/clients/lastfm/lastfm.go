@@ -101,7 +101,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 			}
 
 			if res.StatusCode != http.StatusOK {
-				return nil, errors.New("unexpected status code")
+				return nil, errors.New("unexpected status code: " + strconv.Itoa(res.StatusCode))
 			}
 
 			body, err := io.ReadAll(res.Body)

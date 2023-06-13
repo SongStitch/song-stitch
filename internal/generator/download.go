@@ -3,11 +3,13 @@ package generator
 import (
 	"bytes"
 	"context"
+	"errors"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -19,7 +21,7 @@ const (
 	gifFileType = ".gif"
 )
 
-func downloadImage[T Downloadable](a T) error {
+func DownloadImage[T Downloadable](a T) error {
 	url := a.GetImageUrl()
 	if len(url) == 0 {
 		// Skip album art if it doesn't exist
@@ -29,9 +31,12 @@ func downloadImage[T Downloadable](a T) error {
 	if err != nil {
 		return err
 	}
-	ioBody := resp.Body
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("unexpected status code: " + strconv.Itoa(resp.StatusCode))
+	}
 
+	ioBody := resp.Body
 	extension, err := getExtension(url)
 	if err != nil {
 		return err
@@ -73,7 +78,7 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 		// download each image in a separate goroutine
 		go func(entity *T) {
 			defer wg.Done()
-			err := downloadImage(*entity)
+			err := DownloadImage(*entity)
 			if err != nil {
 				zerolog.Ctx(ctx).Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
 			}
