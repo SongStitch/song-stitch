@@ -95,7 +95,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 			trackInfo, err := getTrackInfo(ctx, trackName, artistName, imageSize)
 			if err != nil {
-				logger.Warn().Err(err).Msg("Error getting track info")
+				logger.Error().Str("track", track.Name).Str("artist", track.Artist.Name).Err(err).Msg("Error getting track info")
 				return
 			}
 			newTrack.ImageUrl = trackInfo.ImageUrl

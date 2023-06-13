@@ -89,7 +89,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 
 	err := validate.Struct(request)
 	if err != nil {
-		logger.Error().Err(err).Msg("Error occurred parsing request")
+		logger.Warn().Err(err).Msg("Request was invalid")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -112,13 +112,15 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 
 	response, err := generateCollage(ctx, request)
 	if err != nil {
-		logger.Error().Err(err).Msg("Error occurred generating collage")
 		switch {
 		case err == constants.ErrUserNotFound:
+			logger.Warn().Err(err).Str("username", request.Username).Msg("User not found")
 			http.Error(w, "User not found", http.StatusNotFound)
 		case err == constants.ErrTooManyImages:
+			logger.Warn().Err(err).Str("method", request.Method).Int("rows", request.Rows).Int("columns", request.Columns).Msg("Too many images requested for the collage type")
 			http.Error(w, "Requested collage size is too large for the collage type", http.StatusBadRequest)
 		default:
+			logger.Error().Err(err).Msg("Error occurred generating collage")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
