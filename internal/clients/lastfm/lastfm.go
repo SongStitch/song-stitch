@@ -101,7 +101,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 			}
 
 			if res.StatusCode != http.StatusOK {
-				return nil, errors.New("unexpected status code")
+				return nil, errors.New("unexpected status code: " + strconv.Itoa(res.StatusCode))
 			}
 
 			body, err := io.ReadAll(res.Body)
@@ -192,7 +192,7 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return &models.TrackInfo{response.Track.Album.AlbumName, image.Link}, nil
+			return &models.TrackInfo{AlbumName: response.Track.Album.AlbumName, ImageUrl: image.Link}, nil
 		}
 	}
 	return nil, errors.New("no image found")

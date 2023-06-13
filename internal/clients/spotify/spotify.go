@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -149,7 +150,8 @@ func (c *SpotifyClient) doRequest(ctx context.Context, requestType string, query
 
 	if res.StatusCode != http.StatusOK {
 		logger.Warn().Int("status", res.StatusCode).Msg("Spotify returned non-200 status")
-		return nil, errors.New("spotify returned non-200 status")
+		return nil, errors.New("unexpected status code: " + strconv.Itoa(res.StatusCode))
+
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -235,7 +237,7 @@ func (c *SpotifyClient) GetAlbumInfo(ctx context.Context, albumName string, arti
 	for _, market := range spotifyMarkets {
 		album, err := c.doAlbumRequest(ctx, albumName, artistName, market)
 		if err != nil {
-			logger.Warn().Err(err).Str("album", albumName).Str("artist", artistName).Str("market", market).Msg("Error fetching track info in market")
+			logger.Warn().Err(err).Str("album", albumName).Str("artist", artistName).Str("market", market).Msg("Error fetching album info in market")
 			continue
 		}
 		if album.ImageUrl != "" {

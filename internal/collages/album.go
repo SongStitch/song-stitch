@@ -88,7 +88,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 			albums[i] = newAlbum
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Warn().Err(err).Msg("error getting album info")
+				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("error getting album info")
 				return
 			}
 			albums[i].ImageUrl = albumInfo.ImageUrl
@@ -99,7 +99,6 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 }
 
 func getAlbumInfo(ctx context.Context, album LastFMAlbum, imageSize string) (*models.AlbumInfo, error) {
-	logger := zerolog.Ctx(ctx)
 	for _, image := range album.Images {
 		if image.Size == imageSize && image.Link != "" {
 			return &models.AlbumInfo{ImageUrl: image.Link}, nil
@@ -107,12 +106,10 @@ func getAlbumInfo(ctx context.Context, album LastFMAlbum, imageSize string) (*mo
 	}
 	client, err := spotify.GetSpotifyClient()
 	if err != nil {
-		logger.Error().Err(err).Msg("error getting spotify client")
 		return nil, err
 	}
 	albumInfo, err := client.GetAlbumInfo(ctx, album.AlbumName, album.Artist.ArtistName)
 	if err != nil {
-		logger.Error().Err(err).Msg("error getting album info from spotify")
 		return nil, err
 	}
 	return albumInfo, nil
