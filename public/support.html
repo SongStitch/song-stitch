@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SongStitch</title>
+    <link rel="stylesheet" href="/public/style.css" />
+    <link rel="author" href="/humans.txt" />
+    <meta
+      name="description"
+      content="Generate an image collage of your most played albums, artists, or tracks!"
+    />
+    <meta name="keywords" content="lastfm, collage, image, music, albums" />
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="SongStitch" />
+    <meta
+      property="og:description"
+      content="Generate an image collage of your most played albums, artists, or tracks!"
+    />
+    <meta property="og:image" content="/public/logo.png" />
+    <meta property="og:url" content="https://songstitch.art/" />
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://songstitch.art/" />
+    <!-- Favicons -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/public/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/public/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/public/apple-touch-icon.png"
+    />
+    <!-- manifest -->
+    <link rel="manifest" href="/public/site.webmanifest" />
+  </head>
+  <style>
+    .form-container {
+      text-align: center;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      margin: 0 auto;
+    }
+
+    .form-container label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+    }
+
+    .form-container input[type='text'],
+    .form-container input[type='email'],
+    .form-container textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .form-container input[type='submit'] {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-container input[type='submit']:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <body>
+    <main class="main">
+      <img
+        src="/public/logo.png"
+        class="header-img"
+        alt="SongStitch Logo"
+        width="418"
+        height="100"
+      />
+      <h1>Support</h1>
+      <h3 style="text-align: center">Thank you for using SongStitch</h3>
+      <h4 style="text-align: center">
+        If you have any issues, please contact us
+      </h4>
+      <div class="form-container">
+        <form
+          action="mailto:songstitchsupport@theden.sh"
+          method="post"
+          enctype="text/plain"
+        >
+          <label style="text-align: center" for="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            placeholder="Your Name"
+          />
+          <br /><br />
+          <label style="text-align: center" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="Your Email"
+          />
+          <br /><br />
+          <label style="text-align: center" for="message">Message</label><br />
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            cols="30"
+            required
+            placeholder="Your Message"
+          ></textarea>
+          <br /><br />
+          <input type="submit" value="Submit" />
+        </form>
+      </div>
+    </main>
+  </body>
+</html>
