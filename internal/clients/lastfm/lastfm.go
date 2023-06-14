@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
@@ -43,6 +44,22 @@ func getMethodForCollageType(collageType constants.CollageType) string {
 	default:
 		return ""
 	}
+}
+
+type CleanError struct {
+	errStr string
+}
+
+func (e CleanError) Error() string {
+	return e.errStr
+}
+
+func cleanError(err error) error {
+	errStr := err.Error()
+	pattern := `(&|\?)api_key=[^&]+(&|\b)`
+	regex := regexp.MustCompile(pattern)
+	modifiedString := regex.ReplaceAllString(errStr, "$1")
+	return CleanError{errStr: modifiedString}
 }
 
 func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int, imageSize string) (*T, error) {
@@ -94,7 +111,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 				defer res.Body.Close()
 			}
 			if err != nil {
-				return nil, err
+				return nil, cleanError(err)
 			}
 
 			if res.StatusCode == http.StatusNotFound {
