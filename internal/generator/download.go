@@ -3,14 +3,12 @@ package generator
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -36,7 +34,7 @@ var (
 func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 	var err error
 	for i := 0; i < maxRetries; i++ {
-		err = DownloadImage(entity)
+		err = DownloadImage(ctx, entity)
 		if err == nil {
 			return nil
 		}
@@ -51,19 +49,23 @@ func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 	}
 	return fmt.Errorf("failed to download image after %d retries: %w", maxRetries, err)
 }
-func DownloadImage(entity Downloadable) error {
+func DownloadImage(ctx context.Context, entity Downloadable) error {
 	url := entity.GetImageUrl()
 	if len(url) == 0 {
 		// Skip album art if it doesn't exist
 		return nil
 	}
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("unexpected status code: " + strconv.Itoa(resp.StatusCode))
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	ioBody := resp.Body

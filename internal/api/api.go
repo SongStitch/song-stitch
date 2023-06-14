@@ -111,6 +111,12 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Msg("Generating collage")
 
 	response, err := generateCollage(ctx, request)
+	if ctx.Err() != nil {
+		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
+		// 499 is the http status code for client closed request
+		http.Error(w, "Context cancelled", 499)
+		return
+	}
 	if err != nil {
 		switch {
 		case err == constants.ErrUserNotFound:
@@ -128,6 +134,12 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/jpeg")
 	err = jpeg.Encode(w, response, nil)
+	if ctx.Err() != nil {
+		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
+		// 499 is the http status code for client closed request
+		http.Error(w, "Context cancelled", 499)
+		return
+	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Error occurred encoding collage")
 		http.Error(w, err.Error(), http.StatusInternalServerError)

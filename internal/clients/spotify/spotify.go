@@ -136,7 +136,7 @@ func (c *SpotifyClient) doRequest(ctx context.Context, requestType string, query
 	q.Set("limit", "10")
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
