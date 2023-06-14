@@ -54,6 +54,7 @@ func (e CleanError) Error() string {
 	return e.errStr
 }
 
+// strip sensitive information from error message
 func cleanError(err error) error {
 	errStr := err.Error()
 	pattern := `(&|\?)api_key=[^&]+(&|\b)`
@@ -111,6 +112,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 				defer res.Body.Close()
 			}
 			if err != nil {
+				// ensure sensitive information is not returned in error message
 				return nil, cleanError(err)
 			}
 
@@ -189,6 +191,7 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		// ensure sensitive information is not returned in error message
 		return nil, cleanError(err)
 	}
 	defer res.Body.Close()
