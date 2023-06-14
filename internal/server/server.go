@@ -64,6 +64,11 @@ func RunServer() {
 		http.ServeFile(w, r, "public/humans.txt")
 	})
 
+	// serve support page
+	router.HandleFunc("/support", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/support.html")
+	})
+
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: router,
