@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/jpeg"
 	"net/http"
+	"regexp"
 
 	"github.com/ggicci/httpin"
 	"github.com/go-playground/validator/v10"
@@ -15,6 +16,22 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
 )
+
+type CleanError struct {
+	errStr string
+}
+
+func (e CleanError) Error() string {
+	return e.errStr
+}
+
+func cleanError(err error) error {
+	errStr := err.Error()
+	pattern := `(&|\?)api_key=[^&]+(&|\b)`
+	regex := regexp.MustCompile(pattern)
+	modifiedString := regex.ReplaceAllString(errStr, "$1")
+	return CleanError{errStr: modifiedString}
+}
 
 type CollageRequest struct {
 	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
@@ -124,8 +141,8 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 			logger.Warn().Err(err).Str("method", request.Method).Int("rows", request.Rows).Int("columns", request.Columns).Msg("Too many images requested for the collage type")
 			http.Error(w, "Requested collage size is too large for the collage type", http.StatusBadRequest)
 		default:
-			logger.Error().Err(err).Msg("Error occurred generating collage")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			logger.Error().Err(cleanError(err)).Msg("Error occurred generating collage")
+			http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -140,7 +157,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Error occurred encoding collage")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
 		return
 	}
 }
