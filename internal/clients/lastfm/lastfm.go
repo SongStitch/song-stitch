@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
@@ -43,6 +44,23 @@ func getMethodForCollageType(collageType constants.CollageType) string {
 	default:
 		return ""
 	}
+}
+
+type CleanError struct {
+	errStr string
+}
+
+func (e CleanError) Error() string {
+	return e.errStr
+}
+
+// strip sensitive information from error message
+func cleanError(err error) error {
+	errStr := err.Error()
+	pattern := `(&|\?)api_key=[^&]+(&|\b)`
+	regex := regexp.MustCompile(pattern)
+	modifiedString := regex.ReplaceAllString(errStr, "$1")
+	return CleanError{errStr: modifiedString}
 }
 
 func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int, imageSize string) (*T, error) {
@@ -94,7 +112,8 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 				defer res.Body.Close()
 			}
 			if err != nil {
-				return nil, err
+				// ensure sensitive information is not returned in error message
+				return nil, cleanError(err)
 			}
 
 			if res.StatusCode == http.StatusNotFound {
@@ -172,7 +191,8 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		// ensure sensitive information is not returned in error message
+		return nil, cleanError(err)
 	}
 	defer res.Body.Close()
 
@@ -203,7 +223,11 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}

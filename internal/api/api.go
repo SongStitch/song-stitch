@@ -125,7 +125,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Requested collage size is too large for the collage type", http.StatusBadRequest)
 		default:
 			logger.Error().Err(err).Msg("Error occurred generating collage")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -140,7 +140,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Error occurred encoding collage")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
 		return
 	}
 }
