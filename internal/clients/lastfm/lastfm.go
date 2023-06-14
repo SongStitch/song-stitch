@@ -189,7 +189,7 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, cleanError(err)
 	}
 	defer res.Body.Close()
 
@@ -220,7 +220,11 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
