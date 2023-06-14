@@ -85,7 +85,7 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 			defer wg.Done()
 			id, err := lastfm.GetImageIdForArtist(ctx, url)
 			if err != nil {
-				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
+				zerolog.Ctx(ctx).Error().Err(err).Str("artist", artist.Name).Str("artistUrl", url).Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
