@@ -57,7 +57,7 @@ func (a *LastFMTopTracks) GetTotalFetched() int {
 	return len(a.TopTracks.Tracks)
 }
 
-func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	if count > 25 {
 		return nil, constants.ErrTooManyImages
 	}

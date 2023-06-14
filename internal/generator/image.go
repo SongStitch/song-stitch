@@ -111,7 +111,7 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
@@ -144,5 +144,5 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 			collage = collageCompressed
 		}
 	}
-	return collage, nil
+	return &collage, nil
 }

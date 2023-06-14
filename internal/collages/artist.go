@@ -49,7 +49,7 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	if count > 100 {
 		return nil, constants.ErrTooManyImages
 	}
