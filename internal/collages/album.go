@@ -55,7 +55,7 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	albums, err := getAlbums(ctx, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 			albums[i] = newAlbum
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("error getting album info")
+				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
 				return
 			}
 			albums[i].ImageUrl = albumInfo.ImageUrl

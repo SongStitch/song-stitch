@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -83,7 +84,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 
 		// We use an anonymous function here since the defer is running within a loop
 		body, err := func() ([]byte, error) {
-			req, err := http.NewRequest("GET", u.String(), nil)
+			req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 			if err != nil {
 				return nil, err
 			}
@@ -101,7 +102,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 			}
 
 			if res.StatusCode != http.StatusOK {
-				return nil, errors.New("unexpected status code: " + strconv.Itoa(res.StatusCode))
+				return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
 			}
 
 			body, err := io.ReadAll(res.Body)

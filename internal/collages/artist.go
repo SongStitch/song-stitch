@@ -49,7 +49,7 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (image.Image, error) {
+func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	if count > 100 {
 		return nil, constants.ErrTooManyImages
 	}
@@ -85,7 +85,7 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 			defer wg.Done()
 			id, err := lastfm.GetImageIdForArtist(ctx, url)
 			if err != nil {
-				zerolog.Ctx(ctx).Err(err).Str("artistName", artist.Name).Msg("Error getting image url for artist")
+				zerolog.Ctx(ctx).Error().Err(err).Str("artist", artist.Name).Str("artistUrl", url).Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id

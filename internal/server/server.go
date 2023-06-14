@@ -68,7 +68,10 @@ func RunServer() {
 		Addr:    ":8080",
 		Handler: router,
 	}
+
+	http.DefaultClient.Timeout = 10 * time.Second
 	spotify.InitSpotifyClient(log)
+
 	log.Info().Msg("Starting server...")
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal().Err(err).Msg("Startup failed")
