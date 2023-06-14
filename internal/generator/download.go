@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -21,8 +23,36 @@ const (
 	gifFileType = ".gif"
 )
 
-func DownloadImage[T Downloadable](a T) error {
-	url := a.GetImageUrl()
+const maxRetries = 3
+
+var (
+	backoffSchedule = []time.Duration{
+		200 * time.Millisecond,
+		500 * time.Millisecond,
+		1 * time.Second,
+	}
+)
+
+func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		err = DownloadImage(entity)
+		if err == nil {
+			return nil
+		}
+		zerolog.Ctx(ctx).Warn().Err(err).Str("imageUrl", entity.GetImageUrl()).Msg("Error downloading image")
+		delay := backoffSchedule[i]
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(delay):
+			continue
+		}
+	}
+	return fmt.Errorf("failed to download image after %d retries: %w", maxRetries, err)
+}
+func DownloadImage(entity Downloadable) error {
+	url := entity.GetImageUrl()
 	if len(url) == 0 {
 		// Skip album art if it doesn't exist
 		return nil
@@ -47,14 +77,14 @@ func DownloadImage[T Downloadable](a T) error {
 		if err != nil {
 			return err
 		}
-		a.SetImage(&img)
+		entity.SetImage(&img)
 		return err
 	} else if strings.ToLower(extension) == gifFileType {
 		img, err := gif.Decode(ioBody)
 		if err != nil {
 			return err
 		}
-		a.SetImage(&img)
+		entity.SetImage(&img)
 		return err
 	} else {
 		body, err := io.ReadAll(resp.Body)
@@ -62,7 +92,7 @@ func DownloadImage[T Downloadable](a T) error {
 			return err
 		}
 		img, _, err := image.Decode(bytes.NewReader(body))
-		a.SetImage(&img)
+		entity.SetImage(&img)
 		return err
 
 	}
@@ -78,9 +108,9 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 		// download each image in a separate goroutine
 		go func(entity *T) {
 			defer wg.Done()
-			err := DownloadImage(*entity)
+			err := DownloadImageWithRetry(ctx, *entity)
 			if err != nil {
-				zerolog.Ctx(ctx).Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
+				zerolog.Ctx(ctx).Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
 			}
 		}(entity)
 	}
