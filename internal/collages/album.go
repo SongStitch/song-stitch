@@ -73,9 +73,11 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 		return nil, err
 	}
 	r := *result
+	cacheCount := 0
+
+	logger := zerolog.Ctx(ctx)
 
 	albums := make([]*Album, len(r.TopAlbums.Albums))
-
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
 	for i, album := range r.TopAlbums.Albums {
@@ -93,17 +95,19 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 			imageCache := cache.GetImageUrlCache()
 			if cacheEntry, ok := imageCache.Get(newAlbum.GetIdentifier()); ok {
 				newAlbum.ImageUrl = cacheEntry.Url
+				cacheCount++
 				return
 			}
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
+				logger.Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
 				return
 			}
 			albums[i].ImageUrl = albumInfo.ImageUrl
 		}(i, album)
 	}
 	wg.Wait()
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Albums fetched from cache")
 	return albums, nil
 }
 

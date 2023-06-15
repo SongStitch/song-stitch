@@ -78,6 +78,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 		return nil, err
 	}
 	r := *result
+	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
 
 	tracks := make([]*Track, len(r.TopTracks.Tracks))
@@ -98,6 +99,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 		if cacheEntry, ok := imageCache.Get(newTrack.GetIdentifier()); ok {
 			newTrack.ImageUrl = cacheEntry.Url
 			newTrack.Album = cacheEntry.Album
+			cacheCount++
 			wg.Done()
 			continue
 		}
@@ -116,6 +118,8 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 	}
 	wg.Wait()
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Tracks fetched from cache")
+
 	return tracks, nil
 }
 
