@@ -1,6 +1,10 @@
 package generator
 
-import "image"
+import (
+	"image"
+
+	"github.com/SongStitch/song-stitch/internal/cache"
+)
 
 type Drawable interface {
 	GetImage() *image.Image
@@ -9,4 +13,6 @@ type Drawable interface {
 type Downloadable interface {
 	GetImageUrl() string
 	SetImage(*image.Image)
+	GetIdentifier() string
+	GetCacheEntry() cache.CacheEntry
 }

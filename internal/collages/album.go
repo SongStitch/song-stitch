@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/constants"
@@ -72,9 +73,11 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 		return nil, err
 	}
 	r := *result
+	cacheCount := 0
+
+	logger := zerolog.Ctx(ctx)
 
 	albums := make([]*Album, len(r.TopAlbums.Albums))
-
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
 	for i, album := range r.TopAlbums.Albums {
@@ -84,17 +87,27 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 				Name:      album.AlbumName,
 				Artist:    album.Artist.ArtistName,
 				Playcount: album.Playcount,
+				Mbid:      album.Mbid,
+				ImageSize: imageSize,
 			}
 			albums[i] = newAlbum
+
+			imageCache := cache.GetImageUrlCache()
+			if cacheEntry, ok := imageCache.Get(newAlbum.GetIdentifier()); ok {
+				newAlbum.ImageUrl = cacheEntry.Url
+				cacheCount++
+				return
+			}
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
-				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
+				logger.Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
 				return
 			}
 			albums[i].ImageUrl = albumInfo.ImageUrl
 		}(i, album)
 	}
 	wg.Wait()
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Albums fetched from cache")
 	return albums, nil
 }
 
@@ -121,6 +134,8 @@ type Album struct {
 	Playcount string
 	ImageUrl  string
 	Image     image.Image
+	Mbid      string
+	ImageSize string
 }
 
 func (a *Album) GetImageUrl() string {
@@ -129,6 +144,17 @@ func (a *Album) GetImageUrl() string {
 
 func (a *Album) SetImage(img *image.Image) {
 	a.Image = *img
+}
+
+func (a *Album) GetIdentifier() string {
+	if a.Mbid != "" {
+		return a.Mbid + a.ImageSize
+	}
+	return a.Name + a.Artist + a.ImageSize
+}
+
+func (a *Album) GetCacheEntry() cache.CacheEntry {
+	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
 func (a *Album) GetImage() *image.Image {

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/rs/zerolog"
 )
 
@@ -114,6 +115,8 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 			if err != nil {
 				zerolog.Ctx(ctx).Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
 			}
+			cache := cache.GetImageUrlCache()
+			cache.Set((*entity).GetIdentifier(), (*entity).GetCacheEntry())
 		}(entity)
 	}
 
