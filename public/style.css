@@ -158,7 +158,18 @@ h1 {
   max-width: 40vh;
   display: block;
   height: auto;
-  margin: auto;
+  display: inline;
+}
+a.img-link:active,
+a.img-link:link,
+a.img-link:visited,
+a.img-link:hover {
+  color: unset;
+  background: none;
+}
+.header-img-container {
+  text-align: center;
+  text-decoration: none;
 }
 .footer {
   text-align: center;
