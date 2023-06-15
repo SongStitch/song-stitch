@@ -90,6 +90,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 			Artist:    track.Artist.Name,
 			Playcount: track.Playcount,
 			Mbid:      track.Mbid,
+			ImageSize: imageSize,
 		}
 		tracks[i] = newTrack
 
@@ -174,6 +175,7 @@ type Track struct {
 	ImageUrl  string
 	Image     image.Image
 	Mbid      string
+	ImageSize string
 }
 
 func (t *Track) GetImageUrl() string {
@@ -190,9 +192,9 @@ func (t *Track) GetImage() *image.Image {
 
 func (t *Track) GetIdentifier() string {
 	if t.Mbid != "" {
-		return t.Mbid
+		return t.Mbid + t.ImageSize
 	}
-	return t.Name + t.Artist
+	return t.Name + t.Artist + t.ImageSize
 }
 func (t *Track) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: t.ImageUrl, Album: t.Album}

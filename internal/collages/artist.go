@@ -80,6 +80,7 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 			Name:      artist.Name,
 			Playcount: artist.Playcount,
 			Mbid:      artist.Mbid,
+			ImageSize: imageSize,
 		}
 		artists[i] = newArtist
 		imageCache := cache.GetImageUrlCache()
@@ -110,6 +111,7 @@ type Artist struct {
 	Image     image.Image
 	ImageUrl  string
 	Mbid      string
+	ImageSize string
 }
 
 func (a *Artist) GetImageUrl() string {
@@ -122,9 +124,9 @@ func (a *Artist) SetImage(img *image.Image) {
 
 func (a *Artist) GetIdentifier() string {
 	if a.Mbid != "" {
-		return a.Mbid
+		return a.Mbid + a.ImageSize
 	}
-	return a.Name
+	return a.Name + a.ImageSize
 }
 
 func (a *Artist) GetImage() *image.Image {

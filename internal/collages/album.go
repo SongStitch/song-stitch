@@ -86,6 +86,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 				Artist:    album.Artist.ArtistName,
 				Playcount: album.Playcount,
 				Mbid:      album.Mbid,
+				ImageSize: imageSize,
 			}
 			albums[i] = newAlbum
 
@@ -130,6 +131,7 @@ type Album struct {
 	ImageUrl  string
 	Image     image.Image
 	Mbid      string
+	ImageSize string
 }
 
 func (a *Album) GetImageUrl() string {
@@ -142,9 +144,9 @@ func (a *Album) SetImage(img *image.Image) {
 
 func (a *Album) GetIdentifier() string {
 	if a.Mbid != "" {
-		return a.Mbid
+		return a.Mbid + a.ImageSize
 	}
-	return a.Name + a.Artist
+	return a.Name + a.Artist + a.ImageSize
 }
 
 func (a *Album) GetCacheEntry() cache.CacheEntry {
