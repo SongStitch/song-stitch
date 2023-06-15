@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/constants"
@@ -84,8 +85,15 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 				Name:      album.AlbumName,
 				Artist:    album.Artist.ArtistName,
 				Playcount: album.Playcount,
+				Mbid:      album.Mbid,
 			}
 			albums[i] = newAlbum
+
+			imageCache := cache.GetImageUrlCache()
+			if cacheEntry, ok := imageCache.Get(newAlbum.GetIdentifier()); ok {
+				newAlbum.ImageUrl = cacheEntry.Url
+				return
+			}
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
 				zerolog.Ctx(ctx).Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
@@ -121,6 +129,7 @@ type Album struct {
 	Playcount string
 	ImageUrl  string
 	Image     image.Image
+	Mbid      string
 }
 
 func (a *Album) GetImageUrl() string {
@@ -129,6 +138,17 @@ func (a *Album) GetImageUrl() string {
 
 func (a *Album) SetImage(img *image.Image) {
 	a.Image = *img
+}
+
+func (a *Album) GetIdentifier() string {
+	if a.Mbid != "" {
+		return a.Mbid
+	}
+	return a.Name + a.Artist
+}
+
+func (a *Album) GetCacheEntry() cache.CacheEntry {
+	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
 func (a *Album) GetImage() *image.Image {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/rs/zerolog"
 
+	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
@@ -78,19 +79,26 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 		newArtist := &Artist{
 			Name:      artist.Name,
 			Playcount: artist.Playcount,
+			Mbid:      artist.Mbid,
+		}
+		artists[i] = newArtist
+		imageCache := cache.GetImageUrlCache()
+		if cacheEntry, ok := imageCache.Get(newArtist.GetIdentifier()); ok {
+			newArtist.ImageUrl = cacheEntry.Url
+			wg.Done()
+			continue
 		}
 
 		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
-		go func(url string) {
+		go func(artist LastFMArtist) {
 			defer wg.Done()
-			id, err := lastfm.GetImageIdForArtist(ctx, url)
+			id, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
 			if err != nil {
-				zerolog.Ctx(ctx).Error().Err(err).Str("artist", artist.Name).Str("artistUrl", url).Msg("Error getting image url for artist")
+				zerolog.Ctx(ctx).Error().Err(err).Str("artist", artist.Name).Str("artistUrl", artist.URL).Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
-		}(artist.URL)
-		artists[i] = newArtist
+		}(artist)
 	}
 	wg.Wait()
 	return artists, nil
@@ -101,6 +109,7 @@ type Artist struct {
 	Playcount string
 	Image     image.Image
 	ImageUrl  string
+	Mbid      string
 }
 
 func (a *Artist) GetImageUrl() string {
@@ -111,8 +120,18 @@ func (a *Artist) SetImage(img *image.Image) {
 	a.Image = *img
 }
 
+func (a *Artist) GetIdentifier() string {
+	if a.Mbid != "" {
+		return a.Mbid
+	}
+	return a.Name
+}
+
 func (a *Artist) GetImage() *image.Image {
 	return &a.Image
+}
+func (a *Artist) GetCacheEntry() cache.CacheEntry {
+	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
 func (a *Artist) GetParameters() map[string]string {
