@@ -6,20 +6,20 @@
   font-display: swap;
 }
 
-a:link {
+a.credits:link {
   color: black;
 }
 /* unvisited link */
-a:visited {
+a.credits:visited {
   color: black;
 }
 /* visited link */
-a:hover {
+a.credits:hover {
   color: #f2f2f2;
   background: black;
 }
 /* selected link */
-a:active {
+a.credits:active {
   color: #f2f2f2;
   background: black;
 }
@@ -552,5 +552,20 @@ a.lastfm-link {
 
 #fontsize-options {
   padding-left: 1em;
+  padding-top: 1em;
+}
+
+.app-link,
+a.app-link {
+  text-decoration: none;
+  font-size: 12px;
+  color: unset;
+  background-color: unset;
+  margin-top: 0;
+}
+.appstore-icon {
+  height: 50px;
+}
+.appstore-container {
   padding-top: 1em;
 }
