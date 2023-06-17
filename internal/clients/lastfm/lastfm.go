@@ -12,6 +12,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
@@ -107,10 +108,12 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 				return nil, err
 			}
 
+			start := time.Now()
 			res, err := http.DefaultClient.Do(req)
 			if res != nil {
 				defer res.Body.Close()
 			}
+			logger.Info().Dur("duration", time.Since(start)).Str("method", method).Msg("Last.fm request completed")
 			if err != nil {
 				// ensure sensitive information is not returned in error message
 				return nil, cleanError(err)

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/nfnt/resize"
@@ -112,6 +113,8 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 }
 
 func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
+	start := time.Now()
+	logger := zerolog.Ctx(ctx)
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
@@ -139,10 +142,11 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collageCompressed, err := compressImage(&collage, compressionQuality)
 		if err != nil {
 			// Skip and just serve the non-compressed image
-			zerolog.Ctx(ctx).Err(err).Msg("Unable to compress image")
+			logger.Err(err).Msg("Unable to compress image")
 		} else {
 			collage = collageCompressed
 		}
 	}
+	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
 	return &collage, nil
 }

@@ -6,6 +6,7 @@ import (
 	"image"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
@@ -80,6 +81,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 	albums := make([]*Album, len(r.TopAlbums.Albums))
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
+	start := time.Now()
 	for i, album := range r.TopAlbums.Albums {
 		go func(i int, album LastFMAlbum) {
 			defer wg.Done()
@@ -107,7 +109,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 		}(i, album)
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Albums fetched from cache")
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "album").Msg("Image URLs fetched")
 	return albums, nil
 }
 

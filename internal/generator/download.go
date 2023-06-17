@@ -103,9 +103,11 @@ func DownloadImage(ctx context.Context, entity Downloadable) error {
 
 func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 
+	logger := zerolog.Ctx(ctx)
 	var wg sync.WaitGroup
 	wg.Add(len(entities))
 
+	start := time.Now()
 	for i := range entities {
 		entity := &entities[i]
 		// download each image in a separate goroutine
@@ -113,7 +115,7 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 			defer wg.Done()
 			err := DownloadImageWithRetry(ctx, *entity)
 			if err != nil {
-				zerolog.Ctx(ctx).Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
+				logger.Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
 			}
 			cache := cache.GetImageUrlCache()
 			cache.Set((*entity).GetIdentifier(), (*entity).GetCacheEntry())
@@ -122,6 +124,7 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 
 	// wait for all downloads to finish
 	wg.Wait()
+	logger.Info().Dur("duration", time.Since(start)).Msg("Downloaded images")
 
 	return nil
 }

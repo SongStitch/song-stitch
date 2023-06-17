@@ -6,6 +6,7 @@ import (
 	"image"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 
@@ -85,6 +86,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopTracks.Tracks))
+	start := time.Now()
 	for i, track := range r.TopTracks.Tracks {
 		newTrack := &Track{
 			Name:      track.Name,
@@ -118,7 +120,7 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Tracks fetched from cache")
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "track").Msg("Image URLs fetched")
 
 	return tracks, nil
 }
