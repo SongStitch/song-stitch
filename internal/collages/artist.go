@@ -6,6 +6,7 @@ import (
 	"image"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 
@@ -77,6 +78,8 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 	artists := make([]*Artist, len(r.TopArtists.Artists))
 	var wg sync.WaitGroup
 	wg.Add(len(artists))
+
+	start := time.Now()
 	for i, artist := range r.TopArtists.Artists {
 		newArtist := &Artist{
 			Name:      artist.Name,
@@ -106,7 +109,7 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 		}(artist)
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Msg("Artists fetched from cache")
+	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "artist").Msg("Image URLs fetched")
 	return artists, nil
 }
 
