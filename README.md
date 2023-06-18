@@ -57,7 +57,7 @@ git clone git@github.com:SongStitch/song-stitch.git
 
 ## iOS Application
 
-There is also a free [SonStitch iOS app](https://apps.apple.com/au/app/songstitch/id6450189672) that you to create collages on your phone to save and share!
+There is also a free [SonStitch iOS app](https://apps.apple.com/au/app/songstitch/id6450189672) for creating collages on your phone to save and share!
 
 ## Contributors
 
