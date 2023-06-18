@@ -8,6 +8,7 @@
 
 ![Last.fm](https://img.shields.io/badge/Last.fm-%23D51007.svg?style=flat-square&logo=lastdotfm&logoColor=ffffff)
 [![Website Status](https://img.shields.io/website?style=flat-square&up_message=UP&url=https%3A%2F%2Fsongstitch.art%2F)](https://songstitch.art/)
+[![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=flat-square&logo=app-store&logoColor=white)](https://apps.apple.com/au/app/songstitch/id6450189672)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/SongStitch/song-stitch?style=flat-square)
 [![CI status](https://img.shields.io/github/actions/workflow/status/SongStitch/song-stitch/deploy.yml?branch=main&style=flat-square)](https://github.com/SongStitch/song-stitch/actions?query=branch%3Amain)
 [![License](https://img.shields.io/github/license/SongStitch/song-stitch?style=flat-square)](/LICENSE)
@@ -53,6 +54,10 @@ git clone git@github.com:SongStitch/song-stitch.git
 4. Run the application with either `docker-compose up` or `make run`. This will start the application on port `8080`.
 
 5. Go to `localhost:8080` and enjoy!
+
+## iOS Application
+
+There is also a free [SonStitch iOS app](https://apps.apple.com/au/app/songstitch/id6450189672) for creating collages on your phone to save and share!
 
 ## Contributors
 
