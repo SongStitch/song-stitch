@@ -60,7 +60,7 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 		dc.SetRGB(0, 0, 0)
 		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
 		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(parameters["track"], float64(x+10), float64(y)+textLocation, 0, 0)
+		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
 		textLocation += 3 + displayOptions.FontSize
 	}
 	if val, ok := parameters["artist"]; ok && displayOptions.ArtistName && len(val) > 0 {
