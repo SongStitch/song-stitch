@@ -67,6 +67,10 @@ function toggleLoader(isLoading) {
       );
     }
   });
+  checkCollageValue();
+  toggleAdvancedOptions(document.getElementById('advanced'));
+  toggleFontSize(document.getElementById('fontsize-checkbox'));
+  toggleImageResolution(document.getElementById('image-resolution'));
 }
 
 window.addEventListener('DOMContentLoaded', initializePage);
