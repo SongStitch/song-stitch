@@ -40,12 +40,13 @@ input[type='text'] {
   font-family: 'Poppins', avenir, Helvetica, sans-serif;
   padding: 20px;
   box-sizing: border-box;
+  padding-top: 0px;
 }
 form {
   max-width: 500px;
   padding: 20px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
   font-family: 'Poppins';
   margin: auto;
@@ -61,7 +62,7 @@ input[type='number'] {
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
-  border-radius: 4px;
+  border-radius: 10px;
   box-sizing: border-box;
   font-size: 1em;
   background-color: white;
@@ -99,7 +100,7 @@ input[type='button'] {
   padding: 14px 20px;
   margin: 8px 0;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 1em;
 }
@@ -112,7 +113,7 @@ input:focus {
 }
 label {
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1em;
 }
 h2,
 h1 {
@@ -121,6 +122,8 @@ h1 {
 }
 .subheading {
   text-align: center;
+  color: #888888;
+  margin-top: 0px;
 }
 @media (max-width: 600px) {
   body {
@@ -339,6 +342,7 @@ a.img-link:hover {
 fieldset {
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin-top: 1em;
 }
 .btn-grad-embed {
   background-image: linear-gradient(
@@ -568,4 +572,16 @@ a.app-link {
 }
 .appstore-container {
   padding-top: 1em;
+}
+.legend, .form-heading {
+  font-size: 1.2em;
+}
+.form-container {
+  display: flex;
+  align-items: center;
+}
+
+.form-container label,
+.form-container select {
+  margin-right: 1em;
 }

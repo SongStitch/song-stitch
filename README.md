@@ -1,7 +1,7 @@
 # Song Stitch
 
 <p align="center">
-  <img alt="SongStitch Logo" src="https://raw.githubusercontent.com/SongStitch/song-stitch/main/public/logo.png" width="500px"/>
+  <img alt="SongStitch Logo" src="public/songstitch_logo.png" width="500px"/>
 </p>
 
 <div align="center">
@@ -63,3 +63,4 @@ There is also a free [SonStitch iOS app](https://apps.apple.com/au/app/songstitc
 
 - [TheDen](https://github.com/TheDen)
 - [BradLewis](https://github.com/BradLewis)
+- [Meena Tharmarajah](https://www.linkedin.com/in/meenatharmarajah/)
