@@ -1,7 +1,7 @@
 # Song Stitch
 
 <p align="center">
-  <img alt="SongStitch Logo" src="public/songstitch_logo.png" width="500px"/>
+  <img alt="SongStitch Logo" src="assets/songstitch_background.png" width="500px"/>
 </p>
 
 <div align="center">
