@@ -573,7 +573,8 @@ a.app-link {
 .appstore-container {
   padding-top: 1em;
 }
-.legend, .form-heading {
+.legend,
+.form-heading {
   font-size: 1.2em;
 }
 .form-container {
