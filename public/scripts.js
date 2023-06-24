@@ -42,13 +42,6 @@ function handleFormSubmit(event) {
   submitForm(event.target);
 }
 
-function uunfocusNonemptyUsernameInput() {
-  username = document.getElementById('username');
-  if (username.value.length) {
-    username.blur();
-  }
-}
-
 /**
  * Toggle the visibility of the loader and associated buttons
  * @param {boolean} isLoading - Whether the loader should be visible
@@ -81,13 +74,21 @@ function toggleLoader(isLoading) {
 }
 
 window.addEventListener('DOMContentLoaded', initializePage);
-
 // Function to initialize the page after the DOM has been loaded
 function initializePage() {
   initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
   uunfocusNonemptyUsernameInput();
+}
+
+function uunfocusNonemptyUsernameInput() {
+  usernameInput = document.getElementById('username');
+  if (usernameInput.value.length) {
+    usernameInput.blur();
+  } else {
+    usernameInput.focus();
+  }
 }
 
 function initCheckboxValues() {
