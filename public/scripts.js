@@ -42,6 +42,13 @@ function handleFormSubmit(event) {
   submitForm(event.target);
 }
 
+function uunfocusNonemptyUsernameInput() {
+  username = document.getElementById('username');
+  if (username.value.length) {
+    username.blur();
+  }
+}
+
 /**
  * Toggle the visibility of the loader and associated buttons
  * @param {boolean} isLoading - Whether the loader should be visible
@@ -80,6 +87,7 @@ function initializePage() {
   initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
+  uunfocusNonemptyUsernameInput();
 }
 
 function initCheckboxValues() {
