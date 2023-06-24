@@ -79,10 +79,10 @@ function initializePage() {
   initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
-  uunfocusNonemptyUsernameInput();
+  unfocusNonEmptyUsernameInput();
 }
 
-function uunfocusNonemptyUsernameInput() {
+function unfocusNonEmptyUsernameInput() {
   usernameInput = document.getElementById('username');
   if (usernameInput.value.length) {
     usernameInput.blur();
