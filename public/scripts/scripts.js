@@ -74,12 +74,21 @@ function toggleLoader(isLoading) {
 }
 
 window.addEventListener('DOMContentLoaded', initializePage);
-
 // Function to initialize the page after the DOM has been loaded
 function initializePage() {
   initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
+  unfocusNonEmptyUsernameInput();
+}
+
+function unfocusNonEmptyUsernameInput() {
+  usernameInput = document.getElementById('username');
+  if (usernameInput.value.length) {
+    usernameInput.blur();
+  } else {
+    usernameInput.focus();
+  }
 }
 
 function initCheckboxValues() {
