@@ -7,7 +7,7 @@ mod:
 
 lint:
 	gofmt -s -w cmd/ internal/
-	prettier -w public/*{.js,.html,.css}
+	prettier -w public/**/*{.js,.html,.css}
 	hadolint Dockerfile
 
 run:
