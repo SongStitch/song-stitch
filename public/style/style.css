@@ -103,6 +103,7 @@ select {
 input[type='submit'],
 input[type='button'] {
   font-family: 'Poppins';
+  font-weight: bold;
 }
 input[type='submit'],
 input[type='button'] {
