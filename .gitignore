@@ -23,3 +23,5 @@ bin/
 go.work
 .env
 *.prof
+
+.DS_Store

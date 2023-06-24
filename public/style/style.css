@@ -1,9 +1,21 @@
 @font-face {
   font-family: 'Poppins';
-  src: url('/public/poppins-semibold.woff2') format('woff2'),
-    url('/public/poppins-semibold.woff') format('woff'),
-    url('/public/poppins-semibold.ttf') format('truetype');
+  src: url('/public/fonts/poppins-semibold.woff2') format('woff2'),
+    url('/public/fonts/poppins-semibold.woff') format('woff'),
+    url('/public/fonts/poppins-semibold.ttf') format('truetype');
   font-display: swap;
+  font-weight: bold;
+  font-style: bold;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('/public/fonts/poppins-regular.woff2') format('woff2'),
+    url('/public/fonts/poppins-regular.woff') format('woff'),
+    url('/public/fonts/poppins-regular.ttf') format('truetype');
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
 }
 
 a.credits:link {
@@ -91,6 +103,7 @@ select {
 input[type='submit'],
 input[type='button'] {
   font-family: 'Poppins';
+  font-weight: bold;
 }
 input[type='submit'],
 input[type='button'] {
@@ -122,7 +135,6 @@ h1 {
 }
 .subheading {
   text-align: center;
-  color: #888888;
   margin-top: 0px;
 }
 @media (max-width: 600px) {
@@ -576,6 +588,7 @@ a.app-link {
 .legend,
 .form-heading {
   font-size: 1.2em;
+  font-weight: bold;
 }
 .form-container {
   display: flex;
