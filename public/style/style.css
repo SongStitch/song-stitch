@@ -47,7 +47,6 @@ html {
     radial-gradient(circle at top left, #f1f1f1 5%, transparent 6%),
     radial-gradient(circle at top right, #f1f1f1 5%, transparent 6%);
   background-size: 1em 1em;
-  background-color: #ffffff;
 }
 body,
 input[type='text'] {
