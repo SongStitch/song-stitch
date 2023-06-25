@@ -5,7 +5,7 @@
     url('/public/fonts/poppins-semibold.ttf') format('truetype');
   font-display: swap;
   font-weight: bold;
-  font-style: bold;
+  font-style: normal;
 }
 
 @font-face {
@@ -41,8 +41,12 @@ a.gh-link {
 }
 html {
   background-color: #ffffff;
-  background-image: radial-gradient(#f2f2f2 2px, #ffffff 2px);
-  background-size: 40px 40px;
+  background: radial-gradient(circle, #f1f1f1 10%, transparent 11%),
+    radial-gradient(circle at bottom left, #f1f1f1 5%, transparent 6%),
+    radial-gradient(circle at bottom right, #f1f1f1 5%, transparent 6%),
+    radial-gradient(circle at top left, #f1f1f1 5%, transparent 6%),
+    radial-gradient(circle at top right, #f1f1f1 5%, transparent 6%);
+  background-size: 1em 1em;
 }
 body,
 input[type='text'] {
@@ -86,9 +90,6 @@ input[type='number'] {
   border: 2px solid transparent;
   box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
   transition: all 0.1s ease 0s;
-  :focus {
-    border: 2px solid rgb(124, 138, 255);
-  }
 }
 input[type='text'],
 select {
@@ -594,7 +595,6 @@ a.app-link {
   display: flex;
   align-items: center;
 }
-
 .form-container label,
 .form-container select {
   margin-right: 1em;
