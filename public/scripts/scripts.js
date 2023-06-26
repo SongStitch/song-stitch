@@ -1,4 +1,14 @@
-window.addEventListener('pageshow', () => toggleLoader(false));
+function initState() {
+  toggleLoader();
+  ['artist', 'album', 'track', 'playcount'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = element.checked;
+    }
+  });
+  document.getElementById('compress').value = '';
+}
+window.addEventListener('pageshow', initState);
 
 const EXCLUDED_FIELDS = [
   'fieldset',
@@ -76,7 +86,6 @@ function toggleLoader(isLoading) {
 window.addEventListener('DOMContentLoaded', initializePage);
 // Function to initialize the page after the DOM has been loaded
 function initializePage() {
-  initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
   unfocusNonEmptyUsernameInput();
@@ -89,16 +98,6 @@ function unfocusNonEmptyUsernameInput() {
   } else {
     usernameInput.focus();
   }
-}
-
-function initCheckboxValues() {
-  ['artist', 'album', 'playcount'].forEach((id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.value = 'true';
-    }
-  });
-  document.getElementById('compress').value = '';
 }
 
 function randomizeCredits() {
