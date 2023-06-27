@@ -3,7 +3,7 @@ function initState() {
   ['artist', 'album', 'track', 'playcount'].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.value = element.checked;
+      updateValue(element);
     }
   });
   document.getElementById('compress').value = '';
@@ -435,28 +435,26 @@ function setInputValues(max) {
   }
 }
 
-function checkboxTrigger(type, display, checked, value) {
+function setCheckboxVisibility(type, display, checked, value) {
   query = `#fieldset > div.checkbox-wrapper.${type}-checkbox`;
   document.querySelector(query).style.display = display;
-  checkboxElem = document.getElementById('track');
-  checkboxElem.value = value;
-  checkboxElem.checked = checked;
 }
 
 function checkCollageValue() {
   var selectBox = document.getElementById('method');
   var selectedValue = selectBox.options[selectBox.selectedIndex].value;
   if (selectedValue === 'artist') {
-    checkboxTrigger('album', 'none', 'false', '');
+    setCheckboxVisibility('album', 'none');
     setInputValues(maxForArtist);
-    checkboxTrigger('track', 'none', false, '');
+    setCheckboxVisibility('track', 'none');
   } else if (selectedValue === 'track') {
-    checkboxTrigger('album', 'block', true, true);
+    setCheckboxVisibility('album', 'block');
     setInputValues(maxForTrack);
-    checkboxTrigger('track', 'block', true, true);
+    setCheckboxVisibility('track', 'block');
   } else {
-    checkboxTrigger('album', 'block', true, true);
+    console.log('here');
+    setCheckboxVisibility('album', 'block');
     setInputValues(maxForAlbum);
-    checkboxTrigger('track', 'none', false, '');
+    setCheckboxVisibility('track', 'none');
   }
 }
