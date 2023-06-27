@@ -176,8 +176,10 @@ function embedUrl() {
   const url = `${action}?${query}`;
 
   const embedData = `<img class="songstitch-collage" src="${url}">`;
+  const embedUrl = `<a class="href-links" href="${url}">Share this link to the collage</a>`;
 
   document.getElementById('embedUrl').textContent = embedData;
+  document.getElementById('imageUrl').innerHTML = embedUrl;
   displayModal();
 
   return false; // prevent the form from submitting
@@ -452,7 +454,6 @@ function checkCollageValue() {
     setInputValues(maxForTrack);
     setCheckboxVisibility('track', 'block');
   } else {
-    console.log('here');
     setCheckboxVisibility('album', 'block');
     setInputValues(maxForAlbum);
     setCheckboxVisibility('track', 'none');
