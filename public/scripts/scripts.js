@@ -1,4 +1,14 @@
-window.addEventListener('pageshow', () => toggleLoader(false));
+function initState() {
+  toggleLoader();
+  ['artist', 'album', 'track', 'playcount'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      updateValue(element);
+    }
+  });
+  document.getElementById('compress').value = '';
+}
+window.addEventListener('pageshow', initState);
 
 const EXCLUDED_FIELDS = [
   'fieldset',
@@ -76,7 +86,6 @@ function toggleLoader(isLoading) {
 window.addEventListener('DOMContentLoaded', initializePage);
 // Function to initialize the page after the DOM has been loaded
 function initializePage() {
-  initCheckboxValues();
   randomizeCredits();
   handleLocalStorage();
   unfocusNonEmptyUsernameInput();
@@ -89,16 +98,6 @@ function unfocusNonEmptyUsernameInput() {
   } else {
     usernameInput.focus();
   }
-}
-
-function initCheckboxValues() {
-  ['artist', 'album', 'playcount'].forEach((id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.value = 'true';
-    }
-  });
-  document.getElementById('compress').value = '';
 }
 
 function randomizeCredits() {
@@ -436,28 +435,26 @@ function setInputValues(max) {
   }
 }
 
-function checkboxTrigger(type, display, checked, value) {
+function setCheckboxVisibility(type, display, checked, value) {
   query = `#fieldset > div.checkbox-wrapper.${type}-checkbox`;
   document.querySelector(query).style.display = display;
-  checkboxElem = document.getElementById('track');
-  checkboxElem.value = value;
-  checkboxElem.checked = checked;
 }
 
 function checkCollageValue() {
   var selectBox = document.getElementById('method');
   var selectedValue = selectBox.options[selectBox.selectedIndex].value;
   if (selectedValue === 'artist') {
-    checkboxTrigger('album', 'none', 'false', '');
+    setCheckboxVisibility('album', 'none');
     setInputValues(maxForArtist);
-    checkboxTrigger('track', 'none', false, '');
+    setCheckboxVisibility('track', 'none');
   } else if (selectedValue === 'track') {
-    checkboxTrigger('album', 'block', true, true);
+    setCheckboxVisibility('album', 'block');
     setInputValues(maxForTrack);
-    checkboxTrigger('track', 'block', true, true);
+    setCheckboxVisibility('track', 'block');
   } else {
-    checkboxTrigger('album', 'block', true, true);
+    console.log('here');
+    setCheckboxVisibility('album', 'block');
     setInputValues(maxForAlbum);
-    checkboxTrigger('track', 'none', false, '');
+    setCheckboxVisibility('track', 'none');
   }
 }
