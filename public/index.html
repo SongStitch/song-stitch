@@ -276,21 +276,20 @@
           name="embed"
           class="btn-grad-embed"
           type="button"
-          value="embed"
+          value="share/embed"
           onclick="embedUrl()"
         />
       </form>
       <div id="modal" class="modal">
         <div class="modal-content">
+          <div class="modal-text" id="imageUrl"></div>
           <p class="modal-text">
-            Use this HTML code to embed your configured collage. The latest
+            Or use this HTML code to embed your configured collage. The latest
             collage will automatically be shown whenever viewed! 🎉
           </p>
           <span class="close">&times;</span>
           <div class="highlight">
-            <pre
-              class="chroma"
-            ><code id="embedUrl" class="language-python"></code></pre>
+            <pre class="chroma"><code id="embedUrl"></code></pre>
           </div>
         </div>
       </div>
@@ -313,7 +312,7 @@
         Made with ❤️ by
         <span
           ><a
-            class="credits"
+            class="href-links"
             href="https://github.com/theden"
             target="_blank"
             rel="noopener"
@@ -322,7 +321,7 @@
         >
         <span
           ><a
-            class="credits"
+            class="href-links"
             href="https://github.com/BradLewis"
             target="_blank"
             rel="noopener"
