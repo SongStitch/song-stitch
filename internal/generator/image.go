@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+
 	"image"
 	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
@@ -33,6 +35,7 @@ type DisplayOptions struct {
 	Columns        int
 	ImageDimension int
 	Webp           bool
+	TextLocation   constants.TextLocation
 }
 
 const (
@@ -58,37 +61,55 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x int, y int) {
+func getTextDrawLocation(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) (float64, float64) {
+	width, height := dc.MeasureString(text)
+	imageWidth := float64(300 - 20)
+	imageHeight := float64(300 - 20)
+	textLength, _ := dc.MeasureString(text)
+	fmt.Println(displayOptions.TextLocation)
+	switch displayOptions.TextLocation {
+	case constants.TOP_LEFT:
+		return x, y
+	case constants.TOP_CENTRE:
+		return x + imageWidth/2 - width/2, y
+	case constants.TOP_RIGHT:
+		return x + imageWidth - textLength, y
+	case constants.BOTTOM_LEFT:
+		return x, y + imageHeight - height
+	case constants.BOTTOM_CENTRE:
+		return x + imageWidth/2 - width/2, y + imageHeight - height
+	case constants.BOTTOM_RIGHT:
+		return x + imageWidth - width, y + imageHeight - height
+	default:
+		return x, y
+	}
+}
+
+func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) float64 {
+	x, y = getTextDrawLocation(dc, text, x, y, displayOptions)
+	dc.SetRGB(0, 0, 0)
+	dc.DrawStringAnchored(text, (x)+1, (y)+1, 0, 0)
+	dc.SetRGB(1, 1, 1)
+	dc.DrawStringAnchored(text, (x), (y), 0, 0)
+	return (3 + displayOptions.FontSize)
+}
+
+func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x float64, y float64) {
 	parameters := drawable.GetParameters()
-	textLocation := 8 + displayOptions.FontSize
+	textLocation := (8 + displayOptions.FontSize)
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		// Add shadow
+		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
 	}
 	if val, ok := parameters["artist"]; ok && displayOptions.ArtistName && len(val) > 0 {
 		// Add shadow
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
 	}
 	if val, ok := parameters["album"]; ok && displayOptions.AlbumName && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
 	}
 	if val, ok := parameters["playcount"]; ok && displayOptions.PlayCount && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", val), float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", val), float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
 	}
 }
 
@@ -140,7 +161,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
 		}
-		placeText(dc, collageElement, displayOptions, x, y)
+		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
 	collage := dc.Image()
 
