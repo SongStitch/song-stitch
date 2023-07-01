@@ -8,5 +8,11 @@ export default defineConfig({
     minify: false,
     outDir: '../public',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: './index.html',
+        support: './support.html',
+      },
+    },
   },
 });
