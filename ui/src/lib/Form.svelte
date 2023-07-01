@@ -4,6 +4,18 @@
   import { validator } from '@felte/validator-zod';
   import { z } from 'zod';
 
+  let method = 'album';
+  $: showTrack = method == 'track';
+  $: showAlbum = method != 'artist';
+  $: maxRows = method == 'track' ? 5 : method == 'artist' ? 10 : 15;
+  $: maxColumns = method == 'track' ? 5 : method == 'artist' ? 10 : 15;
+
+  let showAdvancedOptions = false;
+  let showTextSize = false;
+  let showImageResolution = false;
+
+  let mainTainAspectRatio = false;
+
   const schema = z.object({
     username: z
       .string()
@@ -18,6 +30,37 @@
     artist: z.boolean().optional(),
     album: z.boolean().optional(),
     playcount: z.boolean().optional(),
+    rows: z
+      .number()
+      .int()
+      .refine((val) => val > 0 && val <= maxRows, {
+        message: `Must be greater than 0 and less than or equal to ${maxRows}`,
+      }),
+    columns: z
+      .number()
+      .int()
+      .refine((val) => val > 0 && val <= maxColumns, {
+        message: `Must be greater than 0 and less than or equal to ${maxColumns}`,
+      }),
+    advancedOptions: z.boolean().optional(),
+    showTextSize: z.boolean().optional(),
+    showImageResolution: z.boolean().optional(),
+    lossyCompression: z.boolean().optional(),
+    pixelWidth: z
+      .number()
+      .int()
+      .refine((val) => val > 0 && val <= 3000, {
+        message: 'Must be greater than 0 and less than or equal to 3000',
+      })
+      .optional(),
+    pixelHeight: z
+      .number()
+      .int()
+      .refine((val) => val > 0 && val <= 3000, {
+        message: 'Must be greater than 0 and less than or equal to 3000',
+      })
+      .optional(),
+    textSize: z.string().optional(),
   });
 
   const { form, errors } = createForm<z.infer<typeof schema>>({
@@ -33,14 +76,25 @@
       if (showAlbum) params.append('album', values.album.toString());
       params.append('playcount', values.playcount.toString());
 
+      if (values.advancedOptions) {
+        if (values.showTextSize) {
+          params.append('textSize', values.textSize);
+        }
+        if (values.lossyCompression) {
+          params.append('compress', values.lossyCompression.toString());
+        }
+        if (values.showImageResolution) {
+          if (values.pixelWidth && values.pixelHeight) {
+            params.append('height', values.pixelHeight.toString());
+            params.append('width', values.pixelWidth.toString());
+          }
+        }
+      }
+
       const url = `/collage?${params.toString()}`;
-      // window.open(url, '_self');
+      window.open(url, '_self');
     },
   });
-
-  let method = 'album';
-  $: showTrack = method == 'track';
-  $: showAlbum = method != 'artist';
 </script>
 
 <form use:form on:submit|preventDefault>
@@ -80,6 +134,118 @@
     <Checkbox text="Display Artist Name" visible={true} name="artist" />
     <Checkbox text="Display Album Name" visible={showAlbum} name="album" />
     <Checkbox text="Display Playcount" visible={true} name="playcount" />
+    <br />
+    <label for="rows"
+      >Number of Rows
+      <span class="nonbold maxvalues">(max. {maxRows})</span></label
+    ><br />
+    <input
+      inputmode="decimal"
+      type="number"
+      pattern="\d*"
+      name="rows"
+      min="1"
+      max={maxRows}
+      value="3"
+    />
+    {#if $errors.rows}
+      <p class="error">{$errors.rows[0]}</p>
+    {/if}
+    <br />
+    <label inputmode="decimal" for="columns"
+      >Number of Columns
+      <span class="nonbold maxvalues">(max. {maxColumns})</span></label
+    ><br />
+    <input
+      type="number"
+      pattern="\d*"
+      id="columns"
+      name="columns"
+      min="1"
+      max={maxColumns}
+      value="3"
+    />
+    {#if $errors.columns}
+      <p class="error">{$errors.columns[0]}</p>
+    {/if}
+    <br />
+    <Checkbox
+      text="Show Advanced Options"
+      visible={true}
+      name="advancedOptions"
+      bind:checked={showAdvancedOptions}
+    />
+    {#if showAdvancedOptions}
+      <div class="advanced-options">
+        <Checkbox
+          text="Show Text Font Size"
+          visible={showAdvancedOptions}
+          name="showTextSize"
+          bind:checked={showTextSize}
+        />
+        {#if showTextSize}
+          <div id="fontsize-options">
+            <label class="advanced-option-label" for="fontsize"
+              >Text Font Size</label
+            ><br />
+            <select name="textSize">
+              <option selected value={12}>Small (default)</option>
+              <option value={15}>Medium</option>
+              <option value={18}>Large</option></select
+            ><br />
+          </div>
+        {/if}
+        <Checkbox
+          text="Set Image Resolution"
+          visible={showAdvancedOptions}
+          name="showImageResolution"
+          bind:checked={showImageResolution}
+        />
+        {#if showImageResolution}
+          <div id="image-resolution-options">
+            <label class="advanced-option-label" for="height"
+              >Generated Image Height
+              <span class="nonbold">(in pixels)</span></label
+            >
+            <br />
+            <input
+              inputmode="decimal"
+              type="number"
+              pattern="\d*"
+              name="pixelHeight"
+              min="10"
+              max="3000"
+            />
+            <br />
+            <label class="advanced-option-label" for="width"
+              >Generated Image Width
+              <span class="nonbold">(in pixels)</span></label
+            >
+            <br />
+            <input
+              inputmode="decimal"
+              type="number"
+              pattern="\d*"
+              name="pixelWidth"
+              min="10"
+              max="3000"
+            />
+            <br />
+            <Checkbox
+              text="Maintain Aspect Ratio"
+              visible={true}
+              name="aspectRatio"
+            />
+          </div>
+        {/if}
+        <Checkbox
+          text="Lossy Compress Image"
+          visible={showAdvancedOptions}
+          name="lossyCompression"
+          checked={mainTainAspectRatio}
+        />
+      </div>
+    {/if}
   </fieldset>
   <div class="loader-container">
     <div class="loader" />
@@ -97,7 +263,6 @@
     font-family: 'Poppins';
     margin: auto;
   }
-  #username,
   input[type='text'],
   select,
   input[type='number'] {
@@ -131,13 +296,11 @@
     appearance: none !important;
     padding-right: 2rem !important;
   }
-  input[type='submit'],
-  input[type='button'] {
+  input[type='submit'] {
     font-family: 'Poppins';
     font-weight: bold;
   }
-  input[type='submit'],
-  input[type='button'] {
+  input[type='submit'] {
     width: 100%;
     background-color: #4caf50;
     color: white;
@@ -172,5 +335,28 @@
     -webkit-appearance: none !important;
     appearance: none !important;
     padding-right: 2rem !important;
+  }
+  .advanced-options {
+    color: darkgrey;
+    padding-top: 1em;
+    margin-left: 1em;
+    padding-bottom: 1em;
+  }
+  #image-resolution-options {
+    margin-left: 1em;
+    padding-bottom: 1em;
+    padding-top: 1em;
+  }
+  .advanced-option-label {
+    color: black;
+    font-size: 1em;
+    font-weight: bold;
+  }
+  .advanced-option-label span {
+    color: darkgrey;
+  }
+  #fontsize-options {
+    padding-left: 1em;
+    padding-top: 1em;
   }
 </style>
