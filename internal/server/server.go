@@ -45,14 +45,11 @@ func RunServer() {
 		ThenFunc(api.Collage)
 
 	router := http.NewServeMux()
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "public/index.html")
-	})
 	router.Handle("/collage", h)
 
 	// serve files from public folder
-	fs := http.FileServer(http.Dir("public"))
-	router.Handle("/public/", http.StripPrefix("/public/", fs))
+	fs := http.FileServer(http.Dir("./public"))
+	router.Handle("/", fs)
 
 	// serve robots.txt file
 	router.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {

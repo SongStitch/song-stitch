@@ -11,6 +11,7 @@ lint:
 	hadolint Dockerfile
 
 run:
+	cd ui && npm run build && cd ..
 	go run cmd/*.go
 
 run-debug:
