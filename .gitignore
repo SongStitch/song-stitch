@@ -25,3 +25,5 @@ go.work
 *.prof
 
 .DS_Store
+
+public/
