@@ -3,12 +3,14 @@
   export let checked: boolean = true;
   export let text: string;
   export let name: string;
+
+  $: color = checked ? 'black' : 'darkgrey';
 </script>
 
 {#if visible}
   <div class="checkbox-wrapper">
     <input bind:checked type="checkbox" class="switch" {name} />
-    <label for="track">{text}</label>
+    <label style="color: {color};" for="track">{text}</label>
   </div>
 {/if}
 
@@ -126,10 +128,6 @@
       input[type='checkbox'].switch:disabled:not(:checked):after {
       opacity: 0.6;
     }
-  }
-  label {
-    font-weight: bold;
-    font-size: 1em;
   }
   .checkbox-wrapper * {
     box-sizing: inherit;
