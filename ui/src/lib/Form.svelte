@@ -1,17 +1,32 @@
 <script lang="ts">
   import Checkbox from './Checkbox.svelte';
+
   let username = '';
   let method = 'album';
+
+  let displayTrackChecked = true;
+  let displayArtistChecked = true;
+  let displayAlbumChecked = true;
+  let displayPlaycountChecked = true;
 
   $: showTrack = method == 'track';
   $: showAlbum = method != 'artist';
 
-  function collageTypeChanged() {
-    console.log(method);
-  }
+  const handleSubmit = () => {
+    const params = new URLSearchParams();
+    params.append('username', username);
+    params.append('method', method);
+    if (showTrack) params.append('track', displayTrackChecked.toString());
+    params.append('artist', displayArtistChecked.toString());
+    if (showAlbum) params.append('album', displayAlbumChecked.toString());
+    params.append('playcount', displayPlaycountChecked.toString());
+
+    const url = `/collage?${params.toString()}`;
+    window.open(url, '_self');
+  };
 </script>
 
-<form action="/collage" method="get" id="form">
+<form id="form" on:submit|preventDefault={handleSubmit}>
   <label class="form-heading" for="username">Generate a collage for</label>
   <br />
   <input
@@ -27,18 +42,13 @@
   />
   <br />
   <label class="form-heading" for="method">With</label><br />
-  <select
-    name="method"
-    id="method"
-    bind:value={method}
-    on:change={collageTypeChanged}
-  >
+  <select name="method" id="method" bind:value={method}>
     <option value="album">Top Albums</option>
     <option value="artist">Top Artists</option>
     <option value="track">Top Tracks</option></select
   ><br />
   <label class="form-heading" for="period">For the time period</label><br />
-  <select name="period" id="period" on:change={collageTypeChanged}>
+  <select name="period" id="period">
     <option value="7day">7 Days</option>
     <option value="1month">1 Month</option>
     <option value="3month">3 Months</option>
@@ -48,11 +58,31 @@
   ><br />
   <fieldset id="fieldset">
     <legend class="legend">Collage Options</legend>
-    <Checkbox name="Track" visible={showTrack} />
-    <Checkbox name="Artist" visible={true} />
-    <Checkbox name="Album" visible={showAlbum} />
-    <Checkbox name="Playcount" visible={true} />
+    <Checkbox
+      text="Display Track Name"
+      visible={showTrack}
+      bind:checked={displayTrackChecked}
+    />
+    <Checkbox
+      text="Display Artist Name"
+      visible={true}
+      bind:checked={displayArtistChecked}
+    />
+    <Checkbox
+      text="Display Album Name"
+      visible={showAlbum}
+      bind:checked={displayAlbumChecked}
+    />
+    <Checkbox
+      text="Display Playcount"
+      visible={true}
+      bind:checked={displayPlaycountChecked}
+    />
   </fieldset>
+  <div class="loader-container">
+    <div class="loader" />
+  </div>
+  <input name="submit" class="btn-grad" type="submit" value="Generate" />
 </form>
 
 <style>
@@ -126,5 +156,10 @@
   .form-heading {
     font-size: 1.2em;
     font-weight: bold;
+  }
+  fieldset {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 1em;
   }
 </style>
