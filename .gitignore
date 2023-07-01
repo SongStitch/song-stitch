@@ -27,3 +27,4 @@ go.work
 .DS_Store
 
 public/
+!ui/public
