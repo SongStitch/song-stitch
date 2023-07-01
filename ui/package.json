@@ -22,5 +22,10 @@
     "typescript": "^5.0.2",
     "vite": "^4.3.2",
     "watch": "^0.13.0"
+  },
+  "dependencies": {
+    "@felte/validator-zod": "^1.0.16",
+    "felte": "^1.2.11",
+    "zod": "^3.21.4"
   }
 }
