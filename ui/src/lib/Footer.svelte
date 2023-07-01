@@ -1,5 +1,5 @@
 <script lang="ts">
-  import appstore_icon from '../assets/appstore_icon.png';
+  import appstore_icon from '../assets/images/appstore_icon.png';
   let random = Math.random();
   let names = ['BradLewis', 'TheDen'];
   if (random > 0.5) {
