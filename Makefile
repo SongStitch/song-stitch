@@ -5,13 +5,15 @@ mod:
 	go mod tidy
 	go mod vendor
 
-lint:
+lint: build-ui
 	gofmt -s -w cmd/ internal/
-	prettier -w public/**/*{.js,.html,.css}
+	(cd ui && npm run format)
 	hadolint Dockerfile
 
-run:
-	cd ui && npm run build && cd ..
+build-ui:
+	(cd ui && npm install && npm run build)
+
+run: build-ui
 	go run cmd/*.go
 
 run-debug:

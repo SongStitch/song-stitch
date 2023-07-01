@@ -1,8 +1,8 @@
 FROM node:18-alpine AS node-builder
 
-WORKDIR /app
-COPY ui ./ui
-RUN cd ui && npm install && npm run build
+WORKDIR /app/ui
+COPY ui ./
+RUN npm install && npm run build
 
 FROM golang:1.20 AS builder
 

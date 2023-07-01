@@ -1,17 +1,20 @@
 <script lang="ts">
   export let visible = true;
   export let checked = true;
-  export let name = '';
+  export let text = '';
 </script>
 
 {#if visible}
   <div class="checkbox-wrapper">
-    <input {checked} type="checkbox" class="switch" />
-    <label for="track">Display {name} Name</label>
+    <input bind:checked type="checkbox" class="switch" />
+    <label for="track">{text}</label>
   </div>
 {/if}
 
 <style>
+  .checkbox-wrapper {
+    padding-top: 1em;
+  }
   @supports (-webkit-appearance: none) or (-moz-appearance: none) {
     .checkbox-wrapper input[type='checkbox'] {
       --active: #275efe;
@@ -112,7 +115,7 @@
       width: 17px;
       height: 17px;
       background: var(--ab, var(--border));
-      transform: translateX(var(--x, 0));
+      transform: translatex(var(--x, 0));
     }
     .checkbox-wrapper input[type='checkbox'].switch:checked {
       --ab: var(--active-inner);
@@ -126,5 +129,22 @@
   label {
     font-weight: bold;
     font-size: 1em;
+  }
+  .checkbox-wrapper * {
+    box-sizing: inherit;
+  }
+  .checkbox-wrapper *:before,
+  .checkbox-wrapper *:after {
+    box-sizing: inherit;
+  }
+  .checkbox-wrapper * {
+    box-sizing: inherit;
+  }
+  .checkbox-wrapper *:before,
+  .checkbox-wrapper *:after {
+    box-sizing: inherit;
+  }
+  .checkbox-wrapper {
+    padding-top: 1em;
   }
 </style>

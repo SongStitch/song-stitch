@@ -8,17 +8,19 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "watch": "watch 'npm run build' ./src"
+    "watch": "watch 'npm run build' ./src",
+    "format": "prettier --write \"**/*.{html,js,ts,svelte}\""
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
     "@tsconfig/svelte": "^4.0.1",
+    "prettier": "^2.8.8",
+    "prettier-plugin-svelte": "^2.10.1",
     "svelte": "^3.57.0",
     "svelte-check": "^2.10.3",
     "tslib": "^2.5.0",
     "typescript": "^5.0.2",
     "vite": "^4.3.2",
-    "watch": "^1.0.2"
-  },
-  "dependencies": {}
+    "watch": "^0.13.0"
+  }
 }
