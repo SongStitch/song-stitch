@@ -1,12 +1,13 @@
 <script lang="ts">
-  export let visible = true;
-  export let checked = true;
-  export let text = '';
+  export let visible: boolean = true;
+  export let checked: boolean = true;
+  export let text: string;
+  export let name: string;
 </script>
 
 {#if visible}
   <div class="checkbox-wrapper">
-    <input bind:checked type="checkbox" class="switch" />
+    <input bind:checked type="checkbox" class="switch" {name} />
     <label for="track">{text}</label>
   </div>
 {/if}
