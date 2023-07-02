@@ -2,6 +2,7 @@
   import Checkbox from './components/Checkbox.svelte';
   import { createForm } from 'felte';
   import { validator } from '@felte/validator-zod';
+  import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
   import NumberInput from './components/NumberInput.svelte';
 
@@ -44,7 +45,7 @@
   });
 
   const { form, errors } = createForm<z.infer<typeof schema>>({
-    extend: validator({ schema }),
+    extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
       console.log(values);
       const params = new URLSearchParams();
