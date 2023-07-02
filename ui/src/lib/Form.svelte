@@ -5,16 +5,16 @@
   import { z } from 'zod';
 
   let method = 'album';
-  $: showTrack = method == 'track';
-  $: showAlbum = method != 'artist';
-  $: maxRows = method == 'track' ? 5 : method == 'artist' ? 10 : 15;
-  $: maxColumns = method == 'track' ? 5 : method == 'artist' ? 10 : 15;
+  $: showTrack = method === 'track';
+  $: showAlbum = method !== 'artist';
+  $: maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
+  $: maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
 
   let showAdvancedOptions = false;
   let showTextSize = false;
   let showImageResolution = false;
 
-  let mainTainAspectRatio = false;
+  let maintainAspectRatio = false;
 
   const schema = z.object({
     username: z
@@ -78,7 +78,7 @@
 
       if (values.advancedOptions) {
         if (values.showTextSize) {
-          params.append('textSize', values.textSize);
+          params.append('fontsize', values.textSize);
         }
         if (values.lossyCompression) {
           params.append('compress', values.lossyCompression.toString());
@@ -101,13 +101,17 @@
   <label class="form-heading" for="username">Generate a collage for</label>
   <br />
   <input
+    class="username"
     type="text"
     name="username"
     autocomplete="on"
     placeholder="*Last.FM username"
+    style={$errors.username ? 'border-color: #ff0000' : ''}
   />
   {#if $errors.username}
-    <p class="error">{$errors.username[0]}</p>
+    <div>
+      <span class="error">{$errors.username[0]} </span>
+    </div>
   {/if}
   <br />
   <label class="form-heading" for="method">With</label>
@@ -135,9 +139,9 @@
     <Checkbox text="Display Album Name" visible={showAlbum} name="album" />
     <Checkbox text="Display Playcount" visible={true} name="playcount" />
     <br />
-    <label for="rows"
+    <label class="advanced-option-label" for="rows"
       >Number of Rows
-      <span class="nonbold maxvalues">(max. {maxRows})</span></label
+      <span class="nonbold">(max. {maxRows})</span></label
     ><br />
     <input
       inputmode="decimal"
@@ -152,9 +156,9 @@
       <p class="error">{$errors.rows[0]}</p>
     {/if}
     <br />
-    <label inputmode="decimal" for="columns"
+    <label class="advanced-option-label" for="columns"
       >Number of Columns
-      <span class="nonbold maxvalues">(max. {maxColumns})</span></label
+      <span class="nonbold">(max. {maxColumns})</span></label
     ><br />
     <input
       type="number"
@@ -162,7 +166,7 @@
       id="columns"
       name="columns"
       min="1"
-      max={maxColumns}
+      max="15"
       value="3"
     />
     {#if $errors.columns}
@@ -215,6 +219,7 @@
               name="pixelHeight"
               min="10"
               max="3000"
+              value="1500"
             />
             <br />
             <label class="advanced-option-label" for="width"
@@ -229,6 +234,7 @@
               name="pixelWidth"
               min="10"
               max="3000"
+              value="1500"
             />
             <br />
             <Checkbox
@@ -242,7 +248,7 @@
           text="Lossy Compress Image"
           visible={showAdvancedOptions}
           name="lossyCompression"
-          checked={mainTainAspectRatio}
+          checked={maintainAspectRatio}
         />
       </div>
     {/if}
@@ -328,13 +334,13 @@
     margin-top: 1em;
   }
   .error {
-    background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='%23000000' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")
-      no-repeat;
-    background-position: calc(100% - 0.75rem) center !important;
-    -moz-appearance: none !important;
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    padding-right: 2rem !important;
+    color: red;
+    padding-top: 0;
+    margin-top: 0;
+    font-size: 0.9em;
+    padding-left: 10px;
+    padding-bottom: 0;
+    margin-bottom: 2px;
   }
   .advanced-options {
     color: darkgrey;
@@ -358,5 +364,28 @@
   #fontsize-options {
     padding-left: 1em;
     padding-top: 1em;
+  }
+  .username,
+  input[type='text'],
+  input[type='number'] {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 1em;
+    background-color: white;
+    background: none;
+    color: black;
+    font-family: 'Poppins';
+    line-height: 20px;
+    min-height: 28px;
+    border: 2px solid transparent;
+    box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
+    transition: all 0.1s ease 0s;
   }
 </style>
