@@ -1,8 +1,11 @@
 <script lang="ts">
+  import ErrorMessage from './ErrorMessage.svelte';
+
   export let max: number;
   export let name: string;
   export let value: number;
   export let label: string;
+  export let errorMessage: string = '';
   let min = 0;
 
   $: {
@@ -28,7 +31,13 @@
   {max}
   {min}
   {name}
+  class:error={errorMessage}
 />
+{#if errorMessage}
+  <ErrorMessage message={errorMessage} />
+{:else}
+  <div style="height: 1.5em" />
+{/if}
 
 <style>
   .number-input {
@@ -59,5 +68,8 @@
   }
   .limit {
     color: darkgrey;
+  }
+  .error {
+    border-color: red;
   }
 </style>

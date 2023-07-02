@@ -5,6 +5,7 @@
   import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
   import NumberInput from './components/NumberInput.svelte';
+  import ErrorMessage from './components/ErrorMessage.svelte';
 
   let method = 'album';
   let maxRows: number;
@@ -25,7 +26,7 @@
   const schema = z.object({
     username: z
       .string()
-      .nonempty('Please fill out this field')
+      .nonempty('Username is required')
       .regex(
         /^[a-zA-Z][a-zA-Z0-9_-]{0,15}$/,
         "Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'"
@@ -36,8 +37,14 @@
     artist: z.boolean().optional(),
     album: z.boolean().optional(),
     playcount: z.boolean().optional(),
-    rows: z.number().int().min(1),
-    columns: z.number().int().min(1),
+    rows: z
+      .number({ required_error: 'Number of rows is required' })
+      .int()
+      .min(1),
+    columns: z
+      .number({ required_error: 'Number of columns is required' })
+      .int()
+      .min(1),
     advancedOptions: z.boolean().optional(),
     showTextSize: z.boolean().optional(),
     lossyCompression: z.boolean().optional(),
@@ -95,9 +102,7 @@
     style={$errors.username ? 'border-color: #ff0000' : ''}
   />
   {#if $errors.username}
-    <div>
-      <span class="error">{$errors.username[0]} </span>
-    </div>
+    <ErrorMessage message={$errors.username[0]} />
   {/if}
   <br />
   <label class="form-heading" for="method">With</label>
@@ -125,21 +130,20 @@
     <Checkbox text="Display Album Name" visible={showAlbum} name="album" />
     <Checkbox text="Display Playcount" visible={true} name="playcount" />
     <br />
-    <NumberInput label="Number of Rows" name="rows" max={maxRows} value={3} />
-    {#if $errors.rows}
-      <p class="error">{$errors.rows[0]}</p>
-    {/if}
-    <br />
+    <NumberInput
+      label="Number of Rows"
+      name="rows"
+      max={maxRows}
+      value={3}
+      errorMessage={$errors.rows ? $errors.rows[0] : ''}
+    />
     <NumberInput
       label="Number of Columns"
       name="columns"
       max={maxColumns}
       value={3}
+      errorMessage={$errors.columns ? $errors.columns[0] : ''}
     />
-    {#if $errors.columns}
-      <p class="error">{$errors.columns[0]}</p>
-    {/if}
-    <br />
     <Checkbox
       text="Show Advanced Options"
       visible={true}
