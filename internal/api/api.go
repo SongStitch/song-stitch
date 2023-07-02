@@ -30,6 +30,7 @@ type CollageRequest struct {
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
+	BoldFont      bool   `in:"query=boldfont;default=false"`
 }
 
 func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, error) {
@@ -58,6 +59,7 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		Compress:       request.Compress,
 		ImageDimension: imageDimension,
 		FontSize:       float64(request.FontSize),
+		BoldFont:       request.BoldFont,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
 	}
@@ -106,6 +108,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Uint("height", request.Height).
 		Str("method", request.Method).
 		Int("fontsize", request.FontSize).
+		Bool("boldfont", request.BoldFont).
 		Msg("Generating collage")
 
 	image, err := generateCollage(ctx, request)

@@ -26,13 +26,15 @@ type DisplayOptions struct {
 	Width          uint
 	Height         uint
 	FontSize       float64
+	BoldFont       bool
 	Rows           int
 	Columns        int
 	ImageDimension int
 }
 
 const (
-	fontFile           = "./assets/NotoSans-Regular.ttf"
+	fontFileRegular    = "./assets/NotoSans-Regular.ttf"
+	fontFileBold       = "./assets/NotoSans-Bold.ttf"
 	compressionQuality = 70
 )
 
@@ -120,6 +122,10 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
 	dc := gg.NewContext(collageWidth, collageHeight)
 	dc.SetRGB(0, 0, 0)
+	fontFile := fontFileRegular
+	if displayOptions.BoldFont {
+		fontFile = fontFileBold
+	}
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
 	for i, collageElement := range collageElements {
