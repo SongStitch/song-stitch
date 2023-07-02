@@ -3,16 +3,21 @@
   import { createForm } from 'felte';
   import { validator } from '@felte/validator-zod';
   import { z } from 'zod';
+  import NumberInput from './components/NumberInput.svelte';
 
   let method = 'album';
-  $: showTrack = method === 'track';
-  $: showAlbum = method !== 'artist';
-  $: maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
-  $: maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
-
+  let maxRows: number;
+  let maxColumns: number;
+  let showTrack = false;
+  let showAlbum = false;
+  $: {
+    showTrack = method === 'track';
+    showAlbum = method !== 'artist';
+    maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
+    maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
+  }
   let showAdvancedOptions = false;
   let showTextSize = false;
-  let showImageResolution = false;
 
   let maintainAspectRatio = false;
 
@@ -30,36 +35,11 @@
     artist: z.boolean().optional(),
     album: z.boolean().optional(),
     playcount: z.boolean().optional(),
-    rows: z
-      .number()
-      .int()
-      .refine((val) => val > 0 && val <= maxRows, {
-        message: `Must be greater than 0 and less than or equal to ${maxRows}`,
-      }),
-    columns: z
-      .number()
-      .int()
-      .refine((val) => val > 0 && val <= maxColumns, {
-        message: `Must be greater than 0 and less than or equal to ${maxColumns}`,
-      }),
+    rows: z.number().int().min(1),
+    columns: z.number().int().min(1),
     advancedOptions: z.boolean().optional(),
     showTextSize: z.boolean().optional(),
-    showImageResolution: z.boolean().optional(),
     lossyCompression: z.boolean().optional(),
-    pixelWidth: z
-      .number()
-      .int()
-      .refine((val) => val > 0 && val <= 3000, {
-        message: 'Must be greater than 0 and less than or equal to 3000',
-      })
-      .optional(),
-    pixelHeight: z
-      .number()
-      .int()
-      .refine((val) => val > 0 && val <= 3000, {
-        message: 'Must be greater than 0 and less than or equal to 3000',
-      })
-      .optional(),
     textSize: z.string().optional(),
   });
 
@@ -75,6 +55,16 @@
       params.append('artist', values.artist.toString());
       if (showAlbum) params.append('album', values.album.toString());
       params.append('playcount', values.playcount.toString());
+      let rows = values.rows;
+      if (rows > maxRows) {
+        rows = maxRows;
+      }
+      params.append('rows', rows.toString());
+      let columns = values.columns;
+      if (columns > maxColumns) {
+        columns = maxColumns;
+      }
+      params.append('columns', columns.toString());
 
       if (values.advancedOptions) {
         if (values.showTextSize) {
@@ -83,15 +73,10 @@
         if (values.lossyCompression) {
           params.append('compress', values.lossyCompression.toString());
         }
-        if (values.showImageResolution) {
-          if (values.pixelWidth && values.pixelHeight) {
-            params.append('height', values.pixelHeight.toString());
-            params.append('width', values.pixelWidth.toString());
-          }
-        }
       }
 
       const url = `/collage?${params.toString()}`;
+      console.log(url);
       window.open(url, '_self');
     },
   });
@@ -139,35 +124,16 @@
     <Checkbox text="Display Album Name" visible={showAlbum} name="album" />
     <Checkbox text="Display Playcount" visible={true} name="playcount" />
     <br />
-    <label class="advanced-option-label" for="rows"
-      >Number of Rows
-      <span class="nonbold">(max. {maxRows})</span></label
-    ><br />
-    <input
-      inputmode="decimal"
-      type="number"
-      pattern="\d*"
-      name="rows"
-      min="1"
-      max={maxRows}
-      value="3"
-    />
+    <NumberInput label="Number of Rows" name="rows" max={maxRows} value={3} />
     {#if $errors.rows}
       <p class="error">{$errors.rows[0]}</p>
     {/if}
     <br />
-    <label class="advanced-option-label" for="columns"
-      >Number of Columns
-      <span class="nonbold">(max. {maxColumns})</span></label
-    ><br />
-    <input
-      type="number"
-      pattern="\d*"
-      id="columns"
+    <NumberInput
+      label="Number of Columns"
       name="columns"
-      min="1"
-      max="15"
-      value="3"
+      max={maxColumns}
+      value={3}
     />
     {#if $errors.columns}
       <p class="error">{$errors.columns[0]}</p>
@@ -197,51 +163,6 @@
               <option value={15}>Medium</option>
               <option value={18}>Large</option></select
             ><br />
-          </div>
-        {/if}
-        <Checkbox
-          text="Set Image Resolution"
-          visible={showAdvancedOptions}
-          name="showImageResolution"
-          bind:checked={showImageResolution}
-        />
-        {#if showImageResolution}
-          <div id="image-resolution-options">
-            <label class="advanced-option-label" for="height"
-              >Generated Image Height
-              <span class="nonbold">(in pixels)</span></label
-            >
-            <br />
-            <input
-              inputmode="decimal"
-              type="number"
-              pattern="\d*"
-              name="pixelHeight"
-              min="10"
-              max="3000"
-              value="1500"
-            />
-            <br />
-            <label class="advanced-option-label" for="width"
-              >Generated Image Width
-              <span class="nonbold">(in pixels)</span></label
-            >
-            <br />
-            <input
-              inputmode="decimal"
-              type="number"
-              pattern="\d*"
-              name="pixelWidth"
-              min="10"
-              max="3000"
-              value="1500"
-            />
-            <br />
-            <Checkbox
-              text="Maintain Aspect Ratio"
-              visible={true}
-              name="aspectRatio"
-            />
           </div>
         {/if}
         <Checkbox
