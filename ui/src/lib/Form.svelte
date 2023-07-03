@@ -20,6 +20,8 @@
   }
   let showAdvancedOptions = false;
   let showTextSize = false;
+  let showBoldtext = false;
+  let lossyCompression = false;
 
   let maintainAspectRatio = false;
 
@@ -159,6 +161,7 @@
           text="Use Bold text"
           visible={showAdvancedOptions}
           name="showBoldtext"
+          bind:checked={showBoldtext}
         />
         <Checkbox
           text="Show Text Font Size"
@@ -183,7 +186,7 @@
           text="Lossy Compress Image"
           visible={showAdvancedOptions}
           name="lossyCompression"
-          checked={maintainAspectRatio}
+          checked={lossyCompression}
         />
       </div>
     {/if}
