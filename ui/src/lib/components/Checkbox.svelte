@@ -9,8 +9,8 @@
 
 {#if visible}
   <div class="checkbox-wrapper">
-    <input bind:checked type="checkbox" class="switch" {name} />
-    <label style="color: {color};" for="track">{text}</label>
+    <input bind:checked type="checkbox" class="switch" {name} id={name} />
+    <label style="color: {color};" for={name}>{text}</label>
   </div>
 {/if}
 
