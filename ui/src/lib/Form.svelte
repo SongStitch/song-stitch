@@ -48,6 +48,7 @@
     advancedOptions: z.boolean().optional(),
     showTextSize: z.boolean().optional(),
     lossyCompression: z.boolean().optional(),
+    showBoldtext: z.boolean().optional(),
     textSize: z.string().optional(),
   });
 
@@ -80,6 +81,9 @@
         }
         if (values.lossyCompression) {
           params.append('compress', values.lossyCompression.toString());
+        }
+        if (values.showBoldtext) {
+          params.append('boldfont', values.showBoldtext.toString());
         }
       }
 
@@ -151,6 +155,11 @@
     />
     {#if showAdvancedOptions}
       <div class="advanced-options">
+        <Checkbox
+          text="Use Bold text"
+          visible={showAdvancedOptions}
+          name="showBoldtext"
+        />
         <Checkbox
           text="Show Text Font Size"
           visible={showAdvancedOptions}
