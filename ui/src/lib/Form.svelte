@@ -9,19 +9,9 @@
   import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
 
-  let method = 'album';
-  let maxRows: number;
-  let maxColumns: number;
-  let showTrack = false;
-  let showAlbum = false;
-  $: {
-    showTrack = method === 'track';
-    showAlbum = method !== 'artist';
-    maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
-    maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
-  }
   let showEmbedModal = false;
   let url = '';
+  let submitting = false;
 
   const schema = z.object({
     username: z
@@ -91,7 +81,7 @@
   const { form, errors, data } = createForm<z.infer<typeof schema>>({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
-      console.log(values);
+      submitting = true;
       const url = generateUrl(values);
       window.open(url, '_self');
     },
@@ -102,6 +92,19 @@
     url = 'https://songstitch.art' + generateUrl(values);
     showEmbedModal = true;
   };
+
+  let maxRows: number;
+  let maxColumns: number;
+  let showTrack = false;
+  let showAlbum = false;
+  $: {
+    showTrack = $data.method === 'track';
+    showAlbum = $data.method !== 'artist';
+    maxRows =
+      $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
+    maxColumns =
+      $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
+  }
 </script>
 
 <form use:form on:submit|preventDefault>
@@ -120,7 +123,7 @@
   {/if}
   <label class="form-heading" for="method">With</label>
   <br />
-  <select name="method" id="method" bind:value={method}>
+  <select name="method" id="method">
     <option value="album">Top Albums</option>
     <option value="artist">Top Artists</option>
     <option value="track">Top Tracks</option></select
@@ -146,14 +149,14 @@
     <NumberInput
       label="Number of Rows"
       name="rows"
-      max={maxRows}
+      bind:max={maxRows}
       value={3}
       errorMessage={$errors.rows ? $errors.rows[0] : ''}
     />
     <NumberInput
       label="Number of Columns"
       name="columns"
-      max={maxColumns}
+      bind:max={maxColumns}
       value={3}
       errorMessage={$errors.columns ? $errors.columns[0] : ''}
     />
@@ -183,9 +186,11 @@
       </div>
     {/if}
   </fieldset>
-  <div class="loader-container">
-    <div class="loader" />
-  </div>
+  {#if submitting}
+    <div class="loader-container">
+      <div class="loader" />
+    </div>
+  {/if}
   <input name="submit" class="btn-grad" type="submit" value="Generate" />
   <input
     name="embed"
@@ -436,7 +441,6 @@
     box-sizing: border-box;
     animation: rotation 0.6s linear infinite;
     margin-top: 1em;
-    display: none;
   }
   @keyframes rotation {
     0% {
@@ -449,6 +453,5 @@
   .loader-container {
     display: grid;
     place-items: center;
-    display: none;
   }
 </style>
