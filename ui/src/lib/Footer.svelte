@@ -127,4 +127,16 @@
   a.gh-link {
     background: none;
   }
+  .lastfm-link,
+  a.lastfm-link {
+    text-decoration: none;
+    font-size: 12px;
+    color: unset;
+    background-color: unset;
+    margin-top: 0;
+  }
+
+  .lastfm-footer {
+    margin-top: 0;
+  }
 </style>

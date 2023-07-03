@@ -183,7 +183,26 @@
     <div class="loader" />
   </div>
   <input name="submit" class="btn-grad" type="submit" value="Generate" />
+  <input
+    name="embed"
+    class="btn-grad-embed"
+    type="button"
+    value="Share/embed"
+  />
 </form>
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-text" id="imageUrl" />
+    <p class="modal-text">
+      Or use this HTML code to embed your configured collage. The latest collage
+      will automatically be shown whenever viewed! 🎉
+    </p>
+    <span class="close">&times;</span>
+    <div class="highlight">
+      <pre class="chroma"><code id="embedUrl" /></pre>
+    </div>
+  </div>
+</div>
 
 <style>
   form {
@@ -228,11 +247,13 @@
     appearance: none !important;
     padding-right: 2rem !important;
   }
-  input[type='submit'] {
+  input[type='submit'],
+  input[type='button'] {
     font-family: 'Poppins';
     font-weight: bold;
   }
-  input[type='submit'] {
+  input[type='submit'],
+  input[type='button'] {
     width: 100%;
     background-color: #4caf50;
     color: white;
@@ -313,5 +334,206 @@
     border: 2px solid transparent;
     box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
     transition: all 0.1s ease 0s;
+  }
+  .btn-grad {
+    background-image: linear-gradient(
+      to right,
+      #da22ff 0%,
+      #9733ee 51%,
+      #da22ff 100%
+    );
+    margin: 10px;
+    padding: 15px 45px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    background-size: 200% auto;
+    color: white;
+    box-shadow: 0 0 20px #eee;
+    border-radius: 10px;
+    display: block;
+  }
+  .btn-grad:hover {
+    background-position: right center;
+    color: #fff;
+    text-decoration: none;
+  }
+  .btn-grad-embed {
+    background-image: linear-gradient(
+      to right,
+      #dd5e89 0%,
+      #f7bb97 51%,
+      #dd5e89 100%
+    );
+    margin: 10px;
+    padding: 15px 45px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    background-size: 200% auto;
+    color: white;
+    box-shadow: 0 0 20px #eee;
+    border-radius: 10px;
+    display: block;
+  }
+  .btn-grad-embed:hover {
+    background-position: right center;
+    color: #fff;
+    text-decoration: none;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  .modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 20% auto;
+    padding: 20px;
+    width: 50%;
+    border-radius: 4px;
+  }
+  .modal-text {
+    text-align: center;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 0;
+    right: 15px;
+    transition: 0.3s;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .btn-copy {
+    font-size: 1em;
+    padding: 10px;
+    color: #fff;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .btn-copy:hover {
+    background-color: #45a049;
+  }
+  .highlight-wrapper {
+    display: block;
+  }
+  .highlight {
+    position: relative;
+    z-index: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+  }
+  .highlight > .chroma {
+    color: #d0d0d0;
+    background-color: #212121;
+    position: static;
+    z-index: 1;
+    border-radius: 4px;
+    padding: 2em;
+  }
+  .chroma {
+    overflow: auto;
+  }
+  .chroma .lntable {
+    display: table;
+    width: 100%;
+    padding: 0 0 5px;
+    margin: 0;
+    border-spacing: 0;
+    border: 0;
+    overflow: auto;
+  }
+  .chroma .lntd:first-child {
+    padding: 7px 7px 7px 10px;
+    margin: 0;
+  }
+  .chroma .lntd:last-child {
+    padding: 7px 10px 7px 7px;
+    margin: 0;
+  }
+  .copy-code-button {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 14px;
+    width: 65px;
+    color: #232326;
+    background-color: #b3b3b3;
+    border: 1.25px solid #232326;
+    border-top-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 4px;
+    white-space: nowrap;
+    padding: 4px 4px 5px 4px;
+    margin: 0 0 0 1px;
+    cursor: pointer;
+  }
+  .copy-code-button:hover,
+  .copy-code-button:focus,
+  .copy-code-button:active,
+  .copy-code-button:active:hover {
+    color: #222225;
+    background-color: #b3b3b3;
+    opacity: 0.8;
+  }
+  .copyable-text-area {
+    position: absolute;
+    height: 0;
+    z-index: -1;
+    opacity: 0.01;
+  }
+  .loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid black;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 0.6s linear infinite;
+    margin-top: 1em;
+    display: none;
+  }
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .loader-container {
+    display: grid;
+    place-items: center;
+    display: none;
   }
 </style>
