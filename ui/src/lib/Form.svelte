@@ -78,12 +78,26 @@
     return url;
   };
 
-  const { form, errors, data } = createForm<z.infer<typeof schema>>({
+  const { form, errors, data, reset } = createForm<z.infer<typeof schema>>({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
       submitting = true;
       const url = generateUrl(values);
       window.open(url, '_self');
+    },
+    initialValues: {
+      method: 'album',
+      period: '7day',
+      track: false,
+      album: true,
+      playcount: true,
+      rows: 3,
+      columns: 3,
+      advancedOptions: false,
+      showTextSize: false,
+      textSize: '12',
+      showBoldtext: false,
+      lossyCompression: false,
     },
   });
 
@@ -149,15 +163,15 @@
     <NumberInput
       label="Number of Rows"
       name="rows"
-      bind:max={maxRows}
-      value={3}
+      max={maxRows}
+      bind:value={$data.rows}
       errorMessage={$errors.rows ? $errors.rows[0] : ''}
     />
     <NumberInput
       label="Number of Columns"
       name="columns"
-      bind:max={maxColumns}
-      value={3}
+      max={maxColumns}
+      bind:value={$data.columns}
       errorMessage={$errors.columns ? $errors.columns[0] : ''}
     />
     <Checkbox
@@ -200,6 +214,7 @@
     on:click={embedOnClick}
   />
 </form>
+<input type="button" on:click={reset} value="Reset" />
 <Modal bind:showModal={showEmbedModal}>
   <div slot="header">Share/embed</div>
   <p>
@@ -368,45 +383,6 @@
     background-position: right center;
     color: #fff;
     text-decoration: none;
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.4);
-  }
-  .modal-content {
-    position: relative;
-    background-color: #fefefe;
-    margin: 20% auto;
-    padding: 20px;
-    width: 50%;
-    border-radius: 4px;
-  }
-  .modal-text {
-    text-align: center;
-  }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 0;
-    right: 15px;
-    transition: 0.3s;
-  }
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
   }
   pre {
     overflow-x: auto;
