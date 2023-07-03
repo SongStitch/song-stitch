@@ -158,7 +158,7 @@
     {#if showAdvancedOptions}
       <div class="advanced-options">
         <Checkbox
-          text="Use Bold text"
+          text="Use Bold Text"
           visible={showAdvancedOptions}
           name="showBoldtext"
           bind:checked={showBoldtext}
