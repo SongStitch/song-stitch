@@ -172,6 +172,7 @@
               >Text Font Size</label
             ><br />
             <select name="textSize">
+              <option selected value={10}>Extra Small</option>
               <option selected value={12}>Small (default)</option>
               <option value={15}>Medium</option>
               <option value={18}>Large</option></select
