@@ -1,11 +1,13 @@
 <script lang="ts">
   import Checkbox from './components/Checkbox.svelte';
-  import { createForm, getValue } from 'felte';
+  import NumberInput from './components/NumberInput.svelte';
+  import ErrorMessage from './components/ErrorMessage.svelte';
+  import Modal from './components/Modal.svelte';
+
+  import { createForm } from 'felte';
   import { validator } from '@felte/validator-zod';
   import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
-  import NumberInput from './components/NumberInput.svelte';
-  import ErrorMessage from './components/ErrorMessage.svelte';
 
   let method = 'album';
   let maxRows: number;
@@ -18,6 +20,8 @@
     maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
     maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
   }
+  let showEmbedModal = false;
+  let url = '';
 
   const schema = z.object({
     username: z
@@ -48,46 +52,56 @@
     textSize: z.string().optional(),
   });
 
+  const generateUrl = (values: z.infer<typeof schema>) => {
+    const params = new URLSearchParams();
+    params.append('username', values.username);
+    params.append('method', values.method);
+    params.append('period', values.period);
+    if (showTrack) params.append('track', values.track.toString());
+    params.append('artist', values.artist.toString());
+    if (showAlbum) params.append('album', values.album.toString());
+    params.append('playcount', values.playcount.toString());
+    let rows = values.rows;
+    if (rows > maxRows) {
+      rows = maxRows;
+    }
+    params.append('rows', rows.toString());
+    let columns = values.columns;
+    if (columns > maxColumns) {
+      columns = maxColumns;
+    }
+    params.append('columns', columns.toString());
+
+    if (values.advancedOptions) {
+      if (values.showTextSize) {
+        params.append('fontsize', values.textSize);
+      }
+      if (values.lossyCompression) {
+        params.append('compress', values.lossyCompression.toString());
+      }
+      if (values.showBoldtext) {
+        params.append('boldfont', values.showBoldtext.toString());
+      }
+    }
+
+    const url = `/collage?${params.toString()}`;
+    return url;
+  };
+
   const { form, errors, data } = createForm<z.infer<typeof schema>>({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
       console.log(values);
-      const params = new URLSearchParams();
-      params.append('username', values.username);
-      params.append('method', values.method);
-      params.append('period', values.period);
-      if (showTrack) params.append('track', values.track.toString());
-      params.append('artist', values.artist.toString());
-      if (showAlbum) params.append('album', values.album.toString());
-      params.append('playcount', values.playcount.toString());
-      let rows = values.rows;
-      if (rows > maxRows) {
-        rows = maxRows;
-      }
-      params.append('rows', rows.toString());
-      let columns = values.columns;
-      if (columns > maxColumns) {
-        columns = maxColumns;
-      }
-      params.append('columns', columns.toString());
-
-      if (values.advancedOptions) {
-        if (values.showTextSize) {
-          params.append('fontsize', values.textSize);
-        }
-        if (values.lossyCompression) {
-          params.append('compress', values.lossyCompression.toString());
-        }
-        if (values.showBoldtext) {
-          params.append('boldfont', values.showBoldtext.toString());
-        }
-      }
-
-      const url = `/collage?${params.toString()}`;
-      console.log(url);
+      const url = generateUrl(values);
       window.open(url, '_self');
     },
   });
+
+  const embedOnClick = () => {
+    let values = $data;
+    url = 'https://songstitch.art' + generateUrl(values);
+    showEmbedModal = true;
+  };
 </script>
 
 <form use:form on:submit|preventDefault>
@@ -148,11 +162,11 @@
       visible={true}
       name="advancedOptions"
     />
-    {#if getValue($data, (d) => d.advancedOptions)}
+    {#if $data.advancedOptions}
       <div class="advanced-options">
         <Checkbox text="Use Bold Text" name="showBoldtext" />
         <Checkbox text="Show Text Font Size" name="showTextSize" />
-        {#if getValue($data, (d) => d.showTextSize)}
+        {#if $data.showTextSize}
           <div id="fontsize-options">
             <label class="advanced-option-label" for="fontsize"
               >Text Font Size</label
@@ -178,21 +192,19 @@
     class="btn-grad-embed"
     type="button"
     value="Share/embed"
+    on:click={embedOnClick}
   />
 </form>
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-text" id="imageUrl" />
-    <p class="modal-text">
-      Or use this HTML code to embed your configured collage. The latest collage
-      will automatically be shown whenever viewed! 🎉
-    </p>
-    <span class="close">&times;</span>
-    <div class="highlight">
-      <pre class="chroma"><code id="embedUrl" /></pre>
-    </div>
+<Modal bind:showModal={showEmbedModal}>
+  <div slot="header">Share/embed</div>
+  <p>
+    Use this URL to share your configured collage. The latest collage will
+    automatically be shown whenever viewed! 🎉
+  </p>
+  <div class="highlight">
+    <pre class="chroma"><code id="embedUrl">{url}</code></pre>
   </div>
-</div>
+</Modal>
 
 <style>
   form {
@@ -205,8 +217,7 @@
     margin: auto;
   }
   input[type='text'],
-  select,
-  input[type='number'] {
+  select {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -270,41 +281,23 @@
     border-radius: 4px;
     margin-top: 1em;
   }
-  .error {
-    color: red;
-    padding-top: 0;
-    margin-top: 0;
-    font-size: 0.9em;
-    padding-left: 10px;
-    padding-bottom: 0;
-    margin-bottom: 2px;
-  }
   .advanced-options {
     color: darkgrey;
     padding-top: 1em;
     margin-left: 1em;
     padding-bottom: 1em;
   }
-  #image-resolution-options {
-    margin-left: 1em;
-    padding-bottom: 1em;
-    padding-top: 1em;
-  }
   .advanced-option-label {
     color: black;
     font-size: 1em;
     font-weight: bold;
-  }
-  .advanced-option-label span {
-    color: darkgrey;
   }
   #fontsize-options {
     padding-left: 1em;
     padding-top: 1em;
   }
   .username,
-  input[type='text'],
-  input[type='number'] {
+  input[type='text'] {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -415,22 +408,6 @@
     white-space: pre-wrap;
     word-wrap: break-word;
   }
-  .btn-copy {
-    font-size: 1em;
-    padding: 10px;
-    color: #fff;
-    background-color: #4caf50;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  .btn-copy:hover {
-    background-color: #45a049;
-  }
-  .highlight-wrapper {
-    display: block;
-  }
   .highlight {
     position: relative;
     z-index: 0;
@@ -448,58 +425,6 @@
   }
   .chroma {
     overflow: auto;
-  }
-  .chroma .lntable {
-    display: table;
-    width: 100%;
-    padding: 0 0 5px;
-    margin: 0;
-    border-spacing: 0;
-    border: 0;
-    overflow: auto;
-  }
-  .chroma .lntd:first-child {
-    padding: 7px 7px 7px 10px;
-    margin: 0;
-  }
-  .chroma .lntd:last-child {
-    padding: 7px 10px 7px 7px;
-    margin: 0;
-  }
-  .copy-code-button {
-    position: absolute;
-    z-index: 2;
-    right: 0;
-    top: 0;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 14px;
-    width: 65px;
-    color: #232326;
-    background-color: #b3b3b3;
-    border: 1.25px solid #232326;
-    border-top-left-radius: 0;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 4px;
-    white-space: nowrap;
-    padding: 4px 4px 5px 4px;
-    margin: 0 0 0 1px;
-    cursor: pointer;
-  }
-  .copy-code-button:hover,
-  .copy-code-button:focus,
-  .copy-code-button:active,
-  .copy-code-button:active:hover {
-    color: #222225;
-    background-color: #b3b3b3;
-    opacity: 0.8;
-  }
-  .copyable-text-area {
-    position: absolute;
-    height: 0;
-    z-index: -1;
-    opacity: 0.01;
   }
   .loader {
     width: 48px;
