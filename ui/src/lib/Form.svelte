@@ -155,10 +155,30 @@
   <br />
   <fieldset id="fieldset">
     <legend class="legend">Collage Options</legend>
-    <Checkbox text="Display Track Name" visible={showTrack} name="track" />
-    <Checkbox text="Display Artist Name" visible={true} name="artist" />
-    <Checkbox text="Display Album Name" visible={showAlbum} name="album" />
-    <Checkbox text="Display Playcount" visible={true} name="playcount" />
+    <Checkbox
+      text="Display Track Name"
+      visible={showTrack}
+      name="track"
+      bind:checked={$data.track}
+    />
+    <Checkbox
+      text="Display Artist Name"
+      visible={true}
+      name="artist"
+      bind:checked={$data.artist}
+    />
+    <Checkbox
+      text="Display Album Name"
+      visible={showAlbum}
+      name="album"
+      bind:checked={$data.album}
+    />
+    <Checkbox
+      text="Display Playcount"
+      visible={true}
+      name="playcount"
+      bind:checked={$data.playcount}
+    />
     <br />
     <NumberInput
       label="Number of Rows"
@@ -178,11 +198,20 @@
       text="Show Advanced Options"
       visible={true}
       name="advancedOptions"
+      bind:checked={$data.advancedOptions}
     />
     {#if $data.advancedOptions}
       <div class="advanced-options">
-        <Checkbox text="Use Bold Text" name="showBoldtext" />
-        <Checkbox text="Show Text Font Size" name="showTextSize" />
+        <Checkbox
+          text="Use Bold Text"
+          name="showBoldtext"
+          bind:checked={$data.showBoldtext}
+        />
+        <Checkbox
+          text="Show Text Font Size"
+          name="showTextSize"
+          bind:checked={$data.showTextSize}
+        />
         {#if $data.showTextSize}
           <div id="fontsize-options">
             <label class="advanced-option-label" for="fontsize"
@@ -196,7 +225,11 @@
             ><br />
           </div>
         {/if}
-        <Checkbox text="Lossy Compress Image" name="lossyCompression" />
+        <Checkbox
+          text="Lossy Compress Image"
+          name="lossyCompression"
+          bind:checked={$data.lossyCompression}
+        />
       </div>
     {/if}
   </fieldset>
