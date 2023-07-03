@@ -99,12 +99,11 @@
     name="username"
     autocomplete="on"
     placeholder="*Last.FM username"
-    style={$errors.username ? 'border-color: #ff0000' : ''}
+    style={$errors.username ? 'border: 2px solid red' : ''}
   />
   {#if $errors.username}
     <ErrorMessage message={$errors.username[0]} />
   {/if}
-  <br />
   <label class="form-heading" for="method">With</label>
   <br />
   <select name="method" id="method" bind:value={method}>
