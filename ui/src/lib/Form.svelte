@@ -1,6 +1,6 @@
 <script lang="ts">
   import Checkbox from './components/Checkbox.svelte';
-  import { createForm } from 'felte';
+  import { createForm, getValue } from 'felte';
   import { validator } from '@felte/validator-zod';
   import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
@@ -18,12 +18,6 @@
     maxRows = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
     maxColumns = method === 'track' ? 5 : method === 'artist' ? 10 : 15;
   }
-  let showAdvancedOptions = false;
-  let showTextSize = false;
-  let showBoldtext = false;
-  let lossyCompression = false;
-
-  let maintainAspectRatio = false;
 
   const schema = z.object({
     username: z
@@ -54,7 +48,7 @@
     textSize: z.string().optional(),
   });
 
-  const { form, errors } = createForm<z.infer<typeof schema>>({
+  const { form, errors, data } = createForm<z.infer<typeof schema>>({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
       console.log(values);
@@ -153,23 +147,12 @@
       text="Show Advanced Options"
       visible={true}
       name="advancedOptions"
-      bind:checked={showAdvancedOptions}
     />
-    {#if showAdvancedOptions}
+    {#if getValue($data, (d) => d.advancedOptions)}
       <div class="advanced-options">
-        <Checkbox
-          text="Use Bold Text"
-          visible={showAdvancedOptions}
-          name="showBoldtext"
-          bind:checked={showBoldtext}
-        />
-        <Checkbox
-          text="Show Text Font Size"
-          visible={showAdvancedOptions}
-          name="showTextSize"
-          bind:checked={showTextSize}
-        />
-        {#if showTextSize}
+        <Checkbox text="Use Bold Text" name="showBoldtext" />
+        <Checkbox text="Show Text Font Size" name="showTextSize" />
+        {#if getValue($data, (d) => d.showTextSize)}
           <div id="fontsize-options">
             <label class="advanced-option-label" for="fontsize"
               >Text Font Size</label
@@ -182,12 +165,7 @@
             ><br />
           </div>
         {/if}
-        <Checkbox
-          text="Lossy Compress Image"
-          visible={showAdvancedOptions}
-          name="lossyCompression"
-          checked={lossyCompression}
-        />
+        <Checkbox text="Lossy Compress Image" name="lossyCompression" />
       </div>
     {/if}
   </fieldset>

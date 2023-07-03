@@ -35,8 +35,6 @@
 />
 {#if errorMessage}
   <ErrorMessage message={errorMessage} />
-{:else}
-  <div style="display: none;" />
 {/if}
 
 <style>
