@@ -14,11 +14,8 @@
 >
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div on:click|stopPropagation>
-    <slot name="header" />
     <span class="close" on:click={() => dialog.close()}>&times;</span>
-    <hr />
     <slot />
-    <hr />
   </div>
 </dialog>
 
