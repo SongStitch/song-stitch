@@ -24,10 +24,16 @@
 
 <style>
   dialog {
-    max-width: 32em;
-    border-radius: 0.2em;
     border: none;
-    padding: 0;
+    margin: 20% auto;
+    padding: 20px;
+    width: 40%;
+    border-radius: 10px;
+  }
+  @media (max-width: 600px) {
+    dialog {
+      width: 80% !important;
+    }
   }
   dialog::backdrop {
     background: rgba(0, 0, 0, 0.3);

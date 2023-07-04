@@ -11,6 +11,7 @@
 
   let showEmbedModal = false;
   let url = '';
+  let embedHTML = '';
   let submitting = false;
 
   const schema = z.object({
@@ -104,6 +105,7 @@
   const embedOnClick = () => {
     let values = $data;
     url = 'https://songstitch.art' + generateUrl(values);
+    embedHTML = `<img class="songstitch-collage" src="${url}">`;
     showEmbedModal = true;
   };
 
@@ -257,9 +259,69 @@
       will automatically be shown whenever viewed! 🎉
     </p>
     <div class="highlight">
-      <pre class="chroma"><code id="embedUrl">{url}</code></pre>
+      <button class="copy-code-button" type="button">Copy</button>
+      <pre class="chroma"><code id="embedUrl">{embedHTML}</code></pre>
     </div>
   </div>
+  <script>
+    async function copyCodeToClipboard(button, highlightDiv) {
+      const codeToCopy = document.getElementById('embedUrl').innerText;
+      try {
+        result = await navigator.permissions.query({ name: 'clipboard-write' });
+        if (result.state == 'granted' || result.state == 'prompt') {
+          await navigator.clipboard.writeText(codeToCopy);
+        } else {
+          copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+        }
+      } catch (_) {
+        copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+      } finally {
+        codeWasCopied(button);
+      }
+    }
+    function copyCodeBlockExecCommand(codeToCopy, highlightDiv) {
+      const textArea = document.createElement('textArea');
+      textArea.contentEditable = 'true';
+      textArea.readOnly = 'false';
+      textArea.value = codeToCopy;
+      highlightDiv.insertBefore(textArea, highlightDiv.firstChild);
+      const range = document.createRange();
+      range.selectNodeContents(textArea);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      textArea.setSelectionRange(0, 999999);
+      document.execCommand('copy');
+      highlightDiv.removeChild(textArea);
+    }
+
+    function codeWasCopied(button) {
+      button.blur();
+      button.innerText = 'Copied!';
+      setTimeout(function () {
+        button.innerText = 'Copy';
+      }, 2000);
+    }
+    function createCopyButton(highlightDiv) {
+      const button = document.getElementsByClassName('copy-code-button')[0];
+      document
+        .getElementsByClassName('copy-code-button')[0]
+        .addEventListener('click', () =>
+          copyCodeToClipboard(button, highlightDiv)
+        );
+      addCopyButtonToDom(button, highlightDiv);
+    }
+    function addCopyButtonToDom(button, highlightDiv) {
+      highlightDiv.insertBefore(button, highlightDiv.firstChild);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'highlight-wrapper';
+      highlightDiv.parentNode.insertBefore(wrapper, highlightDiv);
+      wrapper.appendChild(highlightDiv);
+    }
+    document
+      .querySelectorAll('.highlight')
+      .forEach((highlightDiv) => createCopyButton(highlightDiv));
+  </script>
 </Modal>
 
 <style>
@@ -442,6 +504,35 @@
   }
   .chroma {
     overflow: auto;
+  }
+  .copy-code-button {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 14px;
+    width: 65px;
+    color: #232326;
+    background-color: #b3b3b3;
+    border: 1.25px solid #232326;
+    border-top-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 4px;
+    white-space: nowrap;
+    padding: 4px 4px 5px 4px;
+    margin: 0 0 0 1px;
+    cursor: pointer;
+  }
+  .copy-code-button:hover,
+  .copy-code-button:focus,
+  .copy-code-button:active,
+  .copy-code-button:active:hover {
+    color: #222225;
+    background-color: #b3b3b3;
+    opacity: 0.8;
   }
   .loader {
     width: 48px;
