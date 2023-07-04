@@ -249,13 +249,16 @@
 </form>
 <input type="button" on:click={reset} value="Reset" />
 <Modal bind:showModal={showEmbedModal}>
-  <div slot="header">Share/embed</div>
-  <p>
-    Use this URL to share your configured collage. The latest collage will
-    automatically be shown whenever viewed! 🎉
-  </p>
-  <div class="highlight">
-    <pre class="chroma"><code id="embedUrl">{url}</code></pre>
+  <div class="modal-text" slot="header">Share/Embed</div>
+  <div class="modal-text">
+    <a class="href-links" href={url}>Share this link to the collage</a>
+    <p>
+      Or use this HTML code to embed your configured collage. The latest collage
+      will automatically be shown whenever viewed! 🎉
+    </p>
+    <div class="highlight">
+      <pre class="chroma"><code id="embedUrl">{url}</code></pre>
+    </div>
   </div>
 </Modal>
 
@@ -462,5 +465,8 @@
   .loader-container {
     display: grid;
     place-items: center;
+  }
+  .modal-text {
+    text-align: center;
   }
 </style>
