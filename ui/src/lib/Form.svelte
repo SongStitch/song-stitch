@@ -128,7 +128,7 @@
   }
 </script>
 
-<form use:form on:submit|preventDefault>
+<form id="top-form" use:form on:submit|preventDefault>
   <label class="form-heading" for="username">Generate a collage for</label>
   <br />
   <input
@@ -253,8 +253,10 @@
     value="Share/embed"
     on:click={embedOnClick}
   />
+  <div class="reset-button">
+    <a style="color: black;" href="#top-form" on:click={reset}>Reset Form</a>
+  </div>
 </form>
-<input type="button" on:click={reset} value="Reset" />
 <Modal bind:showModal={showEmbedModal}>
   <div class="modal-text" slot="header">Share/Embed</div>
   <div class="modal-text">
@@ -564,5 +566,15 @@
   }
   .modal-text {
     text-align: center;
+  }
+  .reset-button {
+    text-align: center;
+    padding-top: 0.5em;
+    font-size: 1em;
+    cursor: pointer;
+    text-decoration: underline;
+    margin: auto;
+    width: fit-content;
+    color: black;
   }
 </style>
