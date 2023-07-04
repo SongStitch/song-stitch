@@ -11,8 +11,11 @@
 
   let showEmbedModal = false;
   let url = '';
-  let embedHTML = '';
+
   let submitting = false;
+  addEventListener('pageshow', () => {
+    submitting = false;
+  });
 
   const schema = z.object({
     username: z
@@ -79,12 +82,13 @@
     return url;
   };
 
-  const { form, errors, data, reset } = createForm<z.infer<typeof schema>>({
+  const { form, errors, data, reset, isSubmitting } = createForm<
+    z.infer<typeof schema>
+  >({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
     onSubmit: async (values) => {
-      submitting = true;
       const url = generateUrl(values);
-      window.open(url, '_self');
+      await new Promise(() => window.open(url, '_self'));
     },
     initialValues: {
       method: 'album',
@@ -120,6 +124,7 @@
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
     maxColumns =
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
+    submitting = $isSubmitting;
   }
 </script>
 
