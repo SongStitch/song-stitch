@@ -12,11 +12,6 @@
   let showEmbedModal = false;
   let url = '';
 
-  let submitting = false;
-  addEventListener('pageshow', () => {
-    submitting = false;
-  });
-
   const schema = z.object({
     username: z
       .string()
@@ -113,6 +108,10 @@
     showEmbedModal = true;
   };
 
+  addEventListener('pageshow', () => {
+    $isSubmitting = false;
+  });
+
   let maxRows: number;
   let maxColumns: number;
   let showTrack = false;
@@ -124,7 +123,6 @@
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
     maxColumns =
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
-    submitting = $isSubmitting;
   }
 </script>
 
@@ -240,7 +238,7 @@
       </div>
     {/if}
   </fieldset>
-  {#if submitting}
+  {#if $isSubmitting}
     <div class="loader-container">
       <div class="loader" />
     </div>
