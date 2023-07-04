@@ -128,7 +128,7 @@
   }
 </script>
 
-<form id="top-form" use:form on:submit|preventDefault>
+<form use:form on:submit|preventDefault>
   <label class="form-heading" for="username">Generate a collage for</label>
   <br />
   <input
@@ -254,7 +254,7 @@
     on:click={embedOnClick}
   />
   <div class="reset-button">
-    <a style="color: black;" href="#top-form" on:click={reset}>Reset Form</a>
+    <a style="color: black;" href="#top" on:click={reset}>Reset Form</a>
   </div>
 </form>
 <Modal bind:showModal={showEmbedModal}>

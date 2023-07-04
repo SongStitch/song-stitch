@@ -2,7 +2,7 @@
   import logo from '../assets/images/songstitch_logo.png';
 </script>
 
-<div class="header-img-container">
+<div class="header-img-container" id="top">
   <a class="img-link" href="/">
     <img
       src={logo}
