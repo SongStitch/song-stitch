@@ -69,5 +69,6 @@
   }
   .error {
     border-color: red;
+    contain: inline-size;
   }
 </style>

@@ -15,5 +15,6 @@
     padding-left: 0px;
     padding-bottom: 0;
     margin-bottom: 1em;
+    contain: inline-size;
   }
 </style>
