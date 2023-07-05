@@ -28,3 +28,6 @@ go.work
 
 public/
 !ui/public
+
+# vite
+vite.config.ts.timestamp-*.mjs
