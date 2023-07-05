@@ -33,15 +33,28 @@ SongStitch is a free, fast and highly customisable [last.fm]("https://last.fm") 
 
 ### Customisation Options
 
-- **Dimensions**: specify the exact number of rows and columns you would like within your collage.
-- **Text**: Choose between adding the album name, artist name and playcount to your collage; or any combo you choose. You can also choose the font size of the text.
-- **Image Size**: Know the dimensions of the collage you need? SongStitch allows you to specify the desired collage image dimensions to ensure you only get what you need. You can even enable lossy compression!
+- **Collage Type**: Generate collages based off your most played albums, artists, and tracks.
+- **Dimensions**: Specify the exact number of rows and columns you would like within your collage.
+- **Information**: Choose between adding the album name, artist name and playcount to your collage; or any combo you choose.
+- **Text**: Choose the size and style of your text on your collages.
 
 Have a suggestion on how we can make SongStitch better? Feel free to create an issue on [GitHub](https://github.com/SongStitch/song-stitch/issues/new), or submit a PR!
 
 ## Usage
 
-Below are the instructions on how you can run SongStitch yourself. You can either run it with `go` directly, or you can run it with `docker` and `docker-compose`.
+To use SongStitch, simply go to [songstitch.art](songstitch.art) to get started, or you can download the App for iOS on the App Store!
+
+If you would like to run SongStitch yourself, below are the instructions on how you can build and run SongStitch.
+
+### Requirements
+
+There are currently 2 options to run SongStitch yourself.
+
+1. Build and run the application locally. This requires you to have `go` and `npm` installed.
+
+2. Run the application inside the docker container. This requires `docker` to be installed.
+
+### Setup
 
 1. Clone the repository
 
@@ -53,7 +66,7 @@ git clone git@github.com:SongStitch/song-stitch.git
 
 3. Add environment variables to a `.env` file in the root directory. The `.env.example` includes everything that the application requires.
 
-4. Run the application with either `docker-compose up` or `make run`. This will start the application on port `8080`.
+4. Run the application with either `make run` to run it on your machine, or `make docker-run` to run it in a container. This will start the application on port `8080`.
 
 5. Go to `localhost:8080` and enjoy!
 
