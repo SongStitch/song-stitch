@@ -1,4 +1,8 @@
-# Song Stitch
+<div align="center">
+
+# SongStitch
+
+</div>
 
 <p align="center">
   <img alt="SongStitch Logo" src="assets/songstitch_background.png" width="500px"/>
