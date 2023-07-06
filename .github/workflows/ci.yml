@@ -49,13 +49,16 @@ jobs:
           go install honnef.co/go/tools/cmd/staticcheck@latest
           staticcheck ./...
 
-  # prettier:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Prettify code
-  #       uses: creyD/prettier_action@v4.3
-  #       with:
-  #         prettier_options: --check ui/**/*.{js,css,html}
-  #         prettier_plugins: prettier-plugin-svelte
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up npm
+        uses: actions/setup-node@v3
+      - name: Install dependencies
+        working-directory: ./ui
+        run: npm install
+      - name: Prettify code
+        working-directory: ./ui
+        run: npm run prettier
