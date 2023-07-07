@@ -237,7 +237,7 @@
         </div>
       {/if}
       <Checkbox
-        text="WebP Lossy Image"
+        text="WebP Compressed Image"
         name="WebPLossyCompression"
         visible={$data.advancedOptions}
         bind:checked={$data.WebPLossyCompression}
