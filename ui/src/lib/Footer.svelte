@@ -14,7 +14,13 @@
       target="_blank"
       rel="noopener"
     >
-      <img class="appstore-icon" src={appstore_icon} alt="iOS App store link" />
+      <img
+        class="appstore-icon"
+        src={appstore_icon}
+        alt="iOS App store link"
+        width="150px"
+        height="50px"
+      />
     </a>
   </p>
   <p id="links">
@@ -43,6 +49,7 @@
       href="https://github.com/SongStitch/song-stitch"
       target="_blank"
       rel="noopener"
+      aria-label="SongStitch GitHub repository"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"

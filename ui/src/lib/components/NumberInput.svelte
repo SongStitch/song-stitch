@@ -31,6 +31,7 @@
   {max}
   {min}
   {name}
+  id={name}
   class:error={errorMessage}
 />
 {#if errorMessage}
