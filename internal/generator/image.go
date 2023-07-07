@@ -12,6 +12,10 @@ import (
 	"time"
 
 	"github.com/fogleman/gg"
+	"github.com/kolesa-team/go-webp/decoder"
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
+
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
 )
@@ -30,6 +34,7 @@ type DisplayOptions struct {
 	Rows           int
 	Columns        int
 	ImageDimension int
+	Webp           bool
 }
 
 const (
@@ -114,6 +119,20 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
+func webpEncode(collage *image.Image, quality float32) (image.Image, error) {
+	var buf bytes.Buffer
+	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
+	if err != nil {
+		return nil, err
+	}
+
+	err = webp.Encode(&buf, *collage, options)
+	if err != nil {
+		return nil, err
+	}
+	return webp.Decode(bytes.NewReader(buf.Bytes()), &decoder.Options{})
+}
+
 func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
@@ -144,7 +163,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
-	if displayOptions.Compress {
+	if displayOptions.Compress && !displayOptions.Webp {
 		collageCompressed, err := compressImage(&collage, compressionQuality)
 		if err != nil {
 			// Skip and just serve the non-compressed image
@@ -153,6 +172,16 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 			collage = collageCompressed
 		}
 	}
+
+	if displayOptions.Webp {
+		collageWebp, err := webpEncode(&collage, compressionQuality)
+		if err != nil {
+			logger.Err(err).Msg("Unable to create Webp image")
+		} else {
+			collage = collageWebp
+		}
+	}
+
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
 	return &collage, nil
 }
