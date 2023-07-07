@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"image"
-	"image/jpeg"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -109,15 +108,6 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	return &result
 }
 
-func compressImage(collage *image.Image, quality int) (image.Image, error) {
-	var buf bytes.Buffer
-	err := jpeg.Encode(&buf, *collage, &jpeg.Options{Quality: quality})
-	if err != nil {
-		return nil, err
-	}
-	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
-}
-
 func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error {
 	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
 	if err != nil {
@@ -158,15 +148,6 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
-	if displayOptions.Compress && !displayOptions.Webp {
-		collageCompressed, err := compressImage(&collage, compressionQuality)
-		if err != nil {
-			// Skip and just serve the non-compressed image
-			logger.Err(err).Msg("Unable to compress image")
-		} else {
-			collage = collageCompressed
-		}
-	}
 	collageBuffer := new(bytes.Buffer)
 
 	if displayOptions.Webp {

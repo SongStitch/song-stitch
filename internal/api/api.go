@@ -27,7 +27,6 @@ type CollageRequest struct {
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
-	Compress      bool   `in:"query=compress;default=false"`
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
@@ -59,7 +58,6 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		Resize:         request.Width > 0 || request.Height > 0,
 		Width:          request.Width,
 		Height:         request.Height,
-		Compress:       request.Compress,
 		ImageDimension: imageDimension,
 		FontSize:       float64(request.FontSize),
 		BoldFont:       request.BoldFont,
@@ -107,7 +105,6 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Bool("album", request.DisplayAlbum).
 		Bool("track", request.DisplayTrack).
 		Bool("playcount", request.PlayCount).
-		Bool("compress", request.Compress).
 		Uint("width", request.Width).
 		Uint("height", request.Height).
 		Str("method", request.Method).
