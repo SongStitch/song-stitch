@@ -5,14 +5,13 @@
   export let name: string;
 
   $: color = checked ? 'black' : 'darkgrey';
+  $: display = visible ? 'block' : 'none';
 </script>
 
-{#if visible}
-  <div class="checkbox-wrapper">
-    <input bind:checked type="checkbox" class="switch" {name} id={name} />
-    <label style="color: {color};" for={name}>{text}</label>
-  </div>
-{/if}
+<div class="checkbox-wrapper" style="display: {display}">
+  <input checked type="checkbox" class="switch" {name} id={name} />
+  <label style="color: {color};" for={name}>{text}</label>
+</div>
 
 <style>
   .checkbox-wrapper {

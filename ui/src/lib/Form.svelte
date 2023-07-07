@@ -77,7 +77,7 @@
     return url;
   };
 
-  const { form, errors, data, reset, isSubmitting } = createForm<
+  const { form, errors, data, reset, isSubmitting, isValid } = createForm<
     z.infer<typeof schema>
   >({
     extend: [validator({ schema }), extender({ id: 'songstitchform' })],
@@ -88,7 +88,8 @@
     initialValues: {
       method: 'album',
       period: '7day',
-      track: false,
+      track: true,
+      artist: true,
       album: true,
       playcount: true,
       rows: 3,
@@ -123,6 +124,9 @@
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
     maxColumns =
       $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 15;
+    if ($isSubmitting && !$isValid) {
+      window.location.href = '#top';
+    }
   }
 </script>
 
