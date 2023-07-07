@@ -11,6 +11,7 @@
 
   let showEmbedModal = false;
   let url = '';
+  let embedHTML = '';
 
   const schema = z.object({
     username: z
