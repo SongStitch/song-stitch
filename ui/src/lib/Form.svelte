@@ -205,38 +205,39 @@
       name="advancedOptions"
       bind:checked={$data.advancedOptions}
     />
-    {#if $data.advancedOptions}
-      <div class="advanced-options">
-        <Checkbox
-          text="Use Bold Text"
-          name="showBoldtext"
-          bind:checked={$data.showBoldtext}
-        />
-        <Checkbox
-          text="Show Text Font Size"
-          name="showTextSize"
-          bind:checked={$data.showTextSize}
-        />
-        {#if $data.showTextSize}
-          <div id="fontsize-options">
-            <label class="advanced-option-label" for="fontsize"
-              >Text Font Size</label
-            ><br />
-            <select name="textSize">
-              <option selected value={10}>Extra Small</option>
-              <option selected value={12}>Small (default)</option>
-              <option value={15}>Medium</option>
-              <option value={18}>Large</option></select
-            ><br />
-          </div>
-        {/if}
-        <Checkbox
-          text="Lossy Compress Image"
-          name="lossyCompression"
-          bind:checked={$data.lossyCompression}
-        />
-      </div>
-    {/if}
+    <div class="advanced-options">
+      <Checkbox
+        text="Use Bold Text"
+        name="showBoldtext"
+        visible={$data.advancedOptions}
+        bind:checked={$data.showBoldtext}
+      />
+      <Checkbox
+        text="Show Text Font Size"
+        name="showTextSize"
+        visible={$data.advancedOptions}
+        bind:checked={$data.showTextSize}
+      />
+      {#if $data.showTextSize}
+        <div id="fontsize-options">
+          <label class="advanced-option-label" for="fontsize"
+            >Text Font Size</label
+          ><br />
+          <select name="textSize">
+            <option selected value={10}>Extra Small</option>
+            <option selected value={12}>Small (default)</option>
+            <option value={15}>Medium</option>
+            <option value={18}>Large</option></select
+          ><br />
+        </div>
+      {/if}
+      <Checkbox
+        text="Lossy Compress Image"
+        name="lossyCompression"
+        visible={$data.advancedOptions}
+        bind:checked={$data.lossyCompression}
+      />
+    </div>
   </fieldset>
   {#if $isSubmitting}
     <div class="loader-container">
