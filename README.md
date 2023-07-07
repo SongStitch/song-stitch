@@ -46,7 +46,7 @@ Have a suggestion on how we can make SongStitch better? Feel free to create an i
 
 ## Usage
 
-To use SongStitch, simply go to [songstitch.art](songstitch.art) to get started, or you can download the App for iOS on the App Store!
+To use SongStitch, simply go to [songstitch.art](songstitch.art) to get started, or you can download the free App for iOS on the [App Store](https://apps.apple.com/au/app/songstitch/id6450189672)!
 
 If you would like to run SongStitch yourself, below are the instructions on how you can build and run SongStitch.
 
@@ -76,7 +76,7 @@ git clone git@github.com:SongStitch/song-stitch.git
 
 ## iOS Application
 
-There is also a free [SonStitch iOS app](https://apps.apple.com/au/app/songstitch/id6450189672) for creating collages on your phone to save and share!
+There is also the free, [open source](https://github.com/SongStitch/songstitch-ios) SongStitch iOS app for creating collages on your phone to save and share! You can download it from the [App Store](https://apps.apple.com/au/app/songstitch/id6450189672).
 
 ## Contributors
 
