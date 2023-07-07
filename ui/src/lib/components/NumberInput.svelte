@@ -53,7 +53,6 @@
     background: none;
     color: black;
     font-family: 'Poppins';
-    line-height: 20px;
     min-height: 28px;
     border: 2px solid transparent;
     box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
