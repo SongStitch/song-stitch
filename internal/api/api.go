@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"net/http"
@@ -34,7 +36,7 @@ type CollageRequest struct {
 	Webp          bool   `in:"query=webp;default=false"`
 }
 
-func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -76,7 +78,7 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 	case constants.TRACK:
 		return collages.GenerateCollageForTrack(ctx, request.Username, period, count, imageSize, displayOptions)
 	default:
-		return nil, errors.New("invalid collage type")
+		return nil, nil, errors.New("invalid collage type")
 	}
 }
 
@@ -114,7 +116,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Bool("webp", request.Webp).
 		Msg("Generating collage")
 
-	image, err := generateCollage(ctx, request)
+	image, buffer, err := generateCollage(ctx, request)
 	if ctx.Err() != nil {
 		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
 		// 499 is the http status code for client closed request
@@ -136,22 +138,24 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if request.Webp {
-		w.Header().Set("Content-Type", "image/webp")
-	} else {
-		w.Header().Set("Content-Type", "image/jpeg")
-
-	}
-	err = jpeg.Encode(w, *image, nil)
 	if ctx.Err() != nil {
 		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
 		// 499 is the http status code for client closed request
 		http.Error(w, "Context cancelled", 499)
 		return
 	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Error occurred encoding collage")
-		http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
-		return
+
+	if request.Webp {
+		w.Header().Set("Content-Type", "image/webp")
+		w.Write(buffer.Bytes())
+		fmt.Println("Setting webp")
+	} else {
+		w.Header().Set("Content-Type", "image/jpeg")
+		err = jpeg.Encode(w, *image, nil)
+		if err != nil {
+			logger.Error().Err(err).Msg("Error occurred encoding collage")
+			http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
+			return
+		}
 	}
 }

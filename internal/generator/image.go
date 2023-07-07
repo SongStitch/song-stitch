@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/fogleman/gg"
-	"github.com/kolesa-team/go-webp/decoder"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
 
@@ -119,21 +118,17 @@ func compressImage(collage *image.Image, quality int) (image.Image, error) {
 	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
 }
 
-func webpEncode(collage *image.Image, quality float32) (image.Image, error) {
-	var buf bytes.Buffer
+func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error {
 	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = webp.Encode(&buf, *collage, options)
-	if err != nil {
-		return nil, err
-	}
-	return webp.Decode(bytes.NewReader(buf.Bytes()), &decoder.Options{})
+	err = webp.Encode(buf, *collage, options)
+	return err
 }
 
-func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
 
@@ -172,16 +167,15 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 			collage = collageCompressed
 		}
 	}
+	collageBuffer := new(bytes.Buffer)
 
 	if displayOptions.Webp {
-		collageWebp, err := webpEncode(&collage, compressionQuality)
+		err := webpEncode(collageBuffer, &collage, compressionQuality)
 		if err != nil {
 			logger.Err(err).Msg("Unable to create Webp image")
-		} else {
-			collage = collageWebp
 		}
 	}
 
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &collage, nil
+	return &collage, collageBuffer, nil
 }
