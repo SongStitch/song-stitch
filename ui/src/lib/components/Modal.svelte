@@ -1,21 +1,46 @@
-<script>
-  export let showModal; // boolean
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
 
-  let dialog; // HTMLDialogElement
+  export let showModal: boolean;
+  export let message: string;
+
+  let dialog: HTMLDialogElement;
+  let copyButtonText = 'Copy';
 
   $: if (dialog && showModal) dialog.showModal();
+  const dispatch = createEventDispatcher();
+
+  const copyCode = () => {
+    copyButtonText = 'Copied!';
+    navigator.clipboard
+      .writeText(message)
+      .then(
+        () => dispatch('copy', message),
+        (_) => dispatch('fail')
+      )
+      .then(() =>
+        setTimeout(() => {
+          copyButtonText = 'Copy';
+        }, 2000)
+      );
+  };
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <dialog
   bind:this={dialog}
   on:close={() => (showModal = false)}
   on:click|self={() => dialog.close()}
 >
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div on:click|stopPropagation>
     <span class="close" on:click={() => dialog.close()}>&times;</span>
     <slot />
+  </div>
+  <div class="highlight" id="highlight">
+    <button class="copy-code-button" type="button" on:click={copyCode}
+      >{copyButtonText}</button
+    >
+    <pre class="chroma"><code id="embedUrl">{message}</code></pre>
   </div>
 </dialog>
 
@@ -75,5 +100,57 @@
     color: black;
     text-decoration: none;
     cursor: pointer;
+  }
+  pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .highlight {
+    position: relative;
+    z-index: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+  }
+  .highlight > .chroma {
+    color: #d0d0d0;
+    background-color: #212121;
+    position: static;
+    z-index: 1;
+    border-radius: 4px;
+    padding: 2em;
+  }
+  .chroma {
+    overflow: auto;
+  }
+  .copy-code-button {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 14px;
+    width: 65px;
+    color: #232326;
+    background-color: #b3b3b3;
+    border: 1.25px solid #232326;
+    border-top-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 4px;
+    white-space: nowrap;
+    padding: 4px 4px 5px 4px;
+    margin: 0 0 0 1px;
+    cursor: pointer;
+  }
+  .copy-code-button:hover,
+  .copy-code-button:focus,
+  .copy-code-button:active,
+  .copy-code-button:active:hover {
+    color: #222225;
+    background-color: #b3b3b3;
+    opacity: 0.8;
   }
 </style>
