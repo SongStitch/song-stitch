@@ -75,7 +75,7 @@ jobs:
     env:
       IMAGE_NAME: songstitch
       IMAGE_REGISTRY: ghcr.io
-      IMAGE_REPOSITORY: songstitch
+      IMAGE_REPOSITORY: song-stitch
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
