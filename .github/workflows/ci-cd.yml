@@ -65,8 +65,8 @@ jobs:
         working-directory: ./ui
         run: npm run prettier
 
-  build-songstitch:
-    name: Build SongStitch Image
+  build-push-songstitch:
+    name: Build and Push SongStitch Image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -112,7 +112,7 @@ jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    needs: build-songstitch
+    needs: build-push-songstitch
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
