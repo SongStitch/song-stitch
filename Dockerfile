@@ -4,7 +4,8 @@ WORKDIR /app/ui
 COPY ui ./
 RUN npm install && npm run build
 
-FROM golang:1.20 AS builder
+# switch to bullseye due to https://github.com/GoogleContainerTools/distroless/issues/1342
+FROM golang:1.20-bullseye AS builder
 
 WORKDIR /app
 
@@ -20,7 +21,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Minify Assets
 # hadolint ignore=DL3008
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends minify \
+  && apt-get install -y --no-install-recommends minify libwebp-dev \
   && find ./public -type f \( \
   -name "*.html" \
   -o -name '*.js' \
@@ -29,10 +30,14 @@ RUN apt-get update \
   -print0 | \
   xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
 
 # hadolint ignore=DL3006
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
+ARG ARCH=aarch64
+
+# Copy dependency for webp
+COPY --from=builder /usr/lib/${ARCH}-linux-gnu/libwebp.so* /usr/lib/${ARCH}-linux-gnu/
 
 WORKDIR /app
 
