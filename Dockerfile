@@ -21,7 +21,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Minify Assets
 # hadolint ignore=DL3008
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends minify libwebp-dev \
+  && apt-get install -y --no-install-recommends \
+  minify \
+  libwebp-dev \
   && find ./public -type f \( \
   -name "*.html" \
   -o -name '*.js' \
