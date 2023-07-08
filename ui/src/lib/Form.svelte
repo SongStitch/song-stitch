@@ -37,7 +37,7 @@
       .min(1),
     advancedOptions: z.boolean().optional(),
     showTextSize: z.boolean().optional(),
-    lossyCompression: z.boolean().optional(),
+    WebPLossyCompression: z.boolean().optional(),
     showBoldtext: z.boolean().optional(),
     textSize: z.string().optional(),
   });
@@ -66,8 +66,8 @@
       if (values.showTextSize) {
         params.append('fontsize', values.textSize);
       }
-      if (values.lossyCompression) {
-        params.append('compress', values.lossyCompression.toString());
+      if (values.WebPLossyCompression) {
+        params.append('webp', values.WebPLossyCompression.toString());
       }
       if (values.showBoldtext) {
         params.append('boldfont', values.showBoldtext.toString());
@@ -99,7 +99,7 @@
       showTextSize: false,
       textSize: '12',
       showBoldtext: false,
-      lossyCompression: false,
+      WebPLossyCompression: false,
     },
   });
 
@@ -237,10 +237,10 @@
         </div>
       {/if}
       <Checkbox
-        text="Lossy Compress Image"
-        name="lossyCompression"
+        text="WebP Compressed Image"
+        name="WebPLossyCompression"
         visible={$data.advancedOptions}
-        bind:checked={$data.lossyCompression}
+        bind:checked={$data.WebPLossyCompression}
       />
     </div>
   </fieldset>

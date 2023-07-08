@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"net/http"
@@ -25,15 +27,15 @@ type CollageRequest struct {
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
-	Compress      bool   `in:"query=compress;default=false"`
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
 	BoldFont      bool   `in:"query=boldfont;default=false"`
+	Webp          bool   `in:"query=webp;default=false"`
 }
 
-func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -56,10 +58,10 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		Resize:         request.Width > 0 || request.Height > 0,
 		Width:          request.Width,
 		Height:         request.Height,
-		Compress:       request.Compress,
 		ImageDimension: imageDimension,
 		FontSize:       float64(request.FontSize),
 		BoldFont:       request.BoldFont,
+		Webp:           request.Webp,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
 	}
@@ -74,7 +76,7 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 	case constants.TRACK:
 		return collages.GenerateCollageForTrack(ctx, request.Username, period, count, imageSize, displayOptions)
 	default:
-		return nil, errors.New("invalid collage type")
+		return nil, nil, errors.New("invalid collage type")
 	}
 }
 
@@ -103,15 +105,15 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Bool("album", request.DisplayAlbum).
 		Bool("track", request.DisplayTrack).
 		Bool("playcount", request.PlayCount).
-		Bool("compress", request.Compress).
 		Uint("width", request.Width).
 		Uint("height", request.Height).
 		Str("method", request.Method).
 		Int("fontsize", request.FontSize).
 		Bool("boldfont", request.BoldFont).
+		Bool("webp", request.Webp).
 		Msg("Generating collage")
 
-	image, err := generateCollage(ctx, request)
+	image, buffer, err := generateCollage(ctx, request)
 	if ctx.Err() != nil {
 		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
 		// 499 is the http status code for client closed request
@@ -133,17 +135,24 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/jpeg")
-	err = jpeg.Encode(w, *image, nil)
 	if ctx.Err() != nil {
 		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
 		// 499 is the http status code for client closed request
 		http.Error(w, "Context cancelled", 499)
 		return
 	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Error occurred encoding collage")
-		http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
-		return
+
+	if request.Webp {
+		w.Header().Set("Content-Type", "image/webp")
+		w.Write(buffer.Bytes())
+		fmt.Println("Setting webp")
+	} else {
+		w.Header().Set("Content-Type", "image/jpeg")
+		err = jpeg.Encode(w, *image, nil)
+		if err != nil {
+			logger.Error().Err(err).Msg("Error occurred encoding collage")
+			http.Error(w, "An error occurred processing your request", http.StatusInternalServerError)
+			return
+		}
 	}
 }

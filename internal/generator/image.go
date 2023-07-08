@@ -5,13 +5,15 @@ import (
 	"context"
 	"fmt"
 	"image"
-	"image/jpeg"
 	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/fogleman/gg"
+	"github.com/kolesa-team/go-webp/encoder"
+	"github.com/kolesa-team/go-webp/webp"
+
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
 )
@@ -30,6 +32,7 @@ type DisplayOptions struct {
 	Rows           int
 	Columns        int
 	ImageDimension int
+	Webp           bool
 }
 
 const (
@@ -105,16 +108,17 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	return &result
 }
 
-func compressImage(collage *image.Image, quality int) (image.Image, error) {
-	var buf bytes.Buffer
-	err := jpeg.Encode(&buf, *collage, &jpeg.Options{Quality: quality})
+func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error {
+	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return jpeg.Decode(bytes.NewReader(buf.Bytes()))
+
+	err = webp.Encode(buf, *collage, options)
+	return err
 }
 
-func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
 
@@ -144,15 +148,15 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
-	if displayOptions.Compress {
-		collageCompressed, err := compressImage(&collage, compressionQuality)
+	collageBuffer := new(bytes.Buffer)
+
+	if displayOptions.Webp {
+		err := webpEncode(collageBuffer, &collage, compressionQuality)
 		if err != nil {
-			// Skip and just serve the non-compressed image
-			logger.Err(err).Msg("Unable to compress image")
-		} else {
-			collage = collageCompressed
+			logger.Err(err).Msg("Unable to create Webp image")
 		}
 	}
+
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &collage, nil
+	return &collage, collageBuffer, nil
 }
