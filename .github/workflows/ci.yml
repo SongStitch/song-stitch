@@ -73,9 +73,9 @@ jobs:
       packages: write
       id-token: write
     env:
-      IMAGE_NAME: songstitch
+      IMAGE_NAME: song-stitch
       IMAGE_REGISTRY: ghcr.io
-      IMAGE_REPOSITORY: song-stitch
+      IMAGE_REPOSITORY: songstitch
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
