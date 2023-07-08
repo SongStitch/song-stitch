@@ -79,8 +79,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set BUILD_ARCH env
-        run: echo "BUILD_ARCH=$(uname -m)" >> $GITHUB_ENV
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -111,4 +109,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            "ARCH=${{env.BUILD_ARCH}}"
+            "ARCH=$(uname -m)"
