@@ -54,7 +54,7 @@ If you would like to run SongStitch yourself, below are the instructions on how 
 
 There are currently 2 options to run SongStitch yourself.
 
-1. Build and run the application locally. This requires you to have `go` and `npm` installed.
+1. Build and run the application locally. This requires you to have the `go` and `npm` installed, and the `libwebp-dev` library.
 
 2. Run the application inside the docker container. This requires `docker` to be installed.
 
