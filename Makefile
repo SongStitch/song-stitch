@@ -31,7 +31,7 @@ linux-arm64:
 	env GOOS=linux GOARCH=arm64 go build -o bin/${BINARY_NAME}_linux_arm64 cmd/*.go
 
 linux-amd64:
-	env GOOS=linux GOARCH=amd64 go build  -o bin/${BINARY_NAME}_linux_amd64 cmd/*.go
+	env GOOS=linux GOARCH=amd64 go build -o bin/${BINARY_NAME}_linux_amd64 cmd/*.go
 
 docker-build: lint
 	docker-compose build song-stitch
