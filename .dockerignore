@@ -149,3 +149,5 @@ vendor/github.com/leodido/go-urn/**/*.txt
 vendor/github.com/leodido/go-urn/**/vendor
 vendor/github.com/leodido/go-urn/removecomments
 fly.toml
+
+ui/node_modules
