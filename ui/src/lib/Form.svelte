@@ -452,6 +452,7 @@
   .loader-container {
     display: grid;
     place-items: center;
+    padding: 1em;
   }
   .modal-text {
     text-align: center;
