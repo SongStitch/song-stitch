@@ -8,6 +8,7 @@
   import { validator } from '@felte/validator-zod';
   import { extender } from '@felte/extender-persist';
   import { z } from 'zod';
+  import { onMount } from 'svelte';
 
   let showEmbedModal = false;
   let url = '';
@@ -110,7 +111,7 @@
     showEmbedModal = true;
   };
 
-  addEventListener('pageshow', () => {
+  onMount(() => {
     $isSubmitting = false;
   });
 
