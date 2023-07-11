@@ -3,8 +3,6 @@ package generator
 import (
 	"bytes"
 	"context"
-	"fmt"
-
 	"image"
 	"net/url"
 	"path/filepath"
@@ -61,32 +59,31 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func getTextDrawLocation(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) (float64, float64) {
+func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
+
 	width, height := dc.MeasureString(text)
-	imageWidth := float64(300 - 20)
-	imageHeight := float64(300 - 20)
-	textLength, _ := dc.MeasureString(text)
-	fmt.Println(displayOptions.TextLocation)
+	imageSize := float64(300 - 20)
 	switch displayOptions.TextLocation {
 	case constants.TOP_LEFT:
-		return x, y
+		return 0, 0
 	case constants.TOP_CENTRE:
-		return x + imageWidth/2 - width/2, y
+		return imageSize/2 - width/2, 0
 	case constants.TOP_RIGHT:
-		return x + imageWidth - textLength, y
+		return imageSize - width, 0
 	case constants.BOTTOM_LEFT:
-		return x, y + imageHeight - height
+		return 0, imageSize - height
 	case constants.BOTTOM_CENTRE:
-		return x + imageWidth/2 - width/2, y + imageHeight - height
+		return imageSize/2 - width/2, imageSize - height
 	case constants.BOTTOM_RIGHT:
-		return x + imageWidth - width, y + imageHeight - height
+		return imageSize - width, imageSize - height
 	default:
-		return x, y
+		return 0, 0
 	}
 }
 
 func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) float64 {
-	x, y = getTextDrawLocation(dc, text, x, y, displayOptions)
+	x_offset, y_offset := getTextOffset(dc, text, displayOptions)
+	x, y = x+x_offset, y+y_offset
 	dc.SetRGB(0, 0, 0)
 	dc.DrawStringAnchored(text, (x)+1, (y)+1, 0, 0)
 	dc.SetRGB(1, 1, 1)
