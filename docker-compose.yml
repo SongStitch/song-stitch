@@ -5,7 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      cache_from:
+        - ghcr.io/songstitch/song-stitch:main
     ports:
       - 8080:8080
     volumes:
       - .env:/app/.env
+    image: ghcr.io/songstitch/song-stitch:main
