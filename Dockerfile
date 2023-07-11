@@ -34,8 +34,7 @@ RUN apt-get update \
 
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
 
-# hadolint ignore=DL3006
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+FROM gcr.io/distroless/base-debian11:nonroot AS build-release-stage
 
 # Copy dependency for webp
 COPY --from=builder /usr/lib/*-linux-gnu/libwebp.so* /usr/lib/
