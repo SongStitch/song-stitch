@@ -115,7 +115,7 @@
   }
   .highlight > .chroma {
     color: #d0d0d0;
-    background-color: #212121;
+    background-color: black;
     position: static;
     z-index: 1;
     border-radius: 4px;
