@@ -37,6 +37,7 @@
       'gh-footer',
       'dvanced-option-label',
       'darkmode-icon-img',
+      'loader-container',
     ];
 
     classNames.forEach((className) => toggleClassByClassname(className));
@@ -137,7 +138,8 @@
   :global(
       .appstore-icon.dark-mode,
       .gh-footer.dark-mode,
-      .darkmode-icon-img.dark-mode
+      .darkmode-icon-img.dark-mode,
+      .loader-container.dark-mode
     ) {
     filter: invert(1);
   }

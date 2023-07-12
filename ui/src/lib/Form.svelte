@@ -242,11 +242,11 @@
       />
     </div>
   </fieldset>
-  {#if $isSubmitting}
-    <div class="loader-container">
+  <div class="loader-container">
+    {#if $isSubmitting}
       <div class="loader" />
-    </div>
-  {/if}
+    {/if}
+  </div>
   <input name="submit" class="btn-grad" type="submit" value="Generate" />
   <input
     name="embed"
