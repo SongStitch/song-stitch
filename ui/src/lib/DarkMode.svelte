@@ -101,6 +101,7 @@
 
   :global(:root.dark-mode) {
     background-color: #121212;
+    background: none;
   }
 
   :global(
