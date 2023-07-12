@@ -89,12 +89,12 @@
     text-align: right;
     display: inline;
     float: right;
-    padding-right: 1em;
+    padding-right: 1.5em;
     padding-top: 1em;
   }
 
   .darkmode-icon-img {
-    max-width: 2em;
+    max-width: 1.5em;
     width: auto;
     height: auto;
   }
