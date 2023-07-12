@@ -23,7 +23,7 @@
       />
     </a>
   </p>
-  <p id="links">
+  <p id="links" class="footer-text">
     Made with ❤️ by
     <span
       ><a
