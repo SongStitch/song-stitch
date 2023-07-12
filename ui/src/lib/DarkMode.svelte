@@ -100,7 +100,7 @@
   }
 
   :global(:root.dark-mode) {
-    background-color: #121212;
+    background-color: #1a1b1a;
     background: none;
   }
 
@@ -115,18 +115,18 @@
       .reset-text.dark-mode,
       .advanced-option-label.dark-mode
     ) {
-    background-color: #121212 !important;
+    background-color: #1a1b1a !important;
     color: #bfc2c7 !important;
   }
 
   :global(dialog.dark-mode) {
-    background-color: #121212;
+    background-color: #1a1b1a;
     color: #bfc2c7;
     border: solid 1px #bfc2c7 !important;
   }
 
   :global(fieldset.dark-mode) {
-    background-color: #121212;
+    background-color: #1a1b1a;
     color: #bfc2c7;
     border: none;
     box-shadow: 0 0 2px #bfc2c7;
@@ -146,7 +146,7 @@
   }
 
   :global(form.dark-mode) {
-    background-color: #121212 !important;
+    background-color: #1a1b1a !important;
     color: #bfc2c7 !important;
     box-shadow: 0 0 2px #bfc2c7;
   }
@@ -156,7 +156,7 @@
   }
 
   :global(select.dark-mode) {
-    background-color: #121212 !important;
+    background-color: #1a1b1a !important;
     color: #bfc2c7 !important;
     mix-blend-mode: exclusion;
   }
