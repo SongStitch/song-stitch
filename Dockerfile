@@ -41,7 +41,6 @@ COPY --from=builder /usr/lib/*-linux-gnu/libwebp.so* /usr/lib/
 
 WORKDIR /app
 
-USER nonroot:nonroot
 COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
 COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
 COPY --chown=nonroot:nonroot assets/ /app/assets
