@@ -55,6 +55,7 @@ body {
   padding: 20px;
   box-sizing: border-box;
   padding-top: 0px;
+  margin: 0px;
 }
 label {
   font-weight: bold;

@@ -223,19 +223,17 @@
         visible={$data.advancedOptions}
         bind:checked={$data.showTextSize}
       />
-      {#if $data.showTextSize}
-        <div id="fontsize-options">
-          <label class="advanced-option-label" for="fontsize"
-            >Text Font Size</label
-          ><br />
-          <select name="textSize">
-            <option selected value={10}>Extra Small</option>
-            <option selected value={12}>Small (default)</option>
-            <option value={15}>Medium</option>
-            <option value={18}>Large</option></select
-          ><br />
-        </div>
-      {/if}
+      <div hidden={!$data.showTextSize} id="fontsize-options">
+        <label class="advanced-option-label" for="fontsize"
+          >Text Font Size</label
+        ><br />
+        <select name="textSize">
+          <option selected value={10}>Extra Small</option>
+          <option selected value={12}>Small (default)</option>
+          <option value={15}>Medium</option>
+          <option value={18}>Large</option></select
+        ><br />
+      </div>
       <Checkbox
         text="WebP Compressed Image"
         name="WebPLossyCompression"
@@ -258,7 +256,7 @@
     on:click={embedOnClick}
   />
   <div class="reset-button">
-    <a style="color: black;" href="#top" on:click={reset}>Reset Form</a>
+    <a class="reset-text" href="#top" on:click={reset}>Reset Form</a>
   </div>
 </form>
 <Modal bind:showModal={showEmbedModal} message={embedHTML}>
@@ -457,7 +455,11 @@
   .modal-text {
     text-align: center;
   }
+  .reset-text {
+    color: black;
+  }
   .reset-button {
+    color: black;
     text-align: center;
     padding-top: 0.5em;
     font-size: 1em;
