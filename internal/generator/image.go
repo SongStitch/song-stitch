@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"image"
-	"net/url"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/SongStitch/song-stitch/internal/constants"
@@ -41,23 +38,6 @@ const (
 	fontFileBold       = "./assets/NotoSans-Bold.ttf"
 	compressionQuality = 70
 )
-
-func getExtension(u string) (string, error) {
-	parsedURL, err := url.Parse(u)
-	if err != nil {
-		return "", err
-	}
-
-	// Split the path component of the URL into a slice of path elements
-	pathElements := strings.Split(parsedURL.Path, "/")
-
-	// The last element of the path should be the filename
-	fileName := pathElements[len(pathElements)-1]
-
-	// Extract the file extension from the filename
-	ext := filepath.Ext(fileName)
-	return ext, nil
-}
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
 
