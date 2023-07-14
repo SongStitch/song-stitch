@@ -41,6 +41,18 @@ const (
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
 
+	multiplier := 1.0
+
+	if displayOptions.AlbumName {
+		multiplier++
+	}
+	if displayOptions.ArtistName {
+		multiplier++
+	}
+	if displayOptions.PlayCount {
+		multiplier++
+	}
+
 	width, height := dc.MeasureString(text)
 	imageSize := float64(300 - 20)
 	switch displayOptions.TextLocation {
@@ -51,11 +63,11 @@ func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (
 	case constants.TOP_RIGHT:
 		return imageSize - width, 0
 	case constants.BOTTOM_LEFT:
-		return 0, imageSize - height
+		return 0, imageSize - (height * multiplier)
 	case constants.BOTTOM_CENTRE:
-		return imageSize/2 - width/2, imageSize - height
+		return imageSize/2 - width/2, imageSize - (height * multiplier)
 	case constants.BOTTOM_RIGHT:
-		return imageSize - width, imageSize - height
+		return imageSize - width, imageSize - (height * multiplier)
 	default:
 		return 0, 0
 	}
