@@ -230,16 +230,16 @@
         bind:checked={$data.showTextSize}
       />
       <div hidden={!$data.showTextSize} class="sub-options">
-          <label class="advanced-option-label" for="fontsize"
+        <label class="advanced-option-label" for="fontsize"
           >Text Font Size</label
         ><br />
-          <select name="textSize">
-            <option value={10}>Extra Small</option>
-            <option selected value={12}>Small (default)</option>
-            <option value={15}>Medium</option>
-            <option value={18}>Large</option></select
+        <select name="textSize">
+          <option value={10}>Extra Small</option>
+          <option selected value={12}>Small (default)</option>
+          <option value={15}>Medium</option>
+          <option value={18}>Large</option></select
         ><br />
-        </div>
+      </div>
       <Checkbox
         text="Set Text Location"
         name="showTextLocation"
@@ -248,8 +248,8 @@
       />
       <div hidden={!$data.showTextLocation} class="sub-options">
         <label class="advanced-option-label" for="fontlocation"
-        >Text Location</label
-      ><br />
+          >Text Location</label
+        ><br />
         <select name="textLocation">
           <option selected value={'topleft'}>Top Left (default)</option>
           <option value={'topcentre'}>Top Centre</option>
