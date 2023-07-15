@@ -50,3 +50,37 @@ func GetCollageTypeFromStr(s string) CollageType {
 		return ALBUM
 	}
 }
+
+type TextLocation string
+
+const (
+	TOP_LEFT      TextLocation = "topleft"
+	TOP_CENTRE    TextLocation = "topcentre"
+	TOP_RIGHT     TextLocation = "topright"
+	BOTTOM_LEFT   TextLocation = "bottomleft"
+	BOTTOM_CENTRE TextLocation = "bottomcentre"
+	BOTTOM_RIGHT  TextLocation = "bottomright"
+)
+
+func GetTextLocationFromStr(s string) TextLocation {
+	switch s {
+	case "topleft":
+		return TOP_LEFT
+	case "topcentre":
+		return TOP_CENTRE
+	case "topright":
+		return TOP_RIGHT
+	case "bottomleft":
+		return BOTTOM_LEFT
+	case "bottomcentre":
+		return BOTTOM_CENTRE
+	case "bottomright":
+		return BOTTOM_RIGHT
+	default:
+		return TOP_LEFT
+	}
+}
+
+func (tl TextLocation) IsTop() bool {
+	return tl == TOP_LEFT || tl == TOP_CENTRE || tl == TOP_RIGHT
+}

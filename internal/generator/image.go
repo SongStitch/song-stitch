@@ -3,13 +3,10 @@ package generator
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"image"
-	"net/url"
-	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
@@ -33,6 +30,7 @@ type DisplayOptions struct {
 	Columns        int
 	ImageDimension int
 	Webp           bool
+	TextLocation   constants.TextLocation
 }
 
 const (
@@ -41,54 +39,70 @@ const (
 	compressionQuality = 70
 )
 
-func getExtension(u string) (string, error) {
-	parsedURL, err := url.Parse(u)
-	if err != nil {
-		return "", err
+func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
+	width, height := dc.MeasureString(text)
+	imageSize := float64(300 - 20)
+	switch displayOptions.TextLocation {
+	case constants.TOP_LEFT:
+		return 0, 0
+	case constants.TOP_CENTRE:
+		return imageSize/2 - width/2, 0
+	case constants.TOP_RIGHT:
+		return imageSize - width, 0
+	case constants.BOTTOM_LEFT:
+		return 0, imageSize - height
+	case constants.BOTTOM_CENTRE:
+		return imageSize/2 - width/2, imageSize - height
+	case constants.BOTTOM_RIGHT:
+		return imageSize - width, imageSize - height
+	default:
+		return 0, 0
 	}
-
-	// Split the path component of the URL into a slice of path elements
-	pathElements := strings.Split(parsedURL.Path, "/")
-
-	// The last element of the path should be the filename
-	fileName := pathElements[len(pathElements)-1]
-
-	// Extract the file extension from the filename
-	ext := filepath.Ext(fileName)
-	return ext, nil
 }
 
-func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x int, y int) {
+func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) float64 {
+	x_offset, y_offset := getTextOffset(dc, text, displayOptions)
+	x, y = x+x_offset, y+y_offset
+	dc.SetRGB(0, 0, 0)
+	dc.DrawStringAnchored(text, (x)+1, (y)+1, 0, 0)
+	dc.SetRGB(1, 1, 1)
+	dc.DrawStringAnchored(text, (x), (y), 0, 0)
+	return (3 + displayOptions.FontSize)
+}
+
+func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x float64, y float64) {
 	parameters := drawable.GetParameters()
-	textLocation := 8 + displayOptions.FontSize
+	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["artist"]; ok && displayOptions.ArtistName && len(val) > 0 {
-		// Add shadow
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["album"]; ok && displayOptions.AlbumName && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(val, float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(val, float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["playcount"]; ok && displayOptions.PlayCount && len(val) > 0 {
-		dc.SetRGB(0, 0, 0)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", val), float64(x+10)+1, float64(y)+textLocation+1, 0, 0)
-		dc.SetRGB(1, 1, 1)
-		dc.DrawStringAnchored(fmt.Sprintf("Plays: %s", val), float64(x+10), float64(y)+textLocation, 0, 0)
-		textLocation += 3 + displayOptions.FontSize
+		textToDraw = append(textToDraw, val)
+	}
+
+	if !displayOptions.TextLocation.IsTop() {
+		reverse(textToDraw)
+	}
+	textLocation := (8 + displayOptions.FontSize)
+	for _, text := range textToDraw {
+		newOffset := drawText(dc, text, x+10, y+textLocation, displayOptions)
+		if displayOptions.TextLocation.IsTop() {
+			textLocation += newOffset
+		} else {
+			textLocation -= newOffset
+		}
+	}
+}
+
+func reverse(s []string) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
 	}
 }
 
@@ -140,7 +154,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
 		}
-		placeText(dc, collageElement, displayOptions, x, y)
+		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
 	collage := dc.Image()
 

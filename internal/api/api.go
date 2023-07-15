@@ -33,6 +33,7 @@ type CollageRequest struct {
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
 	BoldFont      bool   `in:"query=boldfont;default=false"`
 	Webp          bool   `in:"query=webp;default=false"`
+	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
 }
 
 func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
@@ -64,6 +65,7 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		Webp:           request.Webp,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
+		TextLocation:   constants.GetTextLocationFromStr(request.TextLocation),
 	}
 
 	period := constants.GetPeriodFromStr(request.Period)
@@ -88,6 +90,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 
 	validate := validator.New()
 	validate.RegisterValidation("validatePeriod", validatePeriod)
+	validate.RegisterValidation("validateTextLocation", validateTextLocation)
 
 	err := validate.Struct(request)
 	if err != nil {

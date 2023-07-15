@@ -9,6 +9,8 @@ import (
 	"image/jpeg"
 	"io"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -50,6 +52,7 @@ func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 	}
 	return fmt.Errorf("failed to download image after %d retries: %w", maxRetries, err)
 }
+
 func DownloadImage(ctx context.Context, entity Downloadable) error {
 	url := entity.GetImageUrl()
 	if len(url) == 0 {
@@ -127,4 +130,21 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 	logger.Info().Dur("duration", time.Since(start)).Msg("Downloaded images")
 
 	return nil
+}
+
+func getExtension(u string) (string, error) {
+	parsedURL, err := url.Parse(u)
+	if err != nil {
+		return "", err
+	}
+
+	// Split the path component of the URL into a slice of path elements
+	pathElements := strings.Split(parsedURL.Path, "/")
+
+	// The last element of the path should be the filename
+	fileName := pathElements[len(pathElements)-1]
+
+	// Extract the file extension from the filename
+	ext := filepath.Ext(fileName)
+	return ext, nil
 }
