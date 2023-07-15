@@ -80,3 +80,7 @@ func GetTextLocationFromStr(s string) TextLocation {
 		return TOP_LEFT
 	}
 }
+
+func (tl TextLocation) IsTop() bool {
+	return tl == TOP_LEFT || tl == TOP_CENTRE || tl == TOP_RIGHT
+}

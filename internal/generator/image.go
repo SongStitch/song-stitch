@@ -40,19 +40,6 @@ const (
 )
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
-
-	multiplier := 1.0
-
-	if displayOptions.AlbumName {
-		multiplier++
-	}
-	if displayOptions.ArtistName {
-		multiplier++
-	}
-	if displayOptions.PlayCount {
-		multiplier++
-	}
-
 	width, height := dc.MeasureString(text)
 	imageSize := float64(300 - 20)
 	switch displayOptions.TextLocation {
@@ -63,11 +50,11 @@ func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (
 	case constants.TOP_RIGHT:
 		return imageSize - width, 0
 	case constants.BOTTOM_LEFT:
-		return 0, imageSize - (height * multiplier)
+		return 0, imageSize - height
 	case constants.BOTTOM_CENTRE:
-		return imageSize/2 - width/2, imageSize - (height * multiplier)
+		return imageSize/2 - width/2, imageSize - height
 	case constants.BOTTOM_RIGHT:
-		return imageSize - width, imageSize - (height * multiplier)
+		return imageSize - width, imageSize - height
 	default:
 		return 0, 0
 	}
@@ -85,20 +72,37 @@ func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions 
 
 func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x float64, y float64) {
 	parameters := drawable.GetParameters()
-	textLocation := (8 + displayOptions.FontSize)
+	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
-		// Add shadow
-		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["artist"]; ok && displayOptions.ArtistName && len(val) > 0 {
-		// Add shadow
-		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["album"]; ok && displayOptions.AlbumName && len(val) > 0 {
-		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
+		textToDraw = append(textToDraw, val)
 	}
 	if val, ok := parameters["playcount"]; ok && displayOptions.PlayCount && len(val) > 0 {
-		textLocation += drawText(dc, val, x+10, y+textLocation, displayOptions)
+		textToDraw = append(textToDraw, val)
+	}
+
+	if !displayOptions.TextLocation.IsTop() {
+		reverse(textToDraw)
+	}
+	textLocation := (8 + displayOptions.FontSize)
+	for _, text := range textToDraw {
+		newOffset := drawText(dc, text, x+10, y+textLocation, displayOptions)
+		if displayOptions.TextLocation.IsTop() {
+			textLocation += newOffset
+		} else {
+			textLocation -= newOffset
+		}
+	}
+}
+
+func reverse(s []string) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
 	}
 }
 
