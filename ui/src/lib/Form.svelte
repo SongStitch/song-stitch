@@ -37,9 +37,11 @@
       .min(1),
     advancedOptions: z.boolean().optional(),
     showTextSize: z.boolean().optional(),
+    showTextLocation: z.boolean().optional(),
     WebPLossyCompression: z.boolean().optional(),
     showBoldtext: z.boolean().optional(),
     textSize: z.string().optional(),
+    textLocation: z.string().optional(),
   });
 
   const generateUrl = (values: z.infer<typeof schema>) => {
@@ -65,6 +67,9 @@
     if (values.advancedOptions) {
       if (values.showTextSize) {
         params.append('fontsize', values.textSize);
+      }
+      if (values.showTextLocation) {
+        params.append('textlocation', values.textLocation);
       }
       if (values.WebPLossyCompression) {
         params.append('webp', values.WebPLossyCompression.toString());
@@ -97,6 +102,7 @@
       columns: 3,
       advancedOptions: false,
       showTextSize: false,
+      showTextLocation: false,
       textSize: '12',
       showBoldtext: false,
       WebPLossyCompression: false,
@@ -218,21 +224,40 @@
         bind:checked={$data.showBoldtext}
       />
       <Checkbox
-        text="Show Text Font Size"
+        text="Set Text Font Size"
         name="showTextSize"
         visible={$data.advancedOptions}
         bind:checked={$data.showTextSize}
       />
-      <div hidden={!$data.showTextSize} id="fontsize-options">
-        <label class="advanced-option-label" for="fontsize"
+      <div hidden={!$data.showTextSize} class="sub-options">
+          <label class="advanced-option-label" for="fontsize"
           >Text Font Size</label
         ><br />
-        <select name="textSize">
-          <option selected value={10}>Extra Small</option>
-          <option selected value={12}>Small (default)</option>
-          <option value={15}>Medium</option>
-          <option value={18}>Large</option></select
+          <select name="textSize">
+            <option value={10}>Extra Small</option>
+            <option selected value={12}>Small (default)</option>
+            <option value={15}>Medium</option>
+            <option value={18}>Large</option></select
         ><br />
+        </div>
+      <Checkbox
+        text="Set Text Location"
+        name="showTextLocation"
+        visible={$data.advancedOptions}
+        bind:checked={$data.showTextLocation}
+      />
+      <div hidden={!$data.showTextLocation} class="sub-options">
+        <label class="advanced-option-label" for="fontlocation"
+        >Text Location</label
+      ><br />
+        <select name="textLocation">
+          <option selected value={'topleft'}>Top Left (default)</option>
+          <option value={'topcentre'}>Top Centre</option>
+          <option value={'topright'}>Top Right</option>
+          <option value={'bottomleft'}>Bottom Left</option>
+          <option value={'bottomcentre'}>Bottom Centre</option>
+          <option value={'bottomright'}>Bottom Right</option>
+        </select><br />
       </div>
       <Checkbox
         text="WebP Compressed Image"
@@ -356,7 +381,7 @@
     font-size: 1em;
     font-weight: bold;
   }
-  #fontsize-options {
+  .sub-options {
     padding-left: 1em;
     padding-top: 1em;
   }

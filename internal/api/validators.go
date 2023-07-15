@@ -14,3 +14,13 @@ func validatePeriod(fl validator.FieldLevel) bool {
 		return false
 	}
 }
+
+func validateTextLocation(fl validator.FieldLevel) bool {
+	textLocation := constants.TextLocation(fl.Field().String())
+	switch textLocation {
+	case constants.TOP_LEFT, constants.TOP_CENTRE, constants.TOP_RIGHT, constants.BOTTOM_LEFT, constants.BOTTOM_CENTRE, constants.BOTTOM_RIGHT:
+		return true
+	default:
+		return false
+	}
+}
