@@ -42,4 +42,8 @@ docker-run:
 clean:
 	rm -rf bin/*
 
+test:
+	go clean -testcache
+	go test -v ./tests
+
 all: darwin linux-arm64 linux-amd64

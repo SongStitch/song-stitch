@@ -132,7 +132,6 @@ jobs:
     runs-on: ubuntu-latest
     #needs: deploy
     #if: github.ref == 'refs/heads/main'
-    name: runner / Go package
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
