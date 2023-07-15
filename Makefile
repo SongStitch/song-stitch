@@ -42,6 +42,9 @@ docker-run:
 clean:
 	rm -rf bin/*
 
+gosec:
+	gosec -severity medium  ./...
+
 test:
 	go clean -testcache
 	go test -v ./tests
