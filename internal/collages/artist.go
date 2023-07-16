@@ -139,11 +139,12 @@ func (a *Artist) GetIdentifier() string {
 	return a.Url + a.ImageSize
 }
 
-func (a *Artist) GetImage() *image.Image {
-	return &a.Image
-}
 func (a *Artist) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
+}
+
+func (a *Artist) GetImage() *image.Image {
+	return &a.Image
 }
 
 func (a *Artist) GetParameters() map[string]string {
@@ -151,4 +152,8 @@ func (a *Artist) GetParameters() map[string]string {
 		"artist":    a.Name,
 		"playcount": a.Playcount,
 	}
+}
+
+func (a *Artist) ClearImage() {
+	a.Image = nil
 }

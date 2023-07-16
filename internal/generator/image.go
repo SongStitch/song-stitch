@@ -154,7 +154,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		if *img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
-			img = nil
+			collageElement.ClearImage()
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
