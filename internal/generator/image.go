@@ -6,10 +6,10 @@ import (
 	"image"
 	"time"
 
+	"github.com/SongStitch/go-webp/encoder"
+	"github.com/SongStitch/go-webp/webp"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
-	"github.com/kolesa-team/go-webp/encoder"
-	"github.com/kolesa-team/go-webp/webp"
 
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
@@ -127,6 +127,7 @@ func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error 
 	if err != nil {
 		return err
 	}
+	options.LowMemory = true
 
 	err = webp.Encode(buf, *collage, options)
 	return err
