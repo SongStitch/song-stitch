@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"net/http"
@@ -148,7 +147,6 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	if request.Webp {
 		w.Header().Set("Content-Type", "image/webp")
 		w.Write(buffer.Bytes())
-		fmt.Println("Setting webp")
 	} else {
 		w.Header().Set("Content-Type", "image/jpeg")
 		err = jpeg.Encode(w, *image, nil)

@@ -6,11 +6,11 @@ require github.com/joho/godotenv v1.5.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
+	github.com/SongStitch/go-webp v1.1.1
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.10.1
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/justinas/alice v1.2.0
-	github.com/kolesa-team/go-webp v1.0.4
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/zerolog v1.29.1
 )

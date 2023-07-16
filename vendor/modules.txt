@@ -1,6 +1,12 @@
 # github.com/PuerkitoBio/goquery v1.8.1
 ## explicit; go 1.13
 github.com/PuerkitoBio/goquery
+# github.com/SongStitch/go-webp v1.1.1
+## explicit; go 1.10
+github.com/SongStitch/go-webp/decoder
+github.com/SongStitch/go-webp/encoder
+github.com/SongStitch/go-webp/utils
+github.com/SongStitch/go-webp/webp
 # github.com/andybalholm/cascadia v1.3.2
 ## explicit; go 1.16
 github.com/andybalholm/cascadia
@@ -37,12 +43,6 @@ github.com/joho/godotenv
 # github.com/justinas/alice v1.2.0
 ## explicit; go 1.12
 github.com/justinas/alice
-# github.com/kolesa-team/go-webp v1.0.4
-## explicit; go 1.10
-github.com/kolesa-team/go-webp/decoder
-github.com/kolesa-team/go-webp/encoder
-github.com/kolesa-team/go-webp/utils
-github.com/kolesa-team/go-webp/webp
 # github.com/leodido/go-urn v1.2.4
 ## explicit; go 1.16
 github.com/leodido/go-urn
