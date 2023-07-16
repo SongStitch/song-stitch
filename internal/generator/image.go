@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"runtime"
 	"time"
 
 	"github.com/SongStitch/go-webp/encoder"
@@ -164,6 +165,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
+	runtime.GC()
 	collageBuffer := new(bytes.Buffer)
 
 	if displayOptions.Webp {
