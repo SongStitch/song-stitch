@@ -165,7 +165,10 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
+	gcStart := time.Now()
 	runtime.GC()
+	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
+
 	collageBuffer := new(bytes.Buffer)
 
 	if displayOptions.Webp {
