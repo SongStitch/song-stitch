@@ -41,7 +41,7 @@ const (
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
 	width, height := dc.MeasureString(text)
-	imageSize := float64(300 - 20)
+	imageSize := float64(dc.Width() - 20)
 	switch displayOptions.TextLocation {
 	case constants.TOP_LEFT:
 		return 0, 0
@@ -154,6 +154,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		if *img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
+			img = nil
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
