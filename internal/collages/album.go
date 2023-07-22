@@ -83,12 +83,17 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 	logger := zerolog.Ctx(ctx)
 
 	albums := make([]*Album, len(r.TopAlbums.Albums))
+	imageFetchChan := make(chan struct{}, 10) // Adjust the buffer size as needed
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
 	start := time.Now()
 	for i, album := range r.TopAlbums.Albums {
+		imageFetchChan <- struct{}{} // Add to the buffered channel to control goroutines
 		go func(i int, album LastFMAlbum) {
-			defer wg.Done()
+			defer func() {
+				<-imageFetchChan // Release the channel when the goroutine completes
+				wg.Done()
+			}()
 			newAlbum := &Album{
 				Name:      album.AlbumName,
 				Artist:    album.Artist.ArtistName,
@@ -113,6 +118,7 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 		}(i, album)
 	}
 	wg.Wait()
+	close(imageFetchChan) // Close the channel after all goroutines are done
 	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "album").Msg("Image URLs fetched")
 	return albums, nil
 }
