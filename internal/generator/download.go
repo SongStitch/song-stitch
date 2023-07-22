@@ -1,13 +1,11 @@
 package generator
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
-	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -72,50 +70,52 @@ func DownloadImage(ctx context.Context, entity Downloadable) error {
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	ioBody := resp.Body
 	extension, err := getExtension(url)
 	if err != nil {
 		return err
 	}
 
+	var img image.Image
 	if strings.ToLower(extension) == jpgFileType {
-		img, err := jpeg.Decode(ioBody)
-		if err != nil {
-			return err
-		}
-		entity.SetImage(&img)
-		return err
+		img, err = jpeg.Decode(resp.Body)
 	} else if strings.ToLower(extension) == gifFileType {
-		img, err := gif.Decode(ioBody)
-		if err != nil {
-			return err
-		}
-		entity.SetImage(&img)
-		return err
+		img, err = gif.Decode(resp.Body)
 	} else {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		img, _, err := image.Decode(bytes.NewReader(body))
-		entity.SetImage(&img)
-		return err
-
+		img, _, err = image.Decode(resp.Body)
 	}
+	if err != nil {
+		return err
+	}
+
+	entity.SetImage(img)
+	return nil
 }
 
 func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
-
 	logger := zerolog.Ctx(ctx)
+
+	// Create a buffered channel with a fixed number of goroutines allowed to run concurrently
+	// This limits the number of concurrent goroutines and helps in reducing memory usage.
+	maxConcurrent := 10 // Adjust this value as needed.
+	semaphore := make(chan struct{}, maxConcurrent)
+
 	var wg sync.WaitGroup
 	wg.Add(len(entities))
 
 	start := time.Now()
 	for i := range entities {
 		entity := &entities[i]
-		// download each image in a separate goroutine
+
+		// Acquire a slot from the semaphore (blocks if the limit is reached)
+		semaphore <- struct{}{}
+
+		// Download each image in a separate goroutine
 		go func(entity *T) {
-			defer wg.Done()
+			defer func() {
+				// Release the slot from the semaphore when the goroutine is finished
+				<-semaphore
+				wg.Done()
+			}()
 			err := DownloadImageWithRetry(ctx, *entity)
 			if err != nil {
 				logger.Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
@@ -125,7 +125,7 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 		}(entity)
 	}
 
-	// wait for all downloads to finish
+	// Wait for all downloads to finish
 	wg.Wait()
 	logger.Info().Dur("duration", time.Since(start)).Msg("Downloaded images")
 

@@ -148,8 +148,8 @@ func (a *Album) GetImageUrl() string {
 	return a.ImageUrl
 }
 
-func (a *Album) SetImage(img *image.Image) {
-	a.Image = *img
+func (a *Album) SetImage(img image.Image) {
+	a.Image = img
 }
 
 func (a *Album) GetIdentifier() string {

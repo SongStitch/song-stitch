@@ -189,8 +189,8 @@ func (t *Track) GetImageUrl() string {
 	return t.ImageUrl
 }
 
-func (t *Track) SetImage(img *image.Image) {
-	t.Image = *img
+func (t *Track) SetImage(img image.Image) {
+	t.Image = img
 }
 
 func (t *Track) GetIdentifier() string {

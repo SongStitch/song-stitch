@@ -13,7 +13,7 @@ type Drawable interface {
 }
 type Downloadable interface {
 	GetImageUrl() string
-	SetImage(*image.Image)
+	SetImage(image.Image)
 	GetIdentifier() string
 	GetCacheEntry() cache.CacheEntry
 }
