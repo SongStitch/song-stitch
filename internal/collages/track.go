@@ -1,7 +1,6 @@
 package collages
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"image"
@@ -60,13 +59,13 @@ func (t *LastFMTopTracks) GetTotalFetched() int {
 	return len(t.TopTracks.Tracks)
 }
 
-func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	if count > 25 {
-		return nil, nil, constants.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	tracks, err := getTracks(ctx, username, period, count, imageSize)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	generator.DownloadImages(ctx, tracks)

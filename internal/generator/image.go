@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
-	"runtime"
+	"sync"
 	"time"
 
 	"github.com/SongStitch/go-webp/encoder"
@@ -123,8 +123,8 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	return &result
 }
 
-func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error {
-	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
+func WebpEncode(buf *bytes.Buffer, collage *image.Image) error {
+	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, compressionQuality)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error 
 	return err
 }
 
-func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
 
@@ -165,20 +165,84 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
-	gcStart := time.Now()
-	runtime.GC()
-	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
+	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
+	return &collage, nil
+}
 
-	collageBuffer := new(bytes.Buffer)
+func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, displayOptions DisplayOptions) (*image.Image, error) {
+	start := time.Now()
+	logger := zerolog.Ctx(ctx)
 
-	if displayOptions.Webp {
-		logger.Info().Msg("Converting to Webp image")
-		err := webpEncode(collageBuffer, &collage, compressionQuality)
-		if err != nil {
-			logger.Err(err).Msg("Unable to create Webp image")
-		}
+	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
+	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
+	dc := gg.NewContext(collageWidth, collageHeight)
+	dc.SetRGB(0, 0, 0)
+	fontFile := fontFileRegular
+	if displayOptions.BoldFont {
+		fontFile = fontFileBold
+	}
+	dc.LoadFontFace(fontFile, displayOptions.FontSize)
+
+	type albumImagePair struct {
+		Album T
+		Img   image.Image
+	}
+
+	// Create a channel to receive album-image pairs
+	// resultChan := make(chan albumImagePair)
+
+	// Use a wait group to keep track of goroutines
+	var wg sync.WaitGroup
+	maxconcurrent := 10
+	sem := make(chan struct{}, maxconcurrent)
+	images := make([]image.Image, maxconcurrent)
+
+	// increment the wait group for each goroutine created
+	wg.Add(len(albums))
+
+	// create a goroutine for each album to fetch and process the image concurrently
+	for i, album := range albums {
+		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
+		sem <- struct{}{} // acquire a semaphore slot
+		go func(album T, x int, y int, i int) {
+			defer func() {
+				<-sem // Release the semaphore slot when done
+				wg.Done()
+			}()
+
+			img := images[i%maxconcurrent]
+			err := GetImage(ctx, &img, album.GetImageUrl())
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to fetch image")
+				return
+			}
+
+			if img != nil {
+				dc.DrawImage(img, x, y)
+				album.ClearImage()
+
+				// Place text after drawing the image to avoid overlapping issues
+				placeText(dc, album, displayOptions, float64(x), float64(y))
+			}
+
+			// Send the album-image pair to the channel
+			// resultChan <- albumImagePair{Album: album, Img: img}
+		}(album, x, y, i)
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Close the result channel after all goroutines have completed
+	// close(resultChan)
+
+	collage := dc.Image()
+
+	if displayOptions.Resize {
+		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &collage, collageBuffer, nil
+	return &collage, nil
 }

@@ -1,7 +1,6 @@
 package collages
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"image"
@@ -58,18 +57,18 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, error) {
 	if count > 225 {
-		return nil, nil, constants.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	albums, err := getAlbums(ctx, username, period, count, imageSize)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	generator.DownloadImages(ctx, albums)
 
-	return generator.CreateCollage(ctx, albums, displayOptions)
+	return generator.CreateCollageEfficient(ctx, albums, displayOptions)
 }
 
 func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
@@ -84,9 +83,11 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 
 	albums := make([]*Album, len(r.TopAlbums.Albums))
 	imageFetchChan := make(chan struct{}, 10) // Adjust the buffer size as needed
+
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
 	start := time.Now()
+
 	for i, album := range r.TopAlbums.Albums {
 		imageFetchChan <- struct{}{} // Add to the buffered channel to control goroutines
 		go func(i int, album LastFMAlbum) {
@@ -117,8 +118,10 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 			albums[i].ImageUrl = albumInfo.ImageUrl
 		}(i, album)
 	}
+
 	wg.Wait()
 	close(imageFetchChan) // Close the channel after all goroutines are done
+
 	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "album").Msg("Image URLs fetched")
 	return albums, nil
 }

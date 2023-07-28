@@ -148,3 +148,41 @@ func getExtension(u string) (string, error) {
 	ext := filepath.Ext(fileName)
 	return ext, nil
 }
+
+func GetImage(ctx context.Context, img *image.Image, url string) error {
+	if len(url) == 0 {
+		img = nil
+		// Skip album art if it doesn't exist
+		return nil
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	extension, err := getExtension(url)
+	if err != nil {
+		return err
+	}
+
+	if strings.ToLower(extension) == jpgFileType {
+		*img, err = jpeg.Decode(resp.Body)
+	} else if strings.ToLower(extension) == gifFileType {
+		*img, err = gif.Decode(resp.Body)
+	} else {
+		*img, _, err = image.Decode(resp.Body)
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

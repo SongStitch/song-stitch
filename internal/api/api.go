@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"net/http"
+	"runtime"
+	"runtime/debug"
+	"time"
 
 	"github.com/ggicci/httpin"
 	"github.com/go-playground/validator/v10"
@@ -35,7 +39,7 @@ type CollageRequest struct {
 	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
 }
 
-func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, error) {
 	count := request.Rows * request.Columns
 	imageSize := "extralarge"
 	imageDimension := 300
@@ -77,8 +81,20 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 	case constants.TRACK:
 		return collages.GenerateCollageForTrack(ctx, request.Username, period, count, imageSize, displayOptions)
 	default:
-		return nil, nil, errors.New("invalid collage type")
+		return nil, errors.New("invalid collage type")
 	}
+}
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }
 
 func Collage(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +131,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Bool("webp", request.Webp).
 		Msg("Generating collage")
 
-	image, buffer, err := generateCollage(ctx, request)
+	image, err := generateCollage(ctx, request)
 	if ctx.Err() != nil {
 		logger.Warn().Err(ctx.Err()).Msg("Context cancelled")
 		// 499 is the http status code for client closed request
@@ -145,6 +161,21 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Webp {
+		PrintMemUsage()
+		gcStart := time.Now()
+		runtime.GC()
+		debug.FreeOSMemory()
+		logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
+		PrintMemUsage()
+		buffer := new(bytes.Buffer)
+
+		logger := zerolog.Ctx(ctx)
+		logger.Info().Msg("Creating Webp image")
+		err := generator.WebpEncode(buffer, image)
+    PrintMemUsage()
+		if err != nil {
+			logger.Err(err).Msg("Unable to create Webp image")
+		}
 		w.Header().Set("Content-Type", "image/webp")
 		w.Write(buffer.Bytes())
 	} else {

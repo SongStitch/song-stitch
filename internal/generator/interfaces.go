@@ -10,6 +10,7 @@ type Drawable interface {
 	GetImage() *image.Image
 	GetParameters() map[string]string
 	ClearImage()
+	GetImageUrl() string
 }
 type Downloadable interface {
 	GetImageUrl() string
