@@ -188,26 +188,20 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 		Img   image.Image
 	}
 
-	// Create a channel to receive album-image pairs
-	// resultChan := make(chan albumImagePair)
-
-	// Use a wait group to keep track of goroutines
 	var wg sync.WaitGroup
 	maxconcurrent := 10
 	sem := make(chan struct{}, maxconcurrent)
 	images := make([]image.Image, maxconcurrent)
 
-	// increment the wait group for each goroutine created
 	wg.Add(len(albums))
 
-	// create a goroutine for each album to fetch and process the image concurrently
 	for i, album := range albums {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		sem <- struct{}{} // acquire a semaphore slot
+		sem <- struct{}{}
 		go func(album T, x int, y int, i int) {
 			defer func() {
-				<-sem // Release the semaphore slot when done
+				<-sem
 				wg.Done()
 			}()
 
@@ -219,23 +213,17 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 			}
 
 			if img != nil {
+				img = *resizeImage(ctx, &img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 				dc.DrawImage(img, x, y)
 				album.ClearImage()
 
-				// Place text after drawing the image to avoid overlapping issues
 				placeText(dc, album, displayOptions, float64(x), float64(y))
 			}
 
-			// Send the album-image pair to the channel
-			// resultChan <- albumImagePair{Album: album, Img: img}
 		}(album, x, y, i)
 	}
 
-	// Wait for all goroutines to finish
 	wg.Wait()
-
-	// Close the result channel after all goroutines have completed
-	// close(resultChan)
 
 	collage := dc.Image()
 
