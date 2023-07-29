@@ -4,13 +4,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"net/http"
-	"runtime"
-	"runtime/debug"
-	"time"
 
 	"github.com/ggicci/httpin"
 	"github.com/go-playground/validator/v10"
@@ -84,18 +80,6 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		return nil, errors.New("invalid collage type")
 	}
 }
-func PrintMemUsage() {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
-	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
-	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
-	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
-	fmt.Printf("\tNumGC = %v\n", m.NumGC)
-}
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
 
 func Collage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -161,18 +145,11 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Webp {
-		PrintMemUsage()
-		gcStart := time.Now()
-		runtime.GC()
-		debug.FreeOSMemory()
-		logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
-		PrintMemUsage()
 		buffer := new(bytes.Buffer)
 
 		logger := zerolog.Ctx(ctx)
 		logger.Info().Msg("Creating Webp image")
 		err := generator.WebpEncode(buffer, image)
-    PrintMemUsage()
 		if err != nil {
 			logger.Err(err).Msg("Unable to create Webp image")
 		}
