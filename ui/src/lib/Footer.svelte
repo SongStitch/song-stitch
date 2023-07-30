@@ -1,5 +1,7 @@
 <script lang="ts">
   import appstore_icon from '../assets/images/appstore_icon.png';
+  import KofiWidget from './components/KofiWidget.svelte';
+
   let random = Math.random();
   let names = ['BradLewis', 'TheDen'];
   if (random > 0.5) {
@@ -8,6 +10,9 @@
 </script>
 
 <div class="footer">
+  <div class="kofi-container">
+    <KofiWidget />
+  </div>
   <p class="appstore-container">
     <a
       href="https://apps.apple.com/au/app/songstitch/id6450189672"
@@ -89,11 +94,11 @@
     text-align: center;
     text-align: -webkit-center;
   }
+  .kofi-container {
+    padding-top: 1em;
+  }
   .appstore-icon {
     height: 50px;
-  }
-  .appstore-container {
-    padding-top: 1em;
   }
   a.href-links:link {
     color: black;
