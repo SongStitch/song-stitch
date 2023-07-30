@@ -95,7 +95,7 @@
     text-align: -webkit-center;
   }
   .kofi-container {
-    padding-top: 1em;
+    padding-top: 2em;
   }
   .appstore-icon {
     height: 50px;
