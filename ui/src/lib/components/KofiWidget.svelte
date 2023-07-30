@@ -14,7 +14,6 @@ img.kofiimg{display: initial!important;vertical-align:middle;height:13px!importa
     <a
       title="Support me on ko-fi.com"
       class="kofi-button"
-      style="background-color:#29abe0;"
       href="https://ko-fi.com/P5P3NPGIU"
       target="_blank"
     >
@@ -32,7 +31,7 @@ img.kofiimg{display: initial!important;vertical-align:middle;height:13px!importa
     line-height: 36px !important;
     min-width: 150px;
     display: inline-block !important;
-    background-color: #29abe0;
+    background-color: #275efe;
     padding: 2px 12px !important;
     text-align: center !important;
     border-radius: 12px;
