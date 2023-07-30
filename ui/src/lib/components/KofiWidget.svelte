@@ -34,7 +34,7 @@ img.kofiimg{display: initial!important;vertical-align:middle;height:13px!importa
     background-color: #275efe;
     padding: 2px 12px !important;
     text-align: center !important;
-    border-radius: 12px;
+    border-radius: 10px;
     color: #fff;
     cursor: pointer;
     overflow-wrap: break-word;
