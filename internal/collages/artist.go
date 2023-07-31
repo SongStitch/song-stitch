@@ -18,31 +18,31 @@ import (
 )
 
 type LastFMArtist struct {
-	Images    []lastfm.LastFMImage `json:"image"`
-	Mbid      string               `json:"mbid"`
-	URL       string               `json:"url"`
-	Playcount string               `json:"playcount"`
+	Mbid      string `json:"mbid"`
+	URL       string `json:"url"`
+	Playcount string `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
-	Name string `json:"name"`
+	Name   string               `json:"name"`
+	Images []lastfm.LastFMImage `json:"image"`
 }
 
 type LastFMTopArtists struct {
 	TopArtists struct {
-		Artists []LastFMArtist    `json:"artist"`
 		Attr    lastfm.LastFMUser `json:"@attr"`
+		Artists []LastFMArtist    `json:"artist"`
 	} `json:"topartists"`
 }
 
 func (a *LastFMTopArtists) Append(l lastfm.LastFMResponse) error {
-
 	if artists, ok := l.(*LastFMTopArtists); ok {
 		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
 		return nil
 	}
 	return errors.New("type LastFMResponse is not a LastFMTopArtists")
 }
+
 func (a *LastFMTopArtists) GetTotalPages() int {
 	totalPages, _ := strconv.Atoi(a.TopArtists.Attr.TotalPages)
 	return totalPages
@@ -67,7 +67,6 @@ func GenerateCollageForArtist(ctx context.Context, username string, period const
 }
 
 func getArtists(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Artist, error) {
-
 	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, constants.ARTIST, username, period, count, imageSize)
 	if err != nil {
 		return nil, err
@@ -113,6 +112,8 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "artist").Msg("Image URLs fetched")
 	return artists, nil
 }
+
+
 
 type Artist struct {
 	Name      string

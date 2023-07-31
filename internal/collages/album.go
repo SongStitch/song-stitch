@@ -24,20 +24,20 @@ type LastFMAlbum struct {
 		ArtistName string `json:"name"`
 		Mbid       string `json:"mbid"`
 	} `json:"artist"`
-	Images    []lastfm.LastFMImage `json:"image"`
-	Mbid      string               `json:"mbid"`
-	URL       string               `json:"url"`
-	Playcount string               `json:"playcount"`
+	Mbid      string `json:"mbid"`
+	URL       string `json:"url"`
+	Playcount string `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
-	AlbumName string `json:"name"`
+	AlbumName string               `json:"name"`
+	Images    []lastfm.LastFMImage `json:"image"`
 }
 
 type LastFMTopAlbums struct {
 	TopAlbums struct {
-		Albums []LastFMAlbum     `json:"album"`
 		Attr   lastfm.LastFMUser `json:"@attr"`
+		Albums []LastFMAlbum     `json:"album"`
 	} `json:"topalbums"`
 }
 
