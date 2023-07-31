@@ -42,7 +42,7 @@ const (
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
 	width, height := dc.MeasureString(text)
-	imageSize := float64(dc.Width() - 20)
+	imageSize := float64(dc.Width()/displayOptions.Columns - 20)
 	switch displayOptions.TextLocation {
 	case constants.TOP_LEFT:
 		return 0, 0
@@ -114,7 +114,6 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	} else if int(width) == (*img).Bounds().Dx() && int(height) == (*img).Bounds().Dy() {
 		return img
 	} else if height == 0 {
-
 		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
 	} else if width == 0 {
 		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
