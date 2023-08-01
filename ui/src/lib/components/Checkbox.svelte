@@ -145,4 +145,16 @@
   .checkbox-wrapper {
     padding-top: 1em;
   }
+  :global(body.dark-node) .subheading,
+  .href-links,
+  label,
+  option,
+  .username,
+  .number-input,
+  .nonbold,
+  .reset-text,
+  .advanced-option-label {
+    background-color: #202124 !important;
+    color: #bfc2c7 !important;
+  }
 </style>

@@ -153,4 +153,9 @@
     background-color: #b3b3b3;
     opacity: 0.8;
   }
+  :global(body.dark-mode) dialog {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: solid 1px #bfc2c7 !important;
+  }
 </style>

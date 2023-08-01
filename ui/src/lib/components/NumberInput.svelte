@@ -71,4 +71,9 @@
     border-color: red;
     contain: inline-size;
   }
+  :global(body.dark-mode) .number-input {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: solid 1px #bfc2c7 !important;
+  }
 </style>

@@ -492,4 +492,51 @@
     width: fit-content;
     color: black;
   }
+
+  :global(body.dark-node) .subheading,
+  .href-links,
+  label,
+  option,
+  .username,
+  .number-input,
+  .nonbold,
+  .reset-text,
+  .advanced-option-label {
+    background-color: #202124 !important;
+    color: #bfc2c7 !important;
+  }
+  :global(body.dark-mode) form {
+    background-color: #202124 !important;
+    color: #bfc2c7 !important;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+
+  :global(body.dark-mode) fieldset {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: none;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+
+  :global(body.dark-mode) .btn-grad,
+  .btn-grad-embed {
+    box-shadow: none;
+  }
+
+  :global(body.dark-mode) .appstore-icon,
+  .gh-footer,
+  .darkmode-icon-img,
+  .loader-container {
+    filter: invert(1);
+  }
+
+  :global(body.dark-mode) input {
+    mix-blend-mode: exclusion;
+  }
+
+  :global(body.dark-mode) select {
+    background-color: #202124 !important;
+    color: #bfc2c7 !important;
+    mix-blend-mode: exclusion;
+  }
 </style>
