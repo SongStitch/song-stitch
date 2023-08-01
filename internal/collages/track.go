@@ -193,10 +193,6 @@ func (t *Track) SetImage(img *image.Image) {
 	t.Image = *img
 }
 
-func (t *Track) GetImage() *image.Image {
-	return &t.Image
-}
-
 func (t *Track) GetIdentifier() string {
 	if t.Mbid != "" {
 		return t.Mbid + t.ImageSize
@@ -207,6 +203,10 @@ func (t *Track) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: t.ImageUrl, Album: t.Album}
 }
 
+func (t *Track) GetImage() *image.Image {
+	return &t.Image
+}
+
 func (t *Track) GetParameters() map[string]string {
 	return map[string]string{
 		"artist":    t.Artist,
@@ -214,4 +214,8 @@ func (t *Track) GetParameters() map[string]string {
 		"playcount": t.Playcount,
 		"album":     t.Album,
 	}
+}
+
+func (t *Track) ClearImage() {
+	t.Image = nil
 }

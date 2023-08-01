@@ -67,8 +67,9 @@ func RunServer() {
 	})
 
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: router,
+		Addr:              ":8080",
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Minute,
 	}
 
 	http.DefaultClient.Timeout = 10 * time.Second

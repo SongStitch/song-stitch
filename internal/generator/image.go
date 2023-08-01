@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"runtime"
 	"time"
 
+	"github.com/SongStitch/go-webp/encoder"
+	"github.com/SongStitch/go-webp/webp"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
-	"github.com/kolesa-team/go-webp/encoder"
-	"github.com/kolesa-team/go-webp/webp"
 
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
@@ -41,7 +42,7 @@ const (
 
 func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (float64, float64) {
 	width, height := dc.MeasureString(text)
-	imageSize := float64(300 - 20)
+	imageSize := float64(dc.Width()/displayOptions.Columns - 20)
 	switch displayOptions.TextLocation {
 	case constants.TOP_LEFT:
 		return 0, 0
@@ -113,7 +114,6 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	} else if int(width) == (*img).Bounds().Dx() && int(height) == (*img).Bounds().Dy() {
 		return img
 	} else if height == 0 {
-
 		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
 	} else if width == 0 {
 		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
@@ -127,6 +127,7 @@ func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error 
 	if err != nil {
 		return err
 	}
+	options.LowMemory = true
 
 	err = webp.Encode(buf, *collage, options)
 	return err
@@ -153,6 +154,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		if *img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
+			collageElement.ClearImage()
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
@@ -162,9 +164,14 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
+	gcStart := time.Now()
+	runtime.GC()
+	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
+
 	collageBuffer := new(bytes.Buffer)
 
 	if displayOptions.Webp {
+		logger.Info().Msg("Converting to Webp image")
 		err := webpEncode(collageBuffer, &collage, compressionQuality)
 		if err != nil {
 			logger.Err(err).Msg("Unable to create Webp image")

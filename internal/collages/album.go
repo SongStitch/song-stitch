@@ -174,3 +174,7 @@ func (a *Album) GetParameters() map[string]string {
 		"playcount": a.Playcount,
 	}
 }
+
+func (a *Album) ClearImage() {
+	a.Image = nil
+}
