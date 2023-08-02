@@ -75,7 +75,7 @@ func GenerateCollageForTrack(ctx context.Context, username string, period consta
 }
 
 func getTracks(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Track, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count)
 	if err != nil {
 		return nil, err
 	}

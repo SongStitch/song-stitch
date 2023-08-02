@@ -73,7 +73,7 @@ func GenerateCollageForAlbum(ctx context.Context, username string, period consta
 }
 
 func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count)
 	if err != nil {
 		return nil, err
 	}

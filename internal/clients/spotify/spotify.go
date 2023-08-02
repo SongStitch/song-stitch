@@ -24,10 +24,10 @@ type SpotifyAuthResponse struct {
 }
 
 type Token struct {
-	AccessToken string
-	ExpiresIn   int
 	client      *http.Client
+	AccessToken string
 	endpoint    string
+	ExpiresIn   int
 }
 
 func (t *Token) Refresh() error {
@@ -89,8 +89,8 @@ func (t *Token) KeepAlive(log zerolog.Logger) {
 
 type SpotifyClient struct {
 	token    *Token
-	endpoint string
 	client   *http.Client
+	endpoint string
 }
 
 var spotifyClient *SpotifyClient

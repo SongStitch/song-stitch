@@ -8,8 +8,8 @@ import (
 const MAX_CACHE_SIZE = 10000
 
 type Map[K comparable, V any] struct {
-	count atomic.Uint64
 	m     sync.Map
+	count atomic.Uint64
 }
 
 func (m *Map[K, V]) Load(key K) (value V, ok bool) {

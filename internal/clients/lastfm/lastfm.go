@@ -64,14 +64,14 @@ func cleanError(err error) error {
 	return CleanError{errStr: modifiedString}
 }
 
-func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int, imageSize string) (*T, error) {
+func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int) (*T, error) {
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 
 	// Image URLs stop getting returned by the API at around 500
 	const maxPerPage = 500
-	var totalFetched = 0
-	var page = 1
+	totalFetched := 0
+	page := 1
 
 	var result T
 	initialised := false
@@ -164,14 +164,13 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 type GetTrackInfoResponse struct {
 	Track struct {
 		Album struct {
-			Images    []LastFMImage `json:"image"`
 			AlbumName string        `json:"title"`
+			Images    []LastFMImage `json:"image"`
 		} `json:"Album"`
 	} `json:"track"`
 }
 
 func GetTrackInfo(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
-
 	endpoint := os.Getenv("LASTFM_ENDPOINT")
 	key := os.Getenv("LASTFM_API_KEY")
 	u, err := url.Parse(endpoint)
@@ -220,7 +219,6 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 		}
 	}
 	return nil, errors.New("no image found")
-
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
@@ -245,5 +243,4 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 		return "", errors.New("no image found")
 	}
 	return path.Base(href), nil
-
 }

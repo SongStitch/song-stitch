@@ -67,7 +67,7 @@ func GenerateCollageForArtist(ctx context.Context, username string, period const
 }
 
 func getArtists(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Artist, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, constants.ARTIST, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, constants.ARTIST, username, period, count)
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +112,6 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "artist").Msg("Image URLs fetched")
 	return artists, nil
 }
-
-
 
 type Artist struct {
 	Name      string
