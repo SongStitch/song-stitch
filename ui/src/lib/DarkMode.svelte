@@ -47,6 +47,15 @@
 </div>
 
 <style>
+  :global(:root.dark-mode) {
+    background-color: #202124;
+    opacity: 1;
+    background-image: radial-gradient(#5d5d5d 0.61px, transparent 0.6px),
+      radial-gradient(#5d5d5d 0.6px, #202124 0.6px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+  }
+
   .dark-mode-icon {
     cursor: pointer;
     position: relative;
