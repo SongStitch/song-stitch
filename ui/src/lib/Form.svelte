@@ -331,11 +331,11 @@
   select {
     background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='%23000000' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")
       no-repeat;
-    background-position: calc(100% - 0.75rem) center !important;
-    -moz-appearance: none !important;
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    padding-right: 2rem !important;
+    background-position: calc(100% - 0.75rem) center;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 2rem;
   }
   input[type='submit'],
   input[type='button'] {
@@ -378,6 +378,7 @@
   }
   .advanced-option-label {
     color: black;
+    background-color: white;
     font-size: 1em;
     font-weight: bold;
   }
@@ -491,5 +492,53 @@
     margin: auto;
     width: fit-content;
     color: black;
+  }
+
+  :global(body.dark-mode) .href-links,
+  :global(body.dark-mode) option,
+  :global(body.dark-mode) .username {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) .reset-text {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) .advanced-option-label {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) label {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) form {
+    background-color: #202124;
+    color: #bfc2c7;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+  :global(body.dark-mode) fieldset {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: none;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+  :global(body.dark-mode) .btn-grad,
+  .btn-grad-embed {
+    box-shadow: none;
+    color: white !important;
+  }
+  :global(body.dark-mode) input {
+    background-color: #202124;
+    color: #bfc2c7;
+    mix-blend-mode: exclusion;
+  }
+  :global(body.dark-mode) select {
+    background-color: #202124;
+    color: #bfc2c7;
+    mix-blend-mode: exclusion;
+  }
+  :global(body.dark-mode) .loader-container {
+    filter: invert(1);
   }
 </style>

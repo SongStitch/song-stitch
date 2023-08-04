@@ -107,11 +107,35 @@ a.href-links:active {
   h1 {
     font-size: 1.5em;
   }
-  label {
-    font-size: 1em;
-  }
   .modal-content {
     width: 80% !important;
     margin: 50% auto !important;
   }
+}
+:global(:root.dark-mode) {
+  background-color: #202124;
+  opacity: 1;
+  background-image: radial-gradient(#5d5d5d 0.61px, transparent 0.6px),
+    radial-gradient(#5d5d5d 0.6px, #202124 0.6px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+::-moz-selection {
+  /* Code for Firefox */
+  color: white;
+  background: black;
+}
+::selection {
+  color: white;
+  background: black;
+}
+:global(body.dark-mode) .href-links {
+  color: #bfc2c7;
+  background-color: #202124;
+}
+
+:global(body.dark-mode) a.href-links:hover,
+:global(body.dark-mode) a.href-links:active {
+  color: #202124;
+  background: #bfc2c7;
 }

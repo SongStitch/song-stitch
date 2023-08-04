@@ -13,49 +13,11 @@
   }
 
   function applyDarkMode() {
-    document.body.classList.toggle('dark-mode');
+    window.document.body.classList.toggle('dark-mode');
     document.querySelector('html').classList.toggle('dark-mode');
-    document.getElementsByTagName('dialog')[0].classList.toggle('dark-mode');
-    document.getElementsByTagName('fieldset')[0].classList.toggle('dark-mode');
-    document.querySelector('#app > main > form').classList.toggle('dark-mode');
-
-    const selectElements = document.getElementsByTagName('select');
-    const labelElements = document.getElementsByTagName('label');
     const headerImg = document.querySelector('.header-img');
     headerImg.classList.toggle('dark-mode');
     headerImg.src = darkMode ? logoDark : logo;
-
-    const classNames = [
-      'subheading',
-      'footer-text',
-      'username',
-      'number-input',
-      'nonbold',
-      'href-links',
-      'btn-grad',
-      'btn-grad-embed',
-      'reset-text',
-      'appstore-icon',
-      'gh-footer',
-      'dvanced-option-label',
-      'darkmode-icon-img',
-      'loader-container',
-    ];
-
-    classNames.forEach((className) => toggleClassByClassname(className));
-
-    Array.from(selectElements).forEach((selectElement) => {
-      selectElement.classList.toggle('dark-mode');
-      const optionElements = selectElement.getElementsByTagName('option');
-      Array.from(optionElements).forEach((optionElement) => {
-        optionElement.classList.toggle('dark-mode');
-      });
-    });
-
-    Array.from(labelElements).forEach((labelElement) => {
-      labelElement.classList.toggle('dark-mode');
-    });
-
     localStorage.setItem('darkMode', darkMode.toString());
   }
 
@@ -116,63 +78,7 @@
     background-position: 0 0, 12px 12px;
   }
 
-  :global(.footer-text.dark-mode) {
-    color: #bfc2c7;
-  }
-  :global(
-      .subheading.dark-mode,
-      .href-links.dark-mode,
-      label.dark-mode,
-      option.dark-mode,
-      .username.dark-mode,
-      .number-input.dark-mode,
-      .nonbold.dark-mode,
-      .reset-text.dark-mode,
-      .advanced-option-label.dark-mode
-    ) {
-    background-color: #202124 !important;
-    color: #bfc2c7 !important;
-  }
-
-  :global(dialog.dark-mode) {
-    background-color: #202124;
-    color: #bfc2c7;
-    border: solid 1px #bfc2c7 !important;
-  }
-
-  :global(fieldset.dark-mode) {
-    background-color: #202124;
-    color: #bfc2c7;
-    border: none;
-    box-shadow: 0 0 2px #bfc2c7;
-  }
-
-  :global(.btn-grad.dark-mode, .btn-grad-embed.dark-mode) {
-    box-shadow: none;
-  }
-
-  :global(
-      .appstore-icon.dark-mode,
-      .gh-footer.dark-mode,
-      .darkmode-icon-img.dark-mode,
-      .loader-container.dark-mode
-    ) {
+  :global(body.dark-mode) .darkmode-icon-img {
     filter: invert(1);
-  }
-
-  :global(form.dark-mode) {
-    background-color: #202124 !important;
-    color: #bfc2c7 !important;
-    box-shadow: 0 0 2px #bfc2c7;
-  }
-
-  :global(input.dark-mode) {
-    mix-blend-mode: exclusion;
-  }
-
-  :global(select.dark-mode) {
-    background-color: #202124 !important;
-    color: #bfc2c7 !important;
-    mix-blend-mode: exclusion;
   }
 </style>
