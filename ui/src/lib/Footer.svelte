@@ -28,7 +28,7 @@
       />
     </a>
   </p>
-  <p id="links">
+  <p id="links" class="footer-text">
     Made with ❤️ by
     <span
       ><a
@@ -150,5 +150,25 @@
 
   .lastfm-footer {
     margin-top: 0;
+  }
+  :global(body.dark-mode) .footer-text {
+    color: #bfc2c7;
+    background-color: #202124;
+  }
+
+  :global(body.dark-mode) .appstore-icon,
+  :global(body.dark-mode) .gh-footer {
+    filter: invert(1);
+  }
+
+  :global(body.dark-mode) .href-links {
+    color: #bfc2c7;
+    background-color: #202124;
+  }
+
+  :global(body.dark-mode) a.href-links:hover,
+  :global(body.dark-mode) a.href-links:active {
+    color: #202124;
+    background: #bfc2c7;
   }
 </style>

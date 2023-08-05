@@ -55,6 +55,7 @@ body {
   padding: 20px;
   box-sizing: border-box;
   padding-top: 0px;
+  margin: 0px;
 }
 label {
   font-weight: bold;
@@ -106,11 +107,28 @@ a.href-links:active {
   h1 {
     font-size: 1.5em;
   }
-  label {
-    font-size: 1em;
-  }
   .modal-content {
     width: 80% !important;
     margin: 50% auto !important;
   }
+}
+
+::-moz-selection {
+  /* Code for Firefox */
+  color: white;
+  background: black;
+}
+::selection {
+  color: white;
+  background: black;
+}
+:global(body.dark-mode) .href-links {
+  color: #bfc2c7;
+  background-color: #202124;
+}
+
+:global(body.dark-mode) a.href-links:hover,
+:global(body.dark-mode) a.href-links:active {
+  color: #202124;
+  background: #bfc2c7;
 }

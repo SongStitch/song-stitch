@@ -229,41 +229,36 @@
         visible={$data.advancedOptions}
         bind:checked={$data.showTextSize}
       />
-      {#if $data.showTextSize}
-        <div class="sub-options">
-          <label class="advanced-option-label" for="fontsize"
-            >Text Font Size</label
-          ><br />
-          <select name="textSize">
-            <option value={10}>Extra Small</option>
-            <option selected value={12}>Small (default)</option>
-            <option value={15}>Medium</option>
-            <option value={18}>Large</option></select
-          ><br />
-        </div>
-      {/if}
+      <div hidden={!$data.showTextSize} class="sub-options">
+        <label class="advanced-option-label" for="fontsize"
+          >Text Font Size</label
+        ><br />
+        <select name="textSize">
+          <option value={10}>Extra Small</option>
+          <option selected value={12}>Small (default)</option>
+          <option value={15}>Medium</option>
+          <option value={18}>Large</option></select
+        ><br />
+      </div>
       <Checkbox
         text="Set Text Location"
         name="showTextLocation"
         visible={$data.advancedOptions}
         bind:checked={$data.showTextLocation}
       />
-      {#if $data.showTextLocation}
-        <div class="sub-options">
-          <label class="advanced-option-label" for="fontlocation"
-            >Text Location</label
-          ><br />
-          <select name="textLocation">
-            <option selected value={'topleft'}>Top Left (default)</option>
-            <option value={'topcentre'}>Top Centre</option>
-            <option value={'topright'}>Top Right</option>
-            <option value={'bottomleft'}>Bottom Left</option>
-            <option value={'bottomcentre'}>Bottom Centre</option>
-            <option value={'bottomright'}>Bottom Right</option>
-          </select><br />
-        </div>
-      {/if}
-
+      <div hidden={!$data.showTextLocation} class="sub-options">
+        <label class="advanced-option-label" for="fontlocation"
+          >Text Location</label
+        ><br />
+        <select name="textLocation">
+          <option selected value={'topleft'}>Top Left (default)</option>
+          <option value={'topcentre'}>Top Centre</option>
+          <option value={'topright'}>Top Right</option>
+          <option value={'bottomleft'}>Bottom Left</option>
+          <option value={'bottomcentre'}>Bottom Centre</option>
+          <option value={'bottomright'}>Bottom Right</option>
+        </select><br />
+      </div>
       <Checkbox
         text="WebP Compressed Image"
         name="WebPLossyCompression"
@@ -272,11 +267,11 @@
       />
     </div>
   </fieldset>
-  {#if $isSubmitting}
-    <div class="loader-container">
+  <div class="loader-container">
+    {#if $isSubmitting}
       <div class="loader" />
-    </div>
-  {/if}
+    {/if}
+  </div>
   <input name="submit" class="btn-grad" type="submit" value="Generate" />
   <input
     name="embed"
@@ -286,7 +281,7 @@
     on:click={embedOnClick}
   />
   <div class="reset-button">
-    <a style="color: black;" href="#top" on:click={reset}>Reset Form</a>
+    <a class="reset-text" href="#top" on:click={reset}>Reset Form</a>
   </div>
 </form>
 <Modal bind:showModal={showEmbedModal} message={embedHTML}>
@@ -336,11 +331,11 @@
   select {
     background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='%23000000' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")
       no-repeat;
-    background-position: calc(100% - 0.75rem) center !important;
-    -moz-appearance: none !important;
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    padding-right: 2rem !important;
+    background-position: calc(100% - 0.75rem) center;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 2rem;
   }
   input[type='submit'],
   input[type='button'] {
@@ -383,6 +378,7 @@
   }
   .advanced-option-label {
     color: black;
+    background-color: white;
     font-size: 1em;
     font-weight: bold;
   }
@@ -426,7 +422,6 @@
     transition: 0.5s;
     background-size: 200% auto;
     color: white;
-    box-shadow: 0 0 20px #eee;
     border-radius: 10px;
     display: block;
   }
@@ -449,7 +444,6 @@
     transition: 0.5s;
     background-size: 200% auto;
     color: white;
-    box-shadow: 0 0 20px #eee;
     border-radius: 10px;
     display: block;
   }
@@ -485,7 +479,11 @@
   .modal-text {
     text-align: center;
   }
+  .reset-text {
+    color: black;
+  }
   .reset-button {
+    color: black;
     text-align: center;
     padding-top: 0.5em;
     font-size: 1em;
@@ -494,5 +492,53 @@
     margin: auto;
     width: fit-content;
     color: black;
+  }
+
+  :global(body.dark-mode) .href-links,
+  :global(body.dark-mode) option,
+  :global(body.dark-mode) .username {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) .reset-text {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) .advanced-option-label {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) label {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
+  :global(body.dark-mode) form {
+    background-color: #202124;
+    color: #bfc2c7;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+  :global(body.dark-mode) fieldset {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: none;
+    box-shadow: 0 0 2px #bfc2c7;
+  }
+  :global(body.dark-mode) .btn-grad,
+  .btn-grad-embed {
+    box-shadow: none;
+    color: white !important;
+  }
+  :global(body.dark-mode) input {
+    background-color: #202124;
+    color: #bfc2c7;
+    mix-blend-mode: exclusion;
+  }
+  :global(body.dark-mode) select {
+    background-color: #202124;
+    color: #bfc2c7;
+    mix-blend-mode: exclusion;
+  }
+  :global(body.dark-mode) .loader-container {
+    filter: invert(1);
   }
 </style>

@@ -115,7 +115,7 @@
   }
   .highlight > .chroma {
     color: #d0d0d0;
-    background-color: #212121;
+    background-color: black;
     position: static;
     z-index: 1;
     border-radius: 4px;
@@ -152,5 +152,14 @@
     color: #222225;
     background-color: #b3b3b3;
     opacity: 0.8;
+  }
+  :global(body.dark-mode) dialog {
+    background-color: #202124;
+    color: #bfc2c7;
+    border: solid 1px #bfc2c7;
+  }
+  :global(body.dark-mode) .close:hover,
+  :global(body.dark-mode) .close:focus {
+    color: white;
   }
 </style>

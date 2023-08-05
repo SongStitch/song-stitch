@@ -10,7 +10,8 @@
 
 <div class="checkbox-wrapper" style="display: {display}">
   <input checked type="checkbox" class="switch" {name} id={name} />
-  <label style="color: {color};" for={name}>{text}</label>
+  <label class="checkbox-label" style="color: {color};" for={name}>{text}</label
+  >
 </div>
 
 <style>
@@ -144,5 +145,8 @@
   }
   .checkbox-wrapper {
     padding-top: 1em;
+  }
+  :global(body.dark-mode) .checkbox-label {
+    filter: invert(1);
   }
 </style>

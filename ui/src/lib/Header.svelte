@@ -41,4 +41,8 @@
     color: unset;
     background: none;
   }
+  :global(body.dark-mode) .subheading {
+    background-color: #202124;
+    color: #bfc2c7;
+  }
 </style>
