@@ -24,20 +24,20 @@ type LastFMAlbum struct {
 		ArtistName string `json:"name"`
 		Mbid       string `json:"mbid"`
 	} `json:"artist"`
-	Images    []lastfm.LastFMImage `json:"image"`
-	Mbid      string               `json:"mbid"`
-	URL       string               `json:"url"`
-	Playcount string               `json:"playcount"`
+	Mbid      string `json:"mbid"`
+	URL       string `json:"url"`
+	Playcount string `json:"playcount"`
 	Attr      struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
-	AlbumName string `json:"name"`
+	AlbumName string               `json:"name"`
+	Images    []lastfm.LastFMImage `json:"image"`
 }
 
 type LastFMTopAlbums struct {
 	TopAlbums struct {
-		Albums []LastFMAlbum     `json:"album"`
 		Attr   lastfm.LastFMUser `json:"@attr"`
+		Albums []LastFMAlbum     `json:"album"`
 	} `json:"topalbums"`
 }
 
@@ -73,7 +73,7 @@ func GenerateCollageForAlbum(ctx context.Context, username string, period consta
 }
 
 func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count)
 	if err != nil {
 		return nil, err
 	}

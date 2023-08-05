@@ -17,21 +17,21 @@ import (
 )
 
 type DisplayOptions struct {
-	ArtistName     bool
-	AlbumName      bool
-	TrackName      bool
-	PlayCount      bool
-	Compress       bool
-	Resize         bool
-	Width          uint
-	Height         uint
-	FontSize       float64
-	BoldFont       bool
-	Rows           int
-	Columns        int
-	ImageDimension int
-	Webp           bool
 	TextLocation   constants.TextLocation
+	Height         uint
+	ImageDimension int
+	Columns        int
+	Rows           int
+	FontSize       float64
+	Width          uint
+	PlayCount      bool
+	Resize         bool
+	BoldFont       bool
+	Compress       bool
+	ArtistName     bool
+	TrackName      bool
+	Webp           bool
+	AlbumName      bool
 }
 
 const (

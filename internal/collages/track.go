@@ -20,26 +20,26 @@ import (
 )
 
 type LastFMTrack struct {
-	Mbid   string               `json:"mbid"`
-	Name   string               `json:"name"`
-	Images []lastfm.LastFMImage `json:"image"`
 	Artist struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
 		Mbid string `json:"mbid"`
 	} `json:"artist"`
+	Mbid     string `json:"mbid"`
+	Name     string `json:"name"`
 	URL      string `json:"url"`
 	Duration string `json:"duration"`
 	Attr     struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
-	Playcount string `json:"playcount"`
+	Playcount string               `json:"playcount"`
+	Images    []lastfm.LastFMImage `json:"image"`
 }
 
 type LastFMTopTracks struct {
 	TopTracks struct {
-		Tracks []LastFMTrack     `json:"track"`
 		Attr   lastfm.LastFMUser `json:"@attr"`
+		Tracks []LastFMTrack     `json:"track"`
 	} `json:"toptracks"`
 }
 
@@ -75,7 +75,7 @@ func GenerateCollageForTrack(ctx context.Context, username string, period consta
 }
 
 func getTracks(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Track, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count, imageSize)
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count)
 	if err != nil {
 		return nil, err
 	}
@@ -199,6 +199,7 @@ func (t *Track) GetIdentifier() string {
 	}
 	return t.Name + t.Artist + t.ImageSize
 }
+
 func (t *Track) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: t.ImageUrl, Album: t.Album}
 }

@@ -10,48 +10,48 @@ type AlbumResponse struct {
 
 type SearchResult[T any] struct {
 	Href     string `json:"href"`
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
 	Items    []T    `json:"items"`
 	Limit    int    `json:"limit"`
-	Next     string `json:"next"`
 	Offset   int    `json:"offset"`
-	Previous string `json:"previous"`
 	Total    int    `json:"total"`
 }
 
 type TrackItem struct {
 	Album            Album       `json:"album"`
-	Artists          []Artist    `json:"artists"`
-	AvailableMarkets []string    `json:"available_markets"`
-	DiscNumber       int         `json:"disc_number"`
-	DurationMs       int         `json:"duration_ms"`
-	Explicit         bool        `json:"explicit"`
+	Name             string      `json:"name"`
+	URI              string      `json:"uri"`
+	Type             string      `json:"type"`
 	ExternalIds      ExternalID  `json:"external_ids"`
 	ExternalUrls     ExternalURL `json:"external_urls"`
 	Href             string      `json:"href"`
 	ID               string      `json:"id"`
-	IsLocal          bool        `json:"is_local"`
-	Name             string      `json:"name"`
-	Popularity       int         `json:"popularity"`
 	PreviewURL       string      `json:"preview_url"`
+	Artists          []Artist    `json:"artists"`
+	AvailableMarkets []string    `json:"available_markets"`
+	DurationMs       int         `json:"duration_ms"`
+	Popularity       int         `json:"popularity"`
 	TrackNumber      int         `json:"track_number"`
-	Type             string      `json:"type"`
-	URI              string      `json:"uri"`
+	DiscNumber       int         `json:"disc_number"`
+	IsLocal          bool        `json:"is_local"`
+	Explicit         bool        `json:"explicit"`
 }
 
 type Album struct {
-	AlbumType            string      `json:"album_type"`
-	Artists              []Artist    `json:"artists"`
-	AvailableMarkets     []string    `json:"available_markets"`
+	ReleaseDatePrecision string      `json:"release_date_precision"`
 	ExternalUrls         ExternalURL `json:"external_urls"`
 	Href                 string      `json:"href"`
 	ID                   string      `json:"id"`
-	Images               []Image     `json:"images"`
 	Name                 string      `json:"name"`
 	ReleaseDate          string      `json:"release_date"`
-	ReleaseDatePrecision string      `json:"release_date_precision"`
-	TotalTracks          int         `json:"total_tracks"`
+	AlbumType            string      `json:"album_type"`
 	Type                 string      `json:"type"`
 	URI                  string      `json:"uri"`
+	Artists              []Artist    `json:"artists"`
+	AvailableMarkets     []string    `json:"available_markets"`
+	Images               []Image     `json:"images"`
+	TotalTracks          int         `json:"total_tracks"`
 }
 
 type Artist struct {
@@ -72,23 +72,23 @@ type ExternalURL struct {
 }
 
 type Image struct {
-	Height int    `json:"height"`
 	URL    string `json:"url"`
+	Height int    `json:"height"`
 	Width  int    `json:"width"`
 }
 
 type AlbumItem struct {
-	AlbumType            string      `json:"album_type"`
-	Artists              []Artist    `json:"artists"`
+	ReleaseDatePrecision string      `json:"release_date_precision"`
 	ExternalURLs         ExternalURL `json:"external_urls"`
 	Href                 string      `json:"href"`
 	ID                   string      `json:"id"`
-	Images               []Image     `json:"images"`
-	IsPlayable           bool        `json:"is_playable"`
 	Name                 string      `json:"name"`
 	ReleaseDate          string      `json:"release_date"`
-	ReleaseDatePrecision string      `json:"release_date_precision"`
-	TotalTracks          int         `json:"total_tracks"`
+	AlbumType            string      `json:"album_type"`
 	Type                 string      `json:"type"`
 	URI                  string      `json:"uri"`
+	Artists              []Artist    `json:"artists"`
+	Images               []Image     `json:"images"`
+	TotalTracks          int         `json:"total_tracks"`
+	IsPlayable           bool        `json:"is_playable"`
 }

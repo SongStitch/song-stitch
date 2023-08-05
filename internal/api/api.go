@@ -18,21 +18,21 @@ import (
 )
 
 type CollageRequest struct {
-	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
-	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=15"`
+	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
+	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
 	Username      string `in:"query=username;required" validate:"required"`
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
-	DisplayArtist bool   `in:"query=artist;default=false"`
+	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
+	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
+	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
+	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
+	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=15"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
-	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
-	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
-	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
-	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
+	DisplayArtist bool   `in:"query=artist;default=false"`
 	BoldFont      bool   `in:"query=boldfont;default=false"`
 	Webp          bool   `in:"query=webp;default=false"`
-	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
 }
 
 func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
@@ -123,11 +123,11 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		switch {
-		case err == constants.ErrUserNotFound:
+		switch err {
+		case constants.ErrUserNotFound:
 			logger.Warn().Err(err).Str("username", request.Username).Msg("User not found")
 			http.Error(w, "User not found", http.StatusNotFound)
-		case err == constants.ErrTooManyImages:
+		case constants.ErrTooManyImages:
 			logger.Warn().Err(err).Str("method", request.Method).Int("rows", request.Rows).Int("columns", request.Columns).Msg("Too many images requested for the collage type")
 			http.Error(w, "Requested collage size is too large for the collage type", http.StatusBadRequest)
 		default:
