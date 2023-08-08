@@ -3,15 +3,18 @@ package generator
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"image"
+	"image/color"
 	"runtime"
 	"time"
 
+	"github.com/EdlinOrg/prominentcolor"
 	"github.com/SongStitch/go-webp/encoder"
 	"github.com/SongStitch/go-webp/webp"
+	"github.com/SongStitch/song-stitch/internal/colors"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
-
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
 )
@@ -147,16 +150,74 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 	}
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
+	//	rand.Seed(time.Now().UnixNano())
+	//randomizedIndices := rand.Perm(len(collageElements))
+
+	var redImages []int
+	var blueImages []int
+	var greenImages []int
+	var yellowImages []int
+	var bwImages []int
+
 	for i, collageElement := range collageElements {
-		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
-		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		img := collageElement.GetImage()
+		if *img != nil {
+			var colorstring string
+			var colorVal color.RGBA
+			cols, err := prominentcolor.KmeansWithArgs(prominentcolor.ArgumentNoCropping, *img)
+			if err != nil {
+				colorstring = "#000000"
+				colorVal = color.RGBA{0, 0, 0, 255}
+			} else {
+				domcolour := cols[0]
+				colorstring = "#" + domcolour.AsString()
+				colorVal = color.RGBA{
+					uint8(domcolour.Color.R),
+					uint8(domcolour.Color.G),
+					uint8(domcolour.Color.B),
+					255,
+				}
+			}
+			closest := colors.ClassifyColor(colorVal)
+			fmt.Println(closest)
+			fmt.Println(colorVal, colorstring)
+			if closest == "red" {
+				redImages = append(redImages, i)
+			} else if closest == "green" {
+				greenImages = append(greenImages, i)
+			} else if closest == "blue" {
+				blueImages = append(blueImages, i)
+			} else if closest == "yellow" {
+				yellowImages = append(yellowImages, i)
+			} else if closest == "bw" {
+				bwImages = append(bwImages, i)
+			}
+		} else {
+			bwImages = append(bwImages, i)
+		}
+	}
+
+	//	allImages := append(redImages, greenImages, blueImages, bwImages)
+	var allImages []int
+
+	allImages = append(allImages, redImages...)
+	allImages = append(allImages, greenImages...)
+	allImages = append(allImages, blueImages...)
+	allImages = append(allImages, yellowImages...)
+	allImages = append(allImages, bwImages...)
+	fmt.Println(len(allImages))
+
+	//	for i, collageElement := range collageElements {
+	for index, i := range allImages {
+		x := (index % displayOptions.Columns) * displayOptions.ImageDimension
+		y := (index / displayOptions.Columns) * displayOptions.ImageDimension
+		img := collageElements[i].GetImage()
 		if *img != nil {
 			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
 			dc.DrawImage(*img, x, y)
-			collageElement.ClearImage()
+			collageElements[i].ClearImage()
 		}
-		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
+		placeText(dc, collageElements[i], displayOptions, float64(x), float64(y))
 	}
 	collage := dc.Image()
 
