@@ -5,7 +5,7 @@ COPY ui ./
 RUN npm install && npm run build
 
 # switch to bullseye due to https://github.com/GoogleContainerTools/distroless/issues/1342
-FROM golang:1.21-bookworm AS builder
+FROM golang:1.21-bullseye AS builder
 
 WORKDIR /app
 
