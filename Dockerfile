@@ -4,7 +4,7 @@ WORKDIR /app/ui
 COPY ui ./
 RUN npm install && npm run build
 
-FROM golang:1.21-bookworm AS builder
+FROM golang:1.21-bullseye AS builder
 
 WORKDIR /app
 
@@ -23,6 +23,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   minify \
   libwebp-dev \
+  upx-ucl \
   && find ./public -type f \( \
   -name "*.html" \
   -o -name '*.js' \
@@ -31,7 +32,8 @@ RUN apt-get update \
   -print0 | \
   xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 
-RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w -linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go \
+  && upx ./bin/song-stitch
 
 FROM gcr.io/distroless/static-debian11:nonroot AS build-release-stage
 
