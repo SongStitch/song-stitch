@@ -6,7 +6,7 @@ require github.com/joho/godotenv v1.5.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
-	github.com/SongStitch/go-webp v1.1.1
+	github.com/SongStitch/go-webp v1.2.0
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.10.1
 	github.com/go-playground/validator/v10 v10.14.0

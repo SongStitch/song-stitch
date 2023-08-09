@@ -4,8 +4,7 @@ WORKDIR /app/ui
 COPY ui ./
 RUN npm install && npm run build
 
-# switch to bullseye due to https://github.com/GoogleContainerTools/distroless/issues/1342
-FROM golang:1.21-bullseye AS builder
+FROM golang:1.21-bookworm AS builder
 
 WORKDIR /app
 
@@ -32,17 +31,14 @@ RUN apt-get update \
   -print0 | \
   xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 
-RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o ./bin/song-stitch cmd/*.go
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go
 
-FROM gcr.io/distroless/base-debian11:nonroot AS build-release-stage
-
-# Copy dependency for webp
-COPY --from=builder /usr/lib/*-linux-gnu/libwebp.so* /usr/lib/
+FROM gcr.io/distroless/static-debian11:nonroot AS build-release-stage
 
 WORKDIR /app
 
 COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
 COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
-COPY --chown=nonroot:nonroot assets/ /app/assets
+COPY --chown=nonroot:nonroot assets/NotoSans* /app/assets/*
 
 ENTRYPOINT ["/app/song-stitch"]
