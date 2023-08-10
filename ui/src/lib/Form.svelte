@@ -271,12 +271,14 @@
           <option value={'bottomright'}>Bottom Right</option>
         </select><br />
       </div>
-      <Checkbox
-        text="WebP Compressed Image"
-        name="WebPLossyCompression"
-        visible={$data.advancedOptions}
-        bind:checked={$data.WebPLossyCompression}
-      />
+      <div hidden={$data.grayscaleImage}>
+        <Checkbox
+          text="WebP Compressed Image"
+          name="WebPLossyCompression"
+          visible={$data.advancedOptions}
+          bind:checked={$data.WebPLossyCompression}
+        />
+      </div>
     </div>
   </fieldset>
   <div class="loader-container">

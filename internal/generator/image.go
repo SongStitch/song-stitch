@@ -184,7 +184,7 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 
 	collageBuffer := new(bytes.Buffer)
 
-	if displayOptions.Webp {
+	if displayOptions.Webp && !displayOptions.Grayscale {
 		logger.Info().Msg("Converting to Webp image")
 		err := webpEncode(collageBuffer, &collage, compressionQuality)
 		if err != nil {

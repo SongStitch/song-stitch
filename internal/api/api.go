@@ -147,6 +147,10 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if request.Webp && request.Grayscale {
+		request.Webp = false
+	}
+
 	if request.Webp {
 		w.Header().Set("Content-Type", "image/webp")
 		w.Write(buffer.Bytes())
