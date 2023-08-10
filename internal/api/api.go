@@ -32,6 +32,7 @@ type CollageRequest struct {
 	PlayCount     bool   `in:"query=playcount;default=false"`
 	DisplayArtist bool   `in:"query=artist;default=false"`
 	BoldFont      bool   `in:"query=boldfont;default=false"`
+	Grayscale     bool   `in:"query=grayscale;default=false"`
 	Webp          bool   `in:"query=webp;default=false"`
 }
 
@@ -61,6 +62,7 @@ func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image
 		ImageDimension: imageDimension,
 		FontSize:       float64(request.FontSize),
 		BoldFont:       request.BoldFont,
+		Grayscale:      request.Grayscale,
 		Webp:           request.Webp,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
@@ -112,6 +114,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Str("method", request.Method).
 		Int("fontsize", request.FontSize).
 		Bool("boldfont", request.BoldFont).
+		Bool("grayscale", request.Grayscale).
 		Bool("webp", request.Webp).
 		Msg("Generating collage")
 

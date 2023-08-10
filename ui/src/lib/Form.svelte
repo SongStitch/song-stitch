@@ -39,7 +39,9 @@
     showTextSize: z.boolean().optional(),
     showTextLocation: z.boolean().optional(),
     WebPLossyCompression: z.boolean().optional(),
-    showBoldtext: z.boolean().optional(),
+showBoldtext: z.boolean().optional(),
+grayscaleImage: z.boolean().optional(),
+
     textSize: z.string().optional(),
     textLocation: z.string().optional(),
   });
@@ -76,6 +78,9 @@
       }
       if (values.showBoldtext) {
         params.append('boldfont', values.showBoldtext.toString());
+}
+      if (values.grayscaleImage) {
+        params.append('grayscale', values.grayscaleImage.toString());
       }
     }
 
@@ -104,7 +109,8 @@
       showTextSize: false,
       showTextLocation: false,
       textSize: '12',
-      showBoldtext: false,
+showBoldtext: false,
+grayscaleImage: false,
       WebPLossyCompression: false,
     },
   });
@@ -217,6 +223,12 @@
       bind:checked={$data.advancedOptions}
     />
     <div class="advanced-options">
+      <Checkbox
+        text="Grayscale Image"
+        name="grayscaleImage"
+        visible={$data.advancedOptions}
+        bind:checked={$data.grayscaleImage}
+      />
       <Checkbox
         text="Use Bold Text"
         name="showBoldtext"

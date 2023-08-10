@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"image/color"
 	"runtime"
 	"time"
 
@@ -27,6 +28,7 @@ type DisplayOptions struct {
 	PlayCount      bool
 	Resize         bool
 	BoldFont       bool
+	Grayscale      bool
 	Compress       bool
 	ArtistName     bool
 	TrackName      bool
@@ -133,6 +135,23 @@ func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error 
 	return err
 }
 
+func convertToGrayscale(imgPtr *image.Image) image.Image {
+	img := *imgPtr
+	bounds := img.Bounds()
+	grayImg := image.NewGray(bounds)
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			colorRGB := img.At(x, y)
+			r, g, b, _ := colorRGB.RGBA()
+
+			grayValue := uint8((r + g + b) / 3 >> 8)
+			grayImg.SetGray(x, y, color.Gray{Y: grayValue})
+		}
+	}
+	return grayImg
+}
+
 func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
@@ -162,6 +181,10 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 
 	if displayOptions.Resize {
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
+	}
+
+	if displayOptions.Grayscale {
+		collage = convertToGrayscale(&collage)
 	}
 
 	gcStart := time.Now()
