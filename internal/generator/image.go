@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
-	"image/color"
+	"image/draw"
 	"runtime"
 	"time"
 
@@ -139,16 +139,7 @@ func convertToGrayscale(imgPtr *image.Image) image.Image {
 	img := *imgPtr
 	bounds := img.Bounds()
 	grayImg := image.NewGray(bounds)
-
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			colorRGB := img.At(x, y)
-			r, g, b, _ := colorRGB.RGBA()
-
-			grayValue := uint8((r + g + b) / 3 >> 8)
-			grayImg.SetGray(x, y, color.Gray{Y: grayValue})
-		}
-	}
+	draw.Draw(grayImg, grayImg.Bounds(), img, img.Bounds().Min, draw.Src)
 	return grayImg
 }
 
