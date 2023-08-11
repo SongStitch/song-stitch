@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"image/draw"
 	"runtime"
 	"time"
 
@@ -27,6 +28,7 @@ type DisplayOptions struct {
 	PlayCount      bool
 	Resize         bool
 	BoldFont       bool
+	Grayscale      bool
 	Compress       bool
 	ArtistName     bool
 	TrackName      bool
@@ -133,6 +135,14 @@ func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error 
 	return err
 }
 
+func convertToGrayscale(imgPtr *image.Image) image.Image {
+	img := *imgPtr
+	bounds := img.Bounds()
+	grayImg := image.NewGray(bounds)
+	draw.Draw(grayImg, grayImg.Bounds(), img, img.Bounds().Min, draw.Src)
+	return grayImg
+}
+
 func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
@@ -164,13 +174,17 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
 
+	if displayOptions.Grayscale {
+		collage = convertToGrayscale(&collage)
+	}
+
 	gcStart := time.Now()
 	runtime.GC()
 	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
 
 	collageBuffer := new(bytes.Buffer)
 
-	if displayOptions.Webp {
+	if displayOptions.Webp && !displayOptions.Grayscale {
 		logger.Info().Msg("Converting to Webp image")
 		err := webpEncode(collageBuffer, &collage, compressionQuality)
 		if err != nil {

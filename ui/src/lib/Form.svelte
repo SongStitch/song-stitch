@@ -40,6 +40,8 @@
     showTextLocation: z.boolean().optional(),
     WebPLossyCompression: z.boolean().optional(),
     showBoldtext: z.boolean().optional(),
+    grayscaleImage: z.boolean().optional(),
+
     textSize: z.string().optional(),
     textLocation: z.string().optional(),
   });
@@ -77,6 +79,9 @@
       if (values.showBoldtext) {
         params.append('boldfont', values.showBoldtext.toString());
       }
+      if (values.grayscaleImage) {
+        params.append('grayscale', values.grayscaleImage.toString());
+      }
     }
 
     const url = `/collage?${params.toString()}`;
@@ -105,6 +110,7 @@
       showTextLocation: false,
       textSize: '12',
       showBoldtext: false,
+      grayscaleImage: false,
       WebPLossyCompression: false,
     },
   });
@@ -218,6 +224,12 @@
     />
     <div class="advanced-options">
       <Checkbox
+        text="Grayscale Image"
+        name="grayscaleImage"
+        visible={$data.advancedOptions}
+        bind:checked={$data.grayscaleImage}
+      />
+      <Checkbox
         text="Use Bold Text"
         name="showBoldtext"
         visible={$data.advancedOptions}
@@ -259,12 +271,14 @@
           <option value={'bottomright'}>Bottom Right</option>
         </select><br />
       </div>
-      <Checkbox
-        text="WebP Compressed Image"
-        name="WebPLossyCompression"
-        visible={$data.advancedOptions}
-        bind:checked={$data.WebPLossyCompression}
-      />
+      <div hidden={$data.grayscaleImage}>
+        <Checkbox
+          text="WebP Compressed Image"
+          name="WebPLossyCompression"
+          visible={$data.advancedOptions}
+          bind:checked={$data.WebPLossyCompression}
+        />
+      </div>
     </div>
   </fieldset>
   <div class="loader-container">
