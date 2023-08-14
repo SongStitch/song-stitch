@@ -16,6 +16,12 @@ build-ui:
 run: build-ui
 	go run cmd/*.go
 
+watch: build-ui
+	gow run cmd/*.go
+
+watch-ui: build-ui
+	(cd ui && npm run watch)
+
 run-debug:
 	GODEBUG=gctrace=1 go run cmd/*.go
 
