@@ -149,32 +149,27 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func GetImage(ctx context.Context, url string, mat *gocv.Mat) (image.Image, error) {
+func GetImage(ctx context.Context, url string, mat *gocv.Mat) error {
 	if len(url) == 0 {
-		return nil, nil
+		return nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 	imgBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = gocv.IMDecodeIntoMat(imgBytes, -1, mat)
-	if err != nil {
-		return nil, err
-	}
-	img, _ := mat.ToImage()
-
-	return img, nil
+	err = gocv.IMDecodeIntoMat(imgBytes, 1, mat)
+	return err
 }

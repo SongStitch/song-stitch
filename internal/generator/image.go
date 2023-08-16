@@ -177,13 +177,6 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
-	dc := gg.NewContext(collageWidth, collageHeight)
-	dc.SetRGB(0, 0, 0)
-	fontFile := fontFileRegular
-	if displayOptions.BoldFont {
-		fontFile = fontFileBold
-	}
-	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
 	type albumImagePair struct {
 		Album T
@@ -193,11 +186,7 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 	var wg sync.WaitGroup
 	maxconcurrent := 10
 	sem := make(chan struct{}, maxconcurrent)
-	mats := make([]*gocv.Mat, maxconcurrent)
-	for i := range mats {
-		m := gocv.NewMatWithSize(displayOptions.ImageDimension, displayOptions.ImageDimension, gocv.MatTypeCV8UC3)
-		mats[i] = &m
-	}
+	finalMat := gocv.NewMatWithSize(collageWidth, collageHeight, gocv.MatTypeCV8UC3)
 
 	wg.Add(len(albums))
 
@@ -211,36 +200,26 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 				wg.Done()
 			}()
 
-			img, err := GetImage(ctx, album.GetImageUrl(), mats[i%maxconcurrent])
+			mat := finalMat.Region(image.Rect(x, y, x+displayOptions.ImageDimension, y+displayOptions.ImageDimension))
+			err := GetImage(ctx, album.GetImageUrl(), &mat)
 			if err != nil {
 				logger.Error().Err(err).Msg("Failed to fetch image")
 				return
 			}
 
-			if img != nil {
-				img = *resizeImage(ctx, &img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
-				dc.DrawImage(img, x, y)
-				album.ClearImage()
-
-				placeText(dc, album, displayOptions, float64(x), float64(y))
-				if i%10 == 0 {
-					PrintMemUsage()
-				}
+			if i%10 == 0 {
+				PrintMemUsage()
 			}
 		}(album, x, y, i)
 	}
 
 	wg.Wait()
 
-	collage := dc.Image()
-
-	if displayOptions.Resize {
-		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
-	}
 	PrintMemUsage()
+	img, err := finalMat.ToImage()
 
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &collage, nil
+	return &img, err
 }
 
 func PrintMemUsage() {
