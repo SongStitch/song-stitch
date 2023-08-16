@@ -66,6 +66,9 @@ github.com/rs/zerolog/hlog/internal/mutil
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
+# gocv.io/x/gocv v0.33.0
+## explicit; go 1.13
+gocv.io/x/gocv
 # golang.org/x/crypto v0.7.0
 ## explicit; go 1.17
 golang.org/x/crypto/sha3

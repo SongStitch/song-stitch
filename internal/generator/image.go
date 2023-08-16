@@ -3,7 +3,9 @@ package generator
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"image"
+	"runtime"
 	"sync"
 	"time"
 
@@ -11,27 +13,28 @@ import (
 	"github.com/SongStitch/go-webp/webp"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/fogleman/gg"
+	"gocv.io/x/gocv"
 
 	"github.com/nfnt/resize"
 	"github.com/rs/zerolog"
 )
 
 type DisplayOptions struct {
-	ArtistName     bool
-	AlbumName      bool
-	TrackName      bool
-	PlayCount      bool
-	Compress       bool
-	Resize         bool
-	Width          uint
-	Height         uint
-	FontSize       float64
-	BoldFont       bool
-	Rows           int
-	Columns        int
-	ImageDimension int
-	Webp           bool
 	TextLocation   constants.TextLocation
+	Height         uint
+	ImageDimension int
+	Columns        int
+	Rows           int
+	FontSize       float64
+	Width          uint
+	PlayCount      bool
+	Resize         bool
+	BoldFont       bool
+	Compress       bool
+	ArtistName     bool
+	TrackName      bool
+	Webp           bool
+	AlbumName      bool
 }
 
 const (
@@ -114,7 +117,6 @@ func resizeImage(ctx context.Context, img *image.Image, width uint, height uint)
 	} else if int(width) == (*img).Bounds().Dx() && int(height) == (*img).Bounds().Dy() {
 		return img
 	} else if height == 0 {
-
 		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
 	} else if width == 0 {
 		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
@@ -191,7 +193,11 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 	var wg sync.WaitGroup
 	maxconcurrent := 10
 	sem := make(chan struct{}, maxconcurrent)
-	images := make([]image.Image, maxconcurrent)
+	mats := make([]*gocv.Mat, maxconcurrent)
+	for i := range mats {
+		m := gocv.NewMatWithSize(displayOptions.ImageDimension, displayOptions.ImageDimension, gocv.MatTypeCV8UC3)
+		mats[i] = &m
+	}
 
 	wg.Add(len(albums))
 
@@ -205,8 +211,7 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 				wg.Done()
 			}()
 
-			img := images[i%maxconcurrent]
-			err := GetImage(ctx, &img, album.GetImageUrl())
+			img, err := GetImage(ctx, album.GetImageUrl(), mats[i%maxconcurrent])
 			if err != nil {
 				logger.Error().Err(err).Msg("Failed to fetch image")
 				return
@@ -218,8 +223,10 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 				album.ClearImage()
 
 				placeText(dc, album, displayOptions, float64(x), float64(y))
+				if i%10 == 0 {
+					PrintMemUsage()
+				}
 			}
-
 		}(album, x, y, i)
 	}
 
@@ -230,7 +237,22 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 	if displayOptions.Resize {
 		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
 	}
+	PrintMemUsage()
 
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
 	return &collage, nil
+}
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

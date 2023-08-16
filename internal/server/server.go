@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"time"
 
@@ -65,6 +66,12 @@ func RunServer() {
 	router.HandleFunc("/support", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "public/support.html")
 	})
+	router.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+	router.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+	router.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+	router.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+	router.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+	router.Handle("/debug/pprof/{cmd}", http.HandlerFunc(pprof.Index))
 
 	server := &http.Server{
 		Addr:              ":8080",

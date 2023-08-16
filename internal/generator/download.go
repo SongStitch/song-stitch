@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/gif"
 	"image/jpeg"
+	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/rs/zerolog"
+	"gocv.io/x/gocv"
 )
 
 const (
@@ -24,13 +26,11 @@ const (
 
 const maxRetries = 3
 
-var (
-	backoffSchedule = []time.Duration{
-		200 * time.Millisecond,
-		500 * time.Millisecond,
-		1 * time.Second,
-	}
-)
+var backoffSchedule = []time.Duration{
+	200 * time.Millisecond,
+	500 * time.Millisecond,
+	1 * time.Second,
+}
 
 func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 	var err error
@@ -149,40 +149,32 @@ func getExtension(u string) (string, error) {
 	return ext, nil
 }
 
-func GetImage(ctx context.Context, img *image.Image, url string) error {
+func GetImage(ctx context.Context, url string, mat *gocv.Mat) (image.Image, error) {
 	if len(url) == 0 {
-		img = nil
-		// Skip album art if it doesn't exist
-		return nil
+		return nil, nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
-
-	extension, err := getExtension(url)
+	imgBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if strings.ToLower(extension) == jpgFileType {
-		*img, err = jpeg.Decode(resp.Body)
-	} else if strings.ToLower(extension) == gifFileType {
-		*img, err = gif.Decode(resp.Body)
-	} else {
-		*img, _, err = image.Decode(resp.Body)
-	}
+	err = gocv.IMDecodeIntoMat(imgBytes, -1, mat)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	img, _ := mat.ToImage()
 
-	return nil
+	return img, nil
 }

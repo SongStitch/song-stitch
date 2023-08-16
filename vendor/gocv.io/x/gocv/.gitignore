@@ -1,0 +1,12 @@
+profile.cov
+count.out
+*.swp
+*.snap
+/parts
+/prime
+/stage
+.vscode/
+/build
+.idea/
+contrib/data.yaml
+contrib/testOilPainting.png
