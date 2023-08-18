@@ -178,11 +178,6 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 	collageWidth := displayOptions.ImageDimension * displayOptions.Columns
 	collageHeight := displayOptions.ImageDimension * displayOptions.Rows
 
-	type albumImagePair struct {
-		Album T
-		Img   image.Image
-	}
-
 	var wg sync.WaitGroup
 	maxconcurrent := 10
 	sem := make(chan struct{}, maxconcurrent)
@@ -216,10 +211,19 @@ func CreateCollageEfficient[T Drawable](ctx context.Context, albums []T, display
 	wg.Wait()
 
 	PrintMemUsage()
-	img, err := finalMat.ToImage()
+	i, err := finalMat.ToImage()
+	img := i.(*image.RGBA)
+	dc := gg.NewContextForRGBA(img)
+	for i, album := range albums {
+		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
+		placeText(dc, album, displayOptions, float64(x), float64(y))
+	}
+
+	PrintMemUsage()
 
 	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &img, err
+	return &i, err
 }
 
 func PrintMemUsage() {
