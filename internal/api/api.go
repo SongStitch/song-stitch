@@ -24,9 +24,9 @@ type CollageRequest struct {
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
-	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=15"`
+	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=20"`
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
-	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=15"`
+	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=20"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
