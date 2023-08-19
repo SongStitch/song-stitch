@@ -59,7 +59,7 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 }
 
 func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
-	if count > 225 {
+	if count > 400 {
 		return nil, nil, constants.ErrTooManyImages
 	}
 	albums, err := getAlbums(ctx, username, period, count, imageSize)
