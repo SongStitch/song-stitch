@@ -77,13 +77,14 @@ func (t *Token) Refresh() error {
 
 func (t *Token) KeepAlive(log zerolog.Logger) {
 	for {
+		// Wait until 5 minutes before expiration and then refresh again
+		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
+
 		log.Info().Msg("refreshing spotify token...")
 		err := t.Refresh()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to refresh spotify token")
 		}
-		// Wait until 5 minutes before expiration and then refresh again
-		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
 	}
 }
 
