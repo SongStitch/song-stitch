@@ -12,6 +12,7 @@ import (
 	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
+	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
 	"github.com/SongStitch/song-stitch/internal/models"
@@ -59,7 +60,8 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 }
 
 func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
-	if count > 400 {
+	config := config.GetConfig()
+	if count > config.MaxImages.Albums {
 		return nil, nil, constants.ErrTooManyImages
 	}
 	albums, err := getAlbums(ctx, username, period, count, imageSize)

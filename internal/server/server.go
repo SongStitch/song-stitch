@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/ggicci/httpin"
+	"github.com/joho/godotenv"
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 
 	"github.com/SongStitch/song-stitch/internal/api"
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
+	"github.com/SongStitch/song-stitch/internal/config"
 )
 
 func getLogger() zerolog.Logger {
@@ -24,7 +26,14 @@ func getLogger() zerolog.Logger {
 }
 
 func RunServer() {
+	_ = godotenv.Load()
 	log := getLogger()
+
+	err := config.InitConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize config")
+	}
+
 	c := alice.New()
 	c = c.Append(hlog.NewHandler(log))
 	c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {

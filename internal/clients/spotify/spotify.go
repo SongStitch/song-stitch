@@ -7,11 +7,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/models"
 	"github.com/rs/zerolog"
@@ -31,8 +31,9 @@ type Token struct {
 }
 
 func (t *Token) Refresh() error {
-	client_id := os.Getenv("SPOTIFY_CLIENT_ID")
-	client_secret := os.Getenv("SPOTIFY_CLIENT_SECRET")
+	config := config.GetConfig()
+	client_id := config.Spotify.ClientId
+	client_secret := config.Spotify.ClientSecret
 
 	if client_id == "" || client_secret == "" {
 		return errors.New("spotify credentials not set")
@@ -104,6 +105,7 @@ func GetSpotifyClient() (*SpotifyClient, error) {
 }
 
 func InitSpotifyClient(log zerolog.Logger) {
+	log.Info().Msg("initializing spotify client...")
 	token := &Token{
 		client:   http.DefaultClient,
 		endpoint: "https://accounts.spotify.com/api/token",
