@@ -153,7 +153,6 @@
   }
   :global(body.dark-mode) .footer-text {
     color: #bfc2c7;
-    background-color: #202124;
   }
 
   :global(body.dark-mode) .appstore-icon,
