@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/SongStitch/song-stitch/internal/collages"
+	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/generator"
 )
@@ -24,9 +25,9 @@ type CollageRequest struct {
 	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
 	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
 	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
-	Rows          int    `in:"query=rows;default=3" validate:"required,gte=1,lte=20"`
+	Rows          int    `in:"query=rows;default=3" validate:"required"`
 	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
-	Columns       int    `in:"query=columns;default=3" validate:"required,gte=1,lte=20"`
+	Columns       int    `in:"query=columns;default=3" validate:"required"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
@@ -37,18 +38,24 @@ type CollageRequest struct {
 }
 
 func generateCollage(ctx context.Context, request *CollageRequest) (*image.Image, *bytes.Buffer, error) {
+	config := config.GetConfig()
+
 	count := request.Rows * request.Columns
-	imageSize := "extralarge"
-	imageDimension := 300
-	if count > 100 && count <= 1000 {
-		imageSize = "large"
-		imageDimension = 174
-	} else if count > 1000 && count <= 2000 {
-		imageSize = "medium"
-		imageDimension = 64
-	} else if count > 2000 {
+
+	var imageSize string
+	var imageDimension int
+	if count > config.ImageSizeCutoffs.Medium {
 		imageSize = "small"
 		imageDimension = 3
+	} else if count > config.ImageSizeCutoffs.Large {
+		imageSize = "medium"
+		imageDimension = 64
+	} else if count > config.ImageSizeCutoffs.ExtraLarge {
+		imageSize = "large"
+		imageDimension = 174
+	} else {
+		imageSize = "extralarge"
+		imageDimension = 300
 	}
 
 	displayOptions := generator.DisplayOptions{

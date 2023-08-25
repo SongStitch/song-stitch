@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"regexp"
 	"strconv"
@@ -17,6 +16,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
 
+	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/models"
 )
@@ -65,8 +65,9 @@ func cleanError(err error) error {
 }
 
 func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int) (*T, error) {
-	endpoint := os.Getenv("LASTFM_ENDPOINT")
-	key := os.Getenv("LASTFM_API_KEY")
+	config := config.GetConfig()
+	endpoint := config.LastFM.Endpoint
+	apiKey := config.LastFM.APIKey
 
 	// Image URLs stop getting returned by the API at around 500
 	const maxPerPage = 500
@@ -97,7 +98,7 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 		q.Set("period", string(period))
 		q.Set("limit", strconv.Itoa(limit))
 		q.Set("page", strconv.Itoa(page))
-		q.Set("api_key", key)
+		q.Set("api_key", apiKey)
 		q.Set("format", "json")
 		u.RawQuery = q.Encode()
 
@@ -171,8 +172,10 @@ type GetTrackInfoResponse struct {
 }
 
 func GetTrackInfo(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
-	endpoint := os.Getenv("LASTFM_ENDPOINT")
-	key := os.Getenv("LASTFM_API_KEY")
+	config := config.GetConfig()
+	endpoint := config.LastFM.Endpoint
+	apiKey := config.LastFM.APIKey
+
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		panic(err)
@@ -182,7 +185,7 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 	q.Set("track", trackName)
 	q.Set("artist", artistName)
 	q.Set("method", "track.getInfo")
-	q.Set("api_key", key)
+	q.Set("api_key", apiKey)
 	q.Set("format", "json")
 	u.RawQuery = q.Encode()
 

@@ -7,11 +7,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/SongStitch/song-stitch/internal/models"
 	"github.com/rs/zerolog"
@@ -31,8 +31,9 @@ type Token struct {
 }
 
 func (t *Token) Refresh() error {
-	client_id := os.Getenv("SPOTIFY_CLIENT_ID")
-	client_secret := os.Getenv("SPOTIFY_CLIENT_SECRET")
+	config := config.GetConfig()
+	client_id := config.Spotify.ClientId
+	client_secret := config.Spotify.ClientSecret
 
 	if client_id == "" || client_secret == "" {
 		return errors.New("spotify credentials not set")
@@ -77,13 +78,14 @@ func (t *Token) Refresh() error {
 
 func (t *Token) KeepAlive(log zerolog.Logger) {
 	for {
+		// Wait until 5 minutes before expiration and then refresh again
+		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
+
 		log.Info().Msg("refreshing spotify token...")
 		err := t.Refresh()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to refresh spotify token")
 		}
-		// Wait until 5 minutes before expiration and then refresh again
-		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
 	}
 }
 
@@ -103,6 +105,7 @@ func GetSpotifyClient() (*SpotifyClient, error) {
 }
 
 func InitSpotifyClient(log zerolog.Logger) {
+	log.Info().Msg("initializing spotify client...")
 	token := &Token{
 		client:   http.DefaultClient,
 		endpoint: "https://accounts.spotify.com/api/token",
