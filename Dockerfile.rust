@@ -1,0 +1,46 @@
+
+FROM node:18-alpine AS node-builder
+
+WORKDIR /app/ui
+COPY ui ./
+RUN npm install && npm run build
+
+FROM rust:latest AS builder
+
+WORKDIR /app
+
+COPY src ./src
+COPY Cargo.toml Cargo.lock ./
+COPY assets ./assets
+COPY --from=node-builder /app/public ./public
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Minify Assets
+# hadolint ignore=DL3008
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+  minify \
+  openssl \
+  musl-tools \
+  musl-dev \
+  && find ./public -type f \( \
+  -name "*.html" \
+  -o -name '*.js' \
+  -o -name '*.css' \
+  \) \
+  -print0 | \
+  xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
+
+RUN rustup target add x86_64-unknown-linux-musl
+RUN cargo build --release --target x86_64-unknown-linux-musl
+
+FROM gcr.io/distroless/cc-debian11:nonroot AS build-release-stage
+
+WORKDIR /app
+
+COPY --chown=nonroot:nonroot --from=builder /app/target/x86_64-unknown-linux-musl/release/song-stitch /app/song-stitch
+COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
+COPY --chown=nonroot:nonroot assets/NotoSans* /app/assets/*
+
+ENTRYPOINT ["/app/song-stitch"]

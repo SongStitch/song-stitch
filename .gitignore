@@ -31,3 +31,8 @@ public/
 
 # vite
 vite.config.ts.timestamp-*.mjs
+
+
+# Added by cargo
+
+/target
