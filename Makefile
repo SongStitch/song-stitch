@@ -56,3 +56,6 @@ test:
 	go test -v ./tests
 
 all: darwin linux-arm64 linux-amd64
+
+deploy-dev:
+	flyctl deploy -c fly.dev.toml
