@@ -52,7 +52,6 @@ jobs:
         working-directory: ./ui
         run: npm run prettier
 
-
   test-build:
     name: runner / Go package
     runs-on: ubuntu-latest
@@ -119,6 +118,17 @@ jobs:
           platforms: linux/amd64 # only build X86 for now since arm emulation is slow
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-dev:
+    name: runner / Deploy dev
+    runs-on: ubuntu-latest
+    needs: build-push-songstitch
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --image ghcr.io/songstitch/song-stitch:sha-${GITHUB_SHA::7} -c fly.dev.toml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   deploy:
     name: runner / Deploy app
