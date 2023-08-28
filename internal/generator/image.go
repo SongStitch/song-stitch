@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/draw"
 	"runtime"
+	"slices"
 	"time"
 
 	"github.com/SongStitch/go-webp/encoder"
@@ -90,7 +91,8 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 	}
 
 	if !displayOptions.TextLocation.IsTop() {
-		reverse(textToDraw)
+		slices.Reverse(textToDraw)
+
 	}
 	textLocation := (8 + displayOptions.FontSize)
 	for _, text := range textToDraw {
@@ -100,12 +102,6 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 		} else {
 			textLocation -= newOffset
 		}
-	}
-}
-
-func reverse(s []string) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
 	}
 }
 
