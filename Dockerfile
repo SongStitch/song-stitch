@@ -33,7 +33,7 @@ RUN apt-get update \
 
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w -linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go
 
-FROM gcr.io/distroless/static-debian11:nonroot AS build-release-stage
+FROM gcr.io/distroless/static-debian12:nonroot AS build-release-stage
 
 WORKDIR /app
 
