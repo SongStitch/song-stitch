@@ -16,22 +16,20 @@ type GorillaMuxVarsFunc func(*http.Request) map[string]string
 //
 // Usage:
 //
-//	func init() {
-//	    httpin.UseGorillaMux("path", mux.Vars)
-//	}
+//    func init() {
+//        httpin.UseGorillaMux("path", mux.Vars)
+//    }
 func UseGorillaMux(executor string, fnVars GorillaMuxVarsFunc) {
-	RegisterDirectiveExecutor(executor, &gorillaMuxVarsExtractor{Vars: fnVars})
+	RegisterDirectiveExecutor(executor, &gorillaMuxVarsExtractor{Vars: fnVars}, nil)
 }
 
 type gorillaMuxVarsExtractor struct {
 	Vars GorillaMuxVarsFunc
 }
 
-func (mux *gorillaMuxVarsExtractor) Execute(ctx *DirectiveRuntime) error {
-	req := ctx.Context.Value(RequestValue).(*http.Request)
-	kvs := make(map[string][]string)
-
-	for key, value := range mux.Vars(req) {
+func (mux *gorillaMuxVarsExtractor) Execute(ctx *DirectiveContext) error {
+	var kvs = make(map[string][]string)
+	for key, value := range mux.Vars(ctx.Request) {
 		kvs[key] = []string{value}
 	}
 
