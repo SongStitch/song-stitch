@@ -5,7 +5,7 @@ package httpin
 
 import "mime/multipart"
 
-func defaultValueSetter(ctx *DirectiveRuntime) error {
+func defaultValueSetter(ctx *DirectiveContext) error {
 	if ctx.Context.Value(FieldSet) != nil {
 		return nil // noop, the field was set by a former executor
 	}
@@ -16,10 +16,10 @@ func defaultValueSetter(ctx *DirectiveRuntime) error {
 	extractor := &extractor{
 		Form: multipart.Form{
 			Value: map[string][]string{
-				"default": ctx.Directive.Argv,
+				"default": ctx.Argv,
 			},
 		},
 	}
-	ctx.Directive.Argv = []string{"default"}
+	ctx.Argv = []string{"default"}
 	return extractor.Execute(ctx)
 }
