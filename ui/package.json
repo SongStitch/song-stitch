@@ -28,6 +28,6 @@
     "@felte/extender-persist": "^1.0.15",
     "@felte/validator-zod": "^1.0.16",
     "felte": "^1.2.11",
-    "zod": "^3.21.4"
+    "zod": "^3.22.2"
   }
 }
