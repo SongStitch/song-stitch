@@ -1,5 +1,5 @@
 <script>
-  import logo from '../assets/images/songstitch_logo.png';
+  import logo from "../assets/images/songstitch_logo.png";
 </script>
 
 <div class="header-img-container" id="top">

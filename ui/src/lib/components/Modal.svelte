@@ -1,27 +1,27 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   export let showModal: boolean;
   export let message: string;
 
   let dialog: HTMLDialogElement;
-  let copyButtonText = 'Copy';
+  let copyButtonText = "Copy";
 
   $: if (dialog && showModal) dialog.showModal();
   const dispatch = createEventDispatcher();
 
   const copyCode = () => {
-    copyButtonText = 'Copied!';
+    copyButtonText = "Copied!";
     navigator.clipboard
       .writeText(message)
       .then(
-        () => dispatch('copy', message),
-        (_) => dispatch('fail')
+        () => dispatch("copy", message),
+        (_) => dispatch("fail"),
       )
       .then(() =>
         setTimeout(() => {
-          copyButtonText = 'Copy';
-        }, 2000)
+          copyButtonText = "Copy";
+        }, 2000),
       );
   };
 </script>

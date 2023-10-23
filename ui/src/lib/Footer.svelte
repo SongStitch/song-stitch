@@ -1,9 +1,9 @@
 <script lang="ts">
-  import appstore_icon from '../assets/images/appstore_icon.png';
-  import KofiWidget from './components/KofiWidget.svelte';
+  import appstore_icon from "../assets/images/appstore_icon.png";
+  import KofiWidget from "./components/KofiWidget.svelte";
 
   let random = Math.random();
-  let names = ['BradLewis', 'TheDen'];
+  let names = ["BradLewis", "TheDen"];
   if (random > 0.5) {
     names = names.reverse();
   }

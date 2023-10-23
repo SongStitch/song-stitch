@@ -1,5 +1,5 @@
 <script>
-  import logo from '../../assets/images/cup-border.webp';
+  import logo from "../../assets/images/cup-border.webp";
 </script>
 
 <span id="spanPreview" class="imgPreview"
@@ -16,7 +16,7 @@
       margin-right: 5px !important;
       margin-left: 0 !important;
       margin-bottom: 3px !important;
-      content: url('https://storage.ko-fi.com/cdn/cup-border.png');
+      content: url("https://storage.ko-fi.com/cdn/cup-border.png");
     }
 
     .kofiimg:after {
@@ -29,7 +29,7 @@
       margin-right: 6px;
       margin-left: 0;
       margin-bottom: 4px !important;
-      content: url('https://storage.ko-fi.com/cdn/whitelogo.svg');
+      content: url("https://storage.ko-fi.com/cdn/whitelogo.svg");
     }
 
     .btn-container {
@@ -74,7 +74,11 @@
       overflow-wrap: break-word;
       vertical-align: middle;
       border: 0 none #fff !important;
-      font-family: 'Quicksand', Helvetica, Century Gothic, sans-serif !important;
+      font-family:
+        "Quicksand",
+        Helvetica,
+        Century Gothic,
+        sans-serif !important;
       text-decoration: none;
       text-shadow: none;
       font-weight: 700 !important;
@@ -176,7 +180,11 @@
     overflow-wrap: break-word;
     vertical-align: middle;
     border: 0 none #fff !important;
-    font-family: 'Quicksand', Helvetica, Century Gothic, sans-serif !important;
+    font-family:
+      "Quicksand",
+      Helvetica,
+      Century Gothic,
+      sans-serif !important;
     text-decoration: none;
     text-shadow: none;
     font-weight: 700 !important;

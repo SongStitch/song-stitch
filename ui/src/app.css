@@ -19,20 +19,22 @@
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('./assets/fonts/poppins-semibold.woff2') format('woff2'),
-    url('./assets/fonts/poppins-semibold.woff') format('woff'),
-    url('./assets/fonts/poppins-semibold.ttf') format('truetype');
+  font-family: "Poppins";
+  src:
+    url("./assets/fonts/poppins-semibold.woff2") format("woff2"),
+    url("./assets/fonts/poppins-semibold.woff") format("woff"),
+    url("./assets/fonts/poppins-semibold.ttf") format("truetype");
   font-display: swap;
   font-weight: bold;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('./assets/fonts/poppins-regular.woff2') format('woff2'),
-    url('./assets/fonts/poppins-regular.woff') format('woff'),
-    url('./assets/fonts/poppins-regular.ttf') format('truetype');
+  font-family: "Poppins";
+  src:
+    url("./assets/fonts/poppins-regular.woff2") format("woff2"),
+    url("./assets/fonts/poppins-regular.woff") format("woff"),
+    url("./assets/fonts/poppins-regular.ttf") format("truetype");
   font-display: swap;
   font-weight: normal;
   font-style: normal;
@@ -51,7 +53,7 @@ body {
   display: grid;
   place-items: center;
   min-height: 100%;
-  font-family: 'Poppins', avenir, Helvetica, sans-serif;
+  font-family: "Poppins", avenir, Helvetica, sans-serif;
   padding: 20px;
   box-sizing: border-box;
   padding-top: 0px;
@@ -93,15 +95,15 @@ a.href-links:active {
     padding: 10px;
   }
   #username,
-  input[type='text'],
+  input[type="text"],
   select,
-  input[type='number'],
-  input[type='submit'],
-  input[type='submit'],
-  input[type='button'] {
+  input[type="number"],
+  input[type="submit"],
+  input[type="submit"],
+  input[type="button"] {
     padding: 10px 15px;
     font-size: 1em;
-    font-family: 'Poppins';
+    font-family: "Poppins";
   }
   h2,
   h1 {

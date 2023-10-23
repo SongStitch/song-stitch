@@ -1,25 +1,25 @@
 <script lang="ts">
-  import Checkbox from './components/Checkbox.svelte';
-  import NumberInput from './components/NumberInput.svelte';
-  import ErrorMessage from './components/ErrorMessage.svelte';
-  import Modal from './components/Modal.svelte';
+  import Checkbox from "./components/Checkbox.svelte";
+  import NumberInput from "./components/NumberInput.svelte";
+  import ErrorMessage from "./components/ErrorMessage.svelte";
+  import Modal from "./components/Modal.svelte";
 
-  import { createForm } from 'felte';
-  import { validator } from '@felte/validator-zod';
-  import { extender } from '@felte/extender-persist';
-  import { z } from 'zod';
+  import { createForm } from "felte";
+  import { validator } from "@felte/validator-zod";
+  import { extender } from "@felte/extender-persist";
+  import { z } from "zod";
 
   let showEmbedModal = false;
-  let url = '';
-  let embedHTML = '';
+  let url = "";
+  let embedHTML = "";
 
   const schema = z.object({
     username: z
       .string()
-      .nonempty('Username is required')
+      .nonempty("Username is required")
       .regex(
         /^[a-zA-Z][a-zA-Z0-9_-]{0,15}$/,
-        "Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'"
+        "Username must be between 2 to 15 characters, begin with a letter and contain only letters, numbers, '_' or '-'",
       ),
     method: z.string().nonempty(),
     period: z.string().nonempty(),
@@ -28,11 +28,11 @@
     album: z.boolean().optional(),
     playcount: z.boolean().optional(),
     rows: z
-      .number({ required_error: 'Number of rows is required' })
+      .number({ required_error: "Number of rows is required" })
       .int()
       .min(1),
     columns: z
-      .number({ required_error: 'Number of columns is required' })
+      .number({ required_error: "Number of columns is required" })
       .int()
       .min(1),
     advancedOptions: z.boolean().optional(),
@@ -48,39 +48,39 @@
 
   const generateUrl = (values: z.infer<typeof schema>) => {
     const params = new URLSearchParams();
-    params.append('username', values.username);
-    params.append('method', values.method);
-    params.append('period', values.period);
-    if (showTrack) params.append('track', values.track.toString());
-    params.append('artist', values.artist.toString());
-    if (showAlbum) params.append('album', values.album.toString());
-    params.append('playcount', values.playcount.toString());
+    params.append("username", values.username);
+    params.append("method", values.method);
+    params.append("period", values.period);
+    if (showTrack) params.append("track", values.track.toString());
+    params.append("artist", values.artist.toString());
+    if (showAlbum) params.append("album", values.album.toString());
+    params.append("playcount", values.playcount.toString());
     let rows = values.rows;
     if (rows > maxRows) {
       rows = maxRows;
     }
-    params.append('rows', rows.toString());
+    params.append("rows", rows.toString());
     let columns = values.columns;
     if (columns > maxColumns) {
       columns = maxColumns;
     }
-    params.append('columns', columns.toString());
+    params.append("columns", columns.toString());
 
     if (values.advancedOptions) {
       if (values.showTextSize) {
-        params.append('fontsize', values.textSize);
+        params.append("fontsize", values.textSize);
       }
       if (values.showTextLocation) {
-        params.append('textlocation', values.textLocation);
+        params.append("textlocation", values.textLocation);
       }
       if (values.WebPLossyCompression) {
-        params.append('webp', values.WebPLossyCompression.toString());
+        params.append("webp", values.WebPLossyCompression.toString());
       }
       if (values.showBoldtext) {
-        params.append('boldfont', values.showBoldtext.toString());
+        params.append("boldfont", values.showBoldtext.toString());
       }
       if (values.grayscaleImage) {
-        params.append('grayscale', values.grayscaleImage.toString());
+        params.append("grayscale", values.grayscaleImage.toString());
       }
     }
 
@@ -91,14 +91,14 @@
   const { form, errors, data, reset, isSubmitting, isValid } = createForm<
     z.infer<typeof schema>
   >({
-    extend: [validator({ schema }), extender({ id: 'songstitchform' })],
+    extend: [validator({ schema }), extender({ id: "songstitchform" })],
     onSubmit: async (values) => {
       const url = generateUrl(values);
-      await new Promise(() => window.open(url, '_self'));
+      await new Promise(() => window.open(url, "_self"));
     },
     initialValues: {
-      method: 'album',
-      period: '7day',
+      method: "album",
+      period: "7day",
       track: true,
       artist: true,
       album: true,
@@ -108,7 +108,7 @@
       advancedOptions: false,
       showTextSize: false,
       showTextLocation: false,
-      textSize: '12',
+      textSize: "12",
       showBoldtext: false,
       grayscaleImage: false,
       WebPLossyCompression: false,
@@ -117,12 +117,12 @@
 
   const embedOnClick = () => {
     let values = $data;
-    url = 'https://songstitch.art' + generateUrl(values);
+    url = "https://songstitch.art" + generateUrl(values);
     embedHTML = `<img class="songstitch-collage" src="${url}">`;
     showEmbedModal = true;
   };
 
-  addEventListener('pageshow', () => {
+  addEventListener("pageshow", () => {
     $isSubmitting = false;
   });
 
@@ -131,14 +131,14 @@
   let showTrack = false;
   let showAlbum = false;
   $: {
-    showTrack = $data.method === 'track';
-    showAlbum = $data.method !== 'artist';
+    showTrack = $data.method === "track";
+    showAlbum = $data.method !== "artist";
     maxRows =
-      $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 20;
+      $data.method === "track" ? 5 : $data.method === "artist" ? 10 : 20;
     maxColumns =
-      $data.method === 'track' ? 5 : $data.method === 'artist' ? 10 : 20;
+      $data.method === "track" ? 5 : $data.method === "artist" ? 10 : 20;
     if ($isSubmitting && !$isValid) {
-      window.location.href = '#top';
+      window.location.href = "#top";
     }
   }
 </script>
@@ -152,7 +152,7 @@
     name="username"
     autocomplete="on"
     placeholder="*Last.FM username"
-    style={$errors.username ? 'border: 2px solid red' : ''}
+    style={$errors.username ? "border: 2px solid red" : ""}
   />
   {#if $errors.username}
     <ErrorMessage message={$errors.username[0]} />
@@ -207,14 +207,14 @@
       name="rows"
       max={maxRows}
       bind:value={$data.rows}
-      errorMessage={$errors.rows ? $errors.rows[0] : ''}
+      errorMessage={$errors.rows ? $errors.rows[0] : ""}
     />
     <NumberInput
       label="Number of Columns"
       name="columns"
       max={maxColumns}
       bind:value={$data.columns}
-      errorMessage={$errors.columns ? $errors.columns[0] : ''}
+      errorMessage={$errors.columns ? $errors.columns[0] : ""}
     />
     <Checkbox
       text="Show Advanced Options"
@@ -263,12 +263,12 @@
           >Text Location</label
         ><br />
         <select name="textLocation">
-          <option selected value={'topleft'}>Top Left (default)</option>
-          <option value={'topcentre'}>Top Centre</option>
-          <option value={'topright'}>Top Right</option>
-          <option value={'bottomleft'}>Bottom Left</option>
-          <option value={'bottomcentre'}>Bottom Centre</option>
-          <option value={'bottomright'}>Bottom Right</option>
+          <option selected value={"topleft"}>Top Left (default)</option>
+          <option value={"topcentre"}>Top Centre</option>
+          <option value={"topright"}>Top Right</option>
+          <option value={"bottomleft"}>Bottom Left</option>
+          <option value={"bottomcentre"}>Bottom Centre</option>
+          <option value={"bottomright"}>Bottom Right</option>
         </select><br />
       </div>
       <div hidden={$data.grayscaleImage}>
@@ -316,10 +316,10 @@
     background: #fff;
     border-radius: 10px;
     box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
-    font-family: 'Poppins';
+    font-family: "Poppins";
     margin: auto;
   }
-  input[type='text'],
+  input[type="text"],
   select {
     appearance: none;
     -moz-appearance: none;
@@ -334,14 +334,16 @@
     background-color: white;
     background: none;
     color: black;
-    font-family: 'Poppins';
+    font-family: "Poppins";
     line-height: 20px;
     min-height: 28px;
     border: 2px solid transparent;
-    box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
+    box-shadow:
+      rgb(0 0 0 / 12%) 0px 1px 3px,
+      rgb(0 0 0 / 24%) 0px 1px 2px;
     transition: all 0.1s ease 0s;
   }
-  input[type='text'],
+  input[type="text"],
   select {
     background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='%23000000' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>")
       no-repeat;
@@ -351,13 +353,13 @@
     appearance: none;
     padding-right: 2rem;
   }
-  input[type='submit'],
-  input[type='button'] {
-    font-family: 'Poppins';
+  input[type="submit"],
+  input[type="button"] {
+    font-family: "Poppins";
     font-weight: bold;
   }
-  input[type='submit'],
-  input[type='button'] {
+  input[type="submit"],
+  input[type="button"] {
     width: 100%;
     background-color: #4caf50;
     color: white;
@@ -368,7 +370,7 @@
     cursor: pointer;
     font-size: 1em;
   }
-  input[type='submit']:hover {
+  input[type="submit"]:hover {
     background-color: #45a049;
   }
   input:focus {
@@ -401,7 +403,7 @@
     padding-top: 1em;
   }
   .username,
-  input[type='text'] {
+  input[type="text"] {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -415,11 +417,13 @@
     background-color: white;
     background: none;
     color: black;
-    font-family: 'Poppins';
+    font-family: "Poppins";
     line-height: 20px;
     min-height: 28px;
     border: 2px solid transparent;
-    box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
+    box-shadow:
+      rgb(0 0 0 / 12%) 0px 1px 3px,
+      rgb(0 0 0 / 24%) 0px 1px 2px;
     transition: all 0.1s ease 0s;
   }
   .btn-grad {

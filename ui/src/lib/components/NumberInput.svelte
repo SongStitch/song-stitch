@@ -1,11 +1,11 @@
 <script lang="ts">
-  import ErrorMessage from './ErrorMessage.svelte';
+  import ErrorMessage from "./ErrorMessage.svelte";
 
   export let max: number;
   export let name: string;
   export let value: number;
   export let label: string;
-  export let errorMessage: string = '';
+  export let errorMessage: string = "";
   let min = 0;
 
   $: {
@@ -53,10 +53,12 @@
     background-color: white;
     background: none;
     color: black;
-    font-family: 'Poppins';
+    font-family: "Poppins";
     min-height: 28px;
     border: 2px solid transparent;
-    box-shadow: rgb(0 0 0 / 12%) 0px 1px 3px, rgb(0 0 0 / 24%) 0px 1px 2px;
+    box-shadow:
+      rgb(0 0 0 / 12%) 0px 1px 3px,
+      rgb(0 0 0 / 24%) 0px 1px 2px;
     transition: all 0.1s ease 0s;
   }
   .label {
