@@ -5,10 +5,31 @@ mod:
 	go mod tidy
 	go mod vendor
 
-lint: build-ui
-	gofmt -s -w cmd/ internal/
-	(cd ui && npm run format)
+hadolint:
+	@printf "%s\n" "==== Running hadolint ====="
 	hadolint Dockerfile
+
+lint-prettier:
+	@printf "%s\n" "==== Running prettier lint check ====="
+	prettier -c .
+
+format-prettier:
+	@printf "%s\n" "==== Running prettier format ====="
+	prettier -w .
+
+format-go:
+	@printf "%s\n" "==== Running go-fmt ====="
+	gofmt -s -w cmd/ internal/
+
+format-npm:
+	@printf "%s\n" "==== Running npm format ====="
+	(cd ui && npm run format)
+
+lint: lint-prettier hadolint
+
+format: format-go format-npm format-prettier
+
+format-lint: format lint
 
 build-ui:
 	(cd ui && npm install && npm run build)
@@ -25,7 +46,7 @@ watch-ui: build-ui
 run-debug:
 	GODEBUG=gctrace=1 go run cmd/*.go
 
-build: lint
+build: format-lint
 	go build -o bin/${BINARY_NAME} cmd/*.go
 
 darwin:
@@ -39,7 +60,7 @@ linux-arm64:
 linux-amd64:
 	env GOOS=linux GOARCH=amd64 go build -o bin/${BINARY_NAME}_linux_amd64 cmd/*.go
 
-docker-build: lint
+docker-build: format-lint
 	docker-compose build song-stitch
 
 docker-run:
