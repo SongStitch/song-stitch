@@ -20,8 +20,7 @@
 
 @font-face {
   font-family: 'Poppins';
-  src:
-    url('./assets/fonts/poppins-semibold.woff2') format('woff2'),
+  src: url('./assets/fonts/poppins-semibold.woff2') format('woff2'),
     url('./assets/fonts/poppins-semibold.woff') format('woff'),
     url('./assets/fonts/poppins-semibold.ttf') format('truetype');
   font-display: swap;
@@ -31,8 +30,7 @@
 
 @font-face {
   font-family: 'Poppins';
-  src:
-    url('./assets/fonts/poppins-regular.woff2') format('woff2'),
+  src: url('./assets/fonts/poppins-regular.woff2') format('woff2'),
     url('./assets/fonts/poppins-regular.woff') format('woff'),
     url('./assets/fonts/poppins-regular.ttf') format('truetype');
   font-display: swap;
