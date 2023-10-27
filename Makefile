@@ -5,6 +5,10 @@ mod:
 	go mod tidy
 	go mod vendor
 
+go-update:
+	go get -u ./...
+	$(MAKE) mod
+
 hadolint:
 	@printf "%s\n" "==== Running hadolint ====="
 	hadolint Dockerfile
