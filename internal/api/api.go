@@ -19,15 +19,15 @@ import (
 )
 
 type CollageRequest struct {
-	Method        string `in:"query=method;default=album;validate=required,oneof=album artist track"`
-	TextLocation  string `in:"query=textlocation;default=topleft;validate=validateTextLocation"`
-	Username      string `in:"query=username;required;validate=required"`
-	Period        string `in:"query=period;default=7day;validate=required,validatePeriod"`
-	Height        uint   `in:"query=height;default=0;validate=gte=0,lte=3000"`
-	Width         uint   `in:"query=width;default=0;validate=gte=0,lte=3000"`
-	Rows          int    `in:"query=rows;default=3;validate=required"`
-	FontSize      int    `in:"query=fontsize;default=12;validate=gte=8,lte=30"`
-	Columns       int    `in:"query=columns;default=3;validate=required"`
+	Method        string `in:"query=method;default=album" validate:"required,oneof=album artist track"`
+	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
+	Username      string `in:"query=username;required" validate:"required"`
+	Period        string `in:"query=period;default=7day" validate:"required,validatePeriod"`
+	Height        uint   `in:"query=height;default=0" validate:"gte=0,lte=3000"`
+	Width         uint   `in:"query=width;default=0" validate:"gte=0,lte=3000"`
+	Rows          int    `in:"query=rows;default=3" validate:"required"`
+	FontSize      int    `in:"query=fontsize;default=12" validate:"gte=8,lte=30"`
+	Columns       int    `in:"query=columns;default=3" validate:"required"`
 	DisplayAlbum  bool   `in:"query=album;default=false"`
 	DisplayTrack  bool   `in:"query=track;default=false"`
 	PlayCount     bool   `in:"query=playcount;default=false"`
