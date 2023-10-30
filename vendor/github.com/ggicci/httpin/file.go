@@ -3,11 +3,13 @@
 package httpin
 
 import (
+	"fmt"
 	"mime/multipart"
+	"reflect"
 )
 
 func init() {
-	registerTypeDecoderTo[File](builtinDecoders, DecoderFunc[*multipart.FileHeader](decodeFile), false)
+	RegisterTypeDecoder(reflect.TypeOf(File{}), FileTypeDecoderFunc(decodeFile))
 }
 
 type File struct {
@@ -25,7 +27,7 @@ func decodeFile(fileHeader *multipart.FileHeader) (interface{}, error) {
 	inFile.Header = fileHeader
 	file, err := fileHeader.Open()
 	if err != nil {
-		return inFile, err
+		return inFile, fmt.Errorf("open file: %w", err)
 	}
 
 	inFile.File = file
