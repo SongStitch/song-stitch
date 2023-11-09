@@ -1,7 +1,6 @@
 package httpin
 
 import (
-	"fmt"
 	"mime/multipart"
 	"net/http"
 	"reflect"
@@ -30,8 +29,11 @@ func newExtractor(r *http.Request) *extractor {
 	}
 }
 
-func (e *extractor) Execute(ctx *DirectiveContext) error {
-	for _, key := range ctx.Directive.Argv {
+func (e *extractor) Execute(ctx *DirectiveRuntime, keys ...string) error {
+	if len(keys) == 0 {
+		keys = ctx.Directive.Argv
+	}
+	for _, key := range keys {
 		if e.KeyNormalizer != nil {
 			key = e.KeyNormalizer(key)
 		}
@@ -42,8 +44,8 @@ func (e *extractor) Execute(ctx *DirectiveContext) error {
 	return nil
 }
 
-func (e *extractor) extract(ctx *DirectiveContext, key string) error {
-	if ctx.Context.Value(FieldSet) == true {
+func (e *extractor) extract(rtm *DirectiveRuntime, key string) error {
+	if rtm.Context.Value(FieldSet) == true {
 		return nil
 	}
 
@@ -55,82 +57,67 @@ func (e *extractor) extract(ctx *DirectiveContext, key string) error {
 		return nil
 	}
 
-	// NOTE(ggicci): Array?
-	if ctx.ValueType.Kind() == reflect.Slice {
-		return e.extractMulti(ctx, key)
-	}
+	rtmHelper := directiveRuntimeHelper{rtm}
+	valueType := rtm.Value.Type().Elem()
+	elemType, decoderKind := scalarElemTypeOf(valueType)
+	decoder := rtmHelper.decoderOf(elemType)
 
-	switch decoder := ctx.decoderOf(ctx.ValueType).(type) {
-	case ValueTypeDecoder:
-		if gotValue, interfaceValue, err := decodeValueAt(decoder, e.Form.Value[key], 0); err != nil {
-			return fieldError{key, gotValue, err}
-		} else {
-			ctx.Value.Elem().Set(reflect.ValueOf(interfaceValue))
-		}
-	case FileTypeDecoder:
-		if gotFile, interfaceValue, err := decodeFileAt(decoder, e.Form.File[key], 0); err != nil {
-			return fieldError{key, gotFile, err}
-		} else {
-			ctx.Value.Elem().Set(reflect.ValueOf(interfaceValue))
-		}
+	var decodedValue interface{}
+	var err error
+
+	switch ada := decoder.(type) {
+	case decoderAdaptor[string]:
+		decodedValue, err = ada.DecoderByKind(decoderKind, valueType).DecodeX(values)
+	case decoderAdaptor[*multipart.FileHeader]:
+		decodedValue, err = ada.DecoderByKind(decoderKind, valueType).DecodeX(files)
 	default:
-		return UnsupportedTypeError{ctx.ValueType}
+		err = unsupportedTypeError(elemType)
 	}
 
-	ctx.DeliverContextValue(FieldSet, true)
+	if err == nil {
+		err = setDirectiveRuntimeValue(rtm, decodedValue)
+	}
+	if err != nil {
+		return &fieldError{key, values, err}
+	}
+	rtmHelper.DeliverContextValue(FieldSet, true)
 	return nil
 }
 
-func (e *extractor) extractMulti(ctx *DirectiveContext, key string) error {
-	var (
-		theSlice reflect.Value
-		elemType = ctx.ValueType.Elem()
-		values   = e.Form.Value[key]
-		files    = e.Form.File[key]
-	)
-
-	switch decoder := ctx.decoderOf(elemType).(type) {
-	case ValueTypeDecoder:
-		theSlice = reflect.MakeSlice(ctx.ValueType, len(values), len(values))
-		for i := 0; i < len(values); i++ {
-			if _, interfaceValue, err := decodeValueAt(decoder, values, i); err != nil {
-				return fieldError{key, values, fmt.Errorf("at index %d: %w", i, err)}
-			} else {
-				theSlice.Index(i).Set(reflect.ValueOf(interfaceValue))
-			}
-		}
-	case FileTypeDecoder:
-		theSlice = reflect.MakeSlice(ctx.ValueType, len(files), len(files))
-		for i := 0; i < len(files); i++ {
-			if _, interfaceValue, err := decodeFileAt(decoder, files, i); err != nil {
-				return fieldError{key, files, fmt.Errorf("at index %d: %w", i, err)}
-			} else {
-				theSlice.Index(i).Set(reflect.ValueOf(interfaceValue))
-			}
-		}
-	default:
-		return UnsupportedTypeError{ctx.ValueType}
+func setDirectiveRuntimeValue(rtm *DirectiveRuntime, value interface{}) error {
+	if value == nil {
+		// NOTE: should we wipe the value here? i.e. set the value to nil if necessary.
+		// No case found yet, at lease for now.
+		return nil
 	}
-
-	ctx.Value.Elem().Set(theSlice)
-	ctx.DeliverContextValue(FieldSet, true)
-	return nil
+	newValue := reflect.ValueOf(value)
+	targetType := rtm.Value.Type().Elem()
+	if newValue.Type().AssignableTo(targetType) {
+		rtm.Value.Elem().Set(newValue)
+		return nil
+	}
+	return mismatchedValueTypeError(targetType, reflect.TypeOf(value))
 }
 
-func decodeValueAt(decoder ValueTypeDecoder, values []string, index int) (string, interface{}, error) {
-	var gotValue = ""
-	if index < len(values) {
-		gotValue = values[index]
+// scalarElemTypeOf returns the scalar element type of a given type.
+//   - T -> T, decoderKindScalar
+//   - []T -> T, decoderKindMulti
+//   - patch.Field[T] -> T, decoderKindPatch
+//   - patch.Field[[]T] -> T, decoderKindPatchMulti
+//
+// The given type is gonna use the decoder of the scalar element type to decode
+// the input values.
+func scalarElemTypeOf(valueType reflect.Type) (reflect.Type, decoderKindType) {
+	if valueType.Kind() == reflect.Slice {
+		return valueType.Elem(), decoderKindMulti
 	}
-	res, err := decoder.Decode(gotValue)
-	return gotValue, res, err
-}
-
-func decodeFileAt(decoder FileTypeDecoder, files []*multipart.FileHeader, index int) (*multipart.FileHeader, interface{}, error) {
-	var gotFile *multipart.FileHeader
-	if index < len(files) {
-		gotFile = files[index]
+	if isPatchField(valueType) {
+		subElemType, isMulti := patchFieldElemType(valueType)
+		if isMulti {
+			return subElemType, decoderKindPatchMulti
+		} else {
+			return subElemType, decoderKindPatch
+		}
 	}
-	res, err := decoder.Decode(gotFile)
-	return gotFile, res, err
+	return valueType, decoderKindScalar
 }
