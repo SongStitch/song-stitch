@@ -26,7 +26,6 @@ updates:
 
   - package-ecosystem: 'gomod'
     vendor: true
-    directory: '/'
     schedule:
       interval: 'daily'
       time: '09:00'
