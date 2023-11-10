@@ -25,7 +25,6 @@ updates:
       timezone: 'Australia/Sydney'
 
   - package-ecosystem: 'gomod'
-    vendor: true
     directory: '/'
     schedule:
       interval: 'daily'
