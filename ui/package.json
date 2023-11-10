@@ -13,7 +13,7 @@
     "prettier": "prettier --check \"**/*.{html,js,ts,svelte,css}\""
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.4.6",
+    "@sveltejs/vite-plugin-svelte": "^2.5.1",
     "@tsconfig/svelte": "^5.0.2",
     "prettier": "^3.0.3",
     "prettier-plugin-svelte": "^3.0.3",
