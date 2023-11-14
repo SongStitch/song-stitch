@@ -23,6 +23,10 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Australia/Sydney'
+    groups:
+      group:
+        patterns:
+          - '*'
 
   - package-ecosystem: 'gomod'
     directory: '/'
@@ -30,3 +34,7 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Australia/Sydney'
+    groups:
+      group:
+        patterns:
+          - '*'
