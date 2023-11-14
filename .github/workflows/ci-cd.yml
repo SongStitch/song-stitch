@@ -51,11 +51,6 @@ jobs:
       - name: Prettify code
         working-directory: ./ui
         run: npm run prettier
-      - name: Prettify code
-        uses: creyD/prettier_action@v4.3
-        with:
-          dry: true
-          prettier_options: --log-level debug --check .
 
   test-build:
     name: runner / Go package
