@@ -4,9 +4,10 @@ BINARY_NAME=song-stitch
 mod:
 	go mod tidy
 	go mod vendor
+	go mod verify
 
 go-update:
-	go get -u ./...
+	go list -mod=readonly -m -f '{{if not .Indirect}}{{if not .Main}}{{.Path}}{{end}}{{end}}' all | xargs go get -u
 	$(MAKE) mod
 
 hadolint:

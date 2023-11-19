@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -55,12 +56,12 @@ func New(structValue interface{}, opts ...Option) (*Resolver, error) {
 	// Apply the context to each resolver.
 	tree.Iterate(func(r *Resolver) error {
 		r.Context = ctx
+		r.Directives = getSortedDirectives(ctx, r.Directives)
 		return nil
 	})
 
-	// Validate the tree.
-	if err := tree.validate(); err != nil {
-		return nil, err
+	if tree.Namespace() == nil {
+		return nil, errors.New("nil namespace")
 	}
 
 	return tree, nil
@@ -78,14 +79,6 @@ func (r *Resolver) copy() *Resolver {
 		resolverCopy.Children[i].Parent = resolverCopy
 	}
 	return resolverCopy
-}
-
-func (r *Resolver) validate() error {
-	if r.Namespace() == nil {
-		return errors.New("nil namespace")
-	}
-
-	return nil
 }
 
 func (r *Resolver) IsRoot() bool {
@@ -146,28 +139,49 @@ func findResolver(root *Resolver, path []string) *Resolver {
 	return nil
 }
 
+func shouldResolveNestedDirectives(r *Resolver, ctx context.Context) bool {
+	if r.IsRoot() {
+		return true // always resolve the root
+	}
+	if r.IsLeaf() {
+		return false // leaves have no children
+	}
+	if len(r.Directives) == 0 {
+		return true // go deeper if no directives on current field
+	}
+	if ctx != nil && ctx.Value(ckResolveNestedDirectives) != nil {
+		return ctx.Value(ckResolveNestedDirectives).(bool)
+	}
+	if r.Context.Value(ckResolveNestedDirectives) != nil {
+		return r.Context.Value(ckResolveNestedDirectives).(bool)
+	}
+	return true
+}
+
 func (r *Resolver) String() string {
 	return fmt.Sprintf("%s (%v)", r.PathString(), r.Type)
 }
 
-// Iterate visits the resolver tree by depth-first. The callback function
-// will be called for each field resolver. If the callback returns an error,
-// the iteration will be stopped.
+// Iterate visits the resolver tree by depth-first. The callback function will
+// be called on each field resolver. The iteration will stop if the callback
+// returns an error.
 func (r *Resolver) Iterate(fn func(*Resolver) error) error {
-	return iterateResolverTree(r, fn)
+	ctx := WithValue(ckResolveNestedDirectives, true).Apply(context.Background())
+	return r.iterate(ctx, fn)
 }
 
-func iterateResolverTree(root *Resolver, fn func(*Resolver) error) error {
+func (root *Resolver) iterate(ctx context.Context, fn func(*Resolver) error) error {
 	if err := fn(root); err != nil {
 		return err
 	}
 
-	for _, field := range root.Children {
-		if err := iterateResolverTree(field, fn); err != nil {
-			return err
+	if shouldResolveNestedDirectives(root, ctx) {
+		for _, field := range root.Children {
+			if err := field.iterate(ctx, fn); err != nil {
+				return err
+			}
 		}
 	}
-
 	return nil
 }
 
@@ -206,7 +220,7 @@ func (r *Resolver) Scan(value any, opts ...Option) error {
 	}
 
 	var errs []error
-	r.Iterate(func(r *Resolver) error {
+	r.iterate(ctx, func(r *Resolver) error {
 		errs = append(errs, scan(r, ctx, rv))
 		return nil
 	})
@@ -274,7 +288,7 @@ func (root *Resolver) resolve(ctx context.Context, rootValue reflect.Value) erro
 	}
 
 	// Resolve the children fields.
-	if len(root.Children) > 0 {
+	if shouldResolveNestedDirectives(root, ctx) {
 		// If the root is a pointer, we need to allocate memory for it.
 		// We only expect it's a one-level pointer, e.g. *User, not **User.
 		underlyingValue := rootValue
@@ -305,7 +319,7 @@ func (r *Resolver) runDirectives(ctx context.Context, rv reflect.Value) error {
 		ns = nsOverriden.(*Namespace)
 	}
 
-	for _, directive := range r.Directives {
+	for _, directive := range getSortedDirectives(ctx, r.Directives) {
 		dirRuntime := &DirectiveRuntime{
 			Directive: directive,
 			Resolver:  r,
@@ -331,6 +345,18 @@ func (r *Resolver) runDirectives(ctx context.Context, rv reflect.Value) error {
 	}
 
 	return nil
+}
+
+func getSortedDirectives(ctx context.Context, directives []*Directive) []*Directive {
+	if directiveRunOrder := ctx.Value(ckDirectiveRunOrder); directiveRunOrder != nil {
+		var directivesCopy []*Directive
+		directivesCopy = append(directivesCopy, directives...)
+		sort.SliceStable(directivesCopy, func(i, j int) bool {
+			return directiveRunOrder.(DirectiveRunOrder)(directivesCopy[i], directivesCopy[j])
+		})
+		return directivesCopy
+	}
+	return directives // the original one
 }
 
 func (r *Resolver) DebugLayoutText(depth int) string {
