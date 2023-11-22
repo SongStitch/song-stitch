@@ -22,7 +22,7 @@ github.com/gabriel-vasile/mimetype/internal/magic
 # github.com/ggicci/httpin v0.14.2
 ## explicit; go 1.20
 github.com/ggicci/httpin
-# github.com/ggicci/owl v0.4.0
+# github.com/ggicci/owl v0.6.0
 ## explicit; go 1.20
 github.com/ggicci/owl
 # github.com/go-playground/locales v0.14.1
@@ -71,18 +71,18 @@ github.com/rs/zerolog/log
 # github.com/sethvargo/go-envconfig v0.9.0
 ## explicit; go 1.17
 github.com/sethvargo/go-envconfig
-# golang.org/x/crypto v0.14.0
-## explicit; go 1.17
+# golang.org/x/crypto v0.15.0
+## explicit; go 1.18
 golang.org/x/crypto/sha3
-# golang.org/x/image v0.13.0
+# golang.org/x/image v0.14.0
 ## explicit; go 1.18
 golang.org/x/image/draw
 golang.org/x/image/font
 golang.org/x/image/font/basicfont
 golang.org/x/image/math/f64
 golang.org/x/image/math/fixed
-# golang.org/x/net v0.17.0
-## explicit; go 1.17
+# golang.org/x/net v0.18.0
+## explicit; go 1.18
 golang.org/x/net/html
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.14.0
