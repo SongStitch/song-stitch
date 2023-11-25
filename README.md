@@ -19,7 +19,7 @@
 [![Website Status](https://img.shields.io/website?label=songstitch.art&style=flat-square&url=https%3A%2F%2Fsongstitch.art%2F)](https://songstitch.art/)
 [![CI status](https://img.shields.io/github/actions/workflow/status/SongStitch/song-stitch/ci-cd.yml?branch=main&style=flat-square&logo=github)](https://github.com/SongStitch/song-stitch/actions?query=branch%3Amain)
 [![License](https://img.shields.io/github/license/SongStitch/song-stitch?style=flat-square)](/LICENSE)
-[![Ko-Fi](https://img.shields.io/badge/kofi-%23FF5E5B.svg?style=flat-square&logo=kofi&logoColor=black)](<[https://github.com/prettier/prettier](https://ko-fi.com/songstitch)>)
+[![Ko-Fi](https://img.shields.io/badge/kofi-%23FF5E5B.svg?style=flat-square&logo=kofi&logoColor=black)](https://ko-fi.com/songstitch)
 
 </div>
 
