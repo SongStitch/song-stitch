@@ -16,7 +16,7 @@
 ![typescript](https://img.shields.io/badge/typescript-%233178C6.svg?style=flat-square&logo=typescript&logoColor=white)
 [![Prettier](https://img.shields.io/badge/Prettier-%23F7B93E.svg?style=flat-square&logo=prettier&logoColor=black)](https://github.com/prettier/prettier)
 [![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=flat-square&logo=app-store&logoColor=white)](https://apps.apple.com/au/app/songstitch/id6450189672)
-[![Website Status](https://img.shields.io/website?label=songstitch.art&style=flat-square&url=https%3A%2F%2Fsongstitch.art%2F)](https://songstitch.art/)
+[![Website Status](https://img.shields.io/website?label=songstitch.art&style=flat-square&url=https%3A%2F%2Fsongstitch.fly.dev/)](https://songstitch.art/)
 [![CI status](https://img.shields.io/github/actions/workflow/status/SongStitch/song-stitch/ci-cd.yml?branch=main&style=flat-square&logo=github)](https://github.com/SongStitch/song-stitch/actions?query=branch%3Amain)
 [![License](https://img.shields.io/github/license/SongStitch/song-stitch?style=flat-square)](/LICENSE)
 [![Ko-Fi](https://img.shields.io/badge/kofi-%23FF5E5B.svg?style=flat-square&logo=kofi&logoColor=black)](https://ko-fi.com/songstitch)
