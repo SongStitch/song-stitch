@@ -41,7 +41,11 @@ func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 		if err == nil {
 			return nil
 		}
-		zerolog.Ctx(ctx).Warn().Err(err).Str("imageUrl", entity.GetImageUrl()).Msg("Error downloading image")
+		zerolog.Ctx(ctx).
+			Warn().
+			Err(err).
+			Str("imageUrl", entity.ImageUrl()).
+			Msg("Error downloading image")
 		delay := backoffSchedule[i]
 		select {
 		case <-ctx.Done():
@@ -54,7 +58,7 @@ func DownloadImageWithRetry(ctx context.Context, entity Downloadable) error {
 }
 
 func DownloadImage(ctx context.Context, entity Downloadable) error {
-	url := entity.GetImageUrl()
+	url := entity.ImageUrl()
 	if len(url) == 0 {
 		// Skip album art if it doesn't exist
 		return nil
@@ -83,14 +87,14 @@ func DownloadImage(ctx context.Context, entity Downloadable) error {
 		if err != nil {
 			return err
 		}
-		entity.SetImage(&img)
+		entity.SetImage(img)
 		return err
 	} else if strings.ToLower(extension) == gifFileType {
 		img, err := gif.Decode(ioBody)
 		if err != nil {
 			return err
 		}
-		entity.SetImage(&img)
+		entity.SetImage(img)
 		return err
 	} else {
 		body, err := io.ReadAll(resp.Body)
@@ -98,7 +102,7 @@ func DownloadImage(ctx context.Context, entity Downloadable) error {
 			return err
 		}
 		img, _, err := image.Decode(bytes.NewReader(body))
-		entity.SetImage(&img)
+		entity.SetImage(img)
 		return err
 
 	}
@@ -118,10 +122,13 @@ func DownloadImages[T Downloadable](ctx context.Context, entities []T) error {
 			defer wg.Done()
 			err := DownloadImageWithRetry(ctx, *entity)
 			if err != nil {
-				logger.Error().Err(err).Str("imageUrl", (*entity).GetImageUrl()).Msg("Error downloading image")
+				logger.Error().
+					Err(err).
+					Str("imageUrl", (*entity).ImageUrl()).
+					Msg("Error downloading image")
 			}
 			cache := cache.GetImageUrlCache()
-			cache.Set((*entity).GetIdentifier(), (*entity).GetCacheEntry())
+			cache.Set((*entity).Identifier(), (*entity).CacheEntry())
 		}(entity)
 	}
 
