@@ -16,9 +16,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
 
+	"github.com/SongStitch/song-stitch/internal/clients"
 	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
-	"github.com/SongStitch/song-stitch/internal/models"
 )
 
 type LastFMImage struct {
@@ -64,7 +64,13 @@ func cleanError(err error) error {
 	return CleanError{errStr: modifiedString}
 }
 
-func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType constants.CollageType, username string, period constants.Period, count int) (*T, error) {
+func GetLastFmResponse[T LastFMResponse](
+	ctx context.Context,
+	collageType constants.CollageType,
+	username string,
+	period constants.Period,
+	count int,
+) (*T, error) {
 	config := config.GetConfig()
 	endpoint := config.LastFM.Endpoint
 	apiKey := config.LastFM.APIKey
@@ -81,7 +87,11 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 	logger.Info().Msg("Fetching LastFM data")
 	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
-		logger.Info().Int("page", page).Int("totalFetched", totalFetched).Int("count", count).Msg("Fetching page")
+		logger.Info().
+			Int("page", page).
+			Int("totalFetched", totalFetched).
+			Int("count", count).
+			Msg("Fetching page")
 		// Determine the limit for this request
 		limit := count - totalFetched
 		if limit > maxPerPage {
@@ -114,7 +124,10 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 			if res != nil {
 				defer res.Body.Close()
 			}
-			logger.Info().Dur("duration", time.Since(start)).Str("method", method).Msg("Last.fm request completed")
+			logger.Info().
+				Dur("duration", time.Since(start)).
+				Str("method", method).
+				Msg("Last.fm request completed")
 			if err != nil {
 				// ensure sensitive information is not returned in error message
 				return nil, cleanError(err)
@@ -152,8 +165,8 @@ func GetLastFmResponse[T LastFMResponse](ctx context.Context, collageType consta
 				return nil, err
 			}
 		}
-		totalFetched = result.GetTotalFetched()
-		totalPages := result.GetTotalPages()
+		totalFetched = result.TotalFetched()
+		totalPages := result.TotalPages()
 		if totalPages == page || totalPages == 0 {
 			break
 		}
@@ -171,7 +184,11 @@ type GetTrackInfoResponse struct {
 	} `json:"track"`
 }
 
-func GetTrackInfo(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+func GetTrackInfo(
+	trackName string,
+	artistName string,
+	imageSize string,
+) (*clients.TrackInfo, error) {
 	config := config.GetConfig()
 	endpoint := config.LastFM.Endpoint
 	apiKey := config.LastFM.APIKey
@@ -218,7 +235,10 @@ func GetTrackInfo(trackName string, artistName string, imageSize string) (*model
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return &models.TrackInfo{AlbumName: response.Track.Album.AlbumName, ImageUrl: image.Link}, nil
+			return &clients.TrackInfo{
+				AlbumName: response.Track.Album.AlbumName,
+				ImageUrl:  image.Link,
+			}, nil
 		}
 	}
 	return nil, errors.New("no image found")

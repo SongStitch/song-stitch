@@ -7,14 +7,14 @@ import (
 )
 
 type Drawable interface {
-	GetImage() image.Image
-	GetParameters() map[string]string
+	Image() image.Image
+	Parameters() map[string]string
 	ClearImage()
 }
 
 type Downloadable interface {
-	GetImageUrl() string
+	ImageUrl() string
 	SetImage(image.Image)
-	GetIdentifier() string
-	GetCacheEntry() cache.CacheEntry
+	Identifier() string
+	CacheEntry() cache.CacheEntry
 }

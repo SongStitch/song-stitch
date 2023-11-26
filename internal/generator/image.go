@@ -87,7 +87,7 @@ func placeText[T Drawable](
 	x float64,
 	y float64,
 ) {
-	parameters := drawable.GetParameters()
+	parameters := drawable.Parameters()
 	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
 		textToDraw = append(textToDraw, val)
@@ -171,7 +171,7 @@ func CreateCollage[T Drawable](
 	for i, collageElement := range collageElements {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		img := collageElement.GetImage()
+		img := collageElement.Image()
 		if img != nil {
 			img = resizeImage(
 				ctx,
