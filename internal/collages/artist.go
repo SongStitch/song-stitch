@@ -53,7 +53,14 @@ func (a *LastFMTopArtists) GetTotalFetched() int {
 	return len(a.TopArtists.Artists)
 }
 
-func GenerateCollageForArtist(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func GenerateCollageForArtist(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+	displayOptions generator.DisplayOptions,
+) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Artists {
 		return nil, nil, constants.ErrTooManyImages
@@ -68,8 +75,20 @@ func GenerateCollageForArtist(ctx context.Context, username string, period const
 	return generator.CreateCollage(ctx, artists, displayOptions)
 }
 
-func getArtists(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Artist, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](ctx, constants.ARTIST, username, period, count)
+func getArtists(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+) ([]*Artist, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](
+		ctx,
+		constants.ARTIST,
+		username,
+		period,
+		count,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -104,14 +123,24 @@ func getArtists(ctx context.Context, username string, period constants.Period, c
 			defer wg.Done()
 			id, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
 			if err != nil {
-				logger.Error().Err(err).Str("artist", artist.Name).Str("artistUrl", artist.URL).Msg("Error getting image url for artist")
+				logger.Error().
+					Err(err).
+					Str("artist", artist.Name).
+					Str("artistUrl", artist.URL).
+					Msg("Error getting image url for artist")
 				return
 			}
 			newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
 		}(artist)
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "artist").Msg("Image URLs fetched")
+	logger.Info().
+		Int("cacheCount", cacheCount).
+		Str("username", username).
+		Int("totalCount", count).
+		Dur("duration", time.Since(start)).
+		Str("method", "artist").
+		Msg("Image URLs fetched")
 	return artists, nil
 }
 
@@ -129,8 +158,8 @@ func (a *Artist) GetImageUrl() string {
 	return a.ImageUrl
 }
 
-func (a *Artist) SetImage(img *image.Image) {
-	a.Image = *img
+func (a *Artist) SetImage(img image.Image) {
+	a.Image = img
 }
 
 func (a *Artist) GetIdentifier() string {
@@ -144,8 +173,8 @@ func (a *Artist) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
-func (a *Artist) GetImage() *image.Image {
-	return &a.Image
+func (a *Artist) GetImage() image.Image {
+	return a.Image
 }
 
 func (a *Artist) GetParameters() map[string]string {

@@ -59,7 +59,14 @@ func (a *LastFMTopAlbums) GetTotalFetched() int {
 	return len(a.TopAlbums.Albums)
 }
 
-func GenerateCollageForAlbum(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func GenerateCollageForAlbum(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+	displayOptions generator.DisplayOptions,
+) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Albums {
 		return nil, nil, constants.ErrTooManyImages
@@ -74,8 +81,20 @@ func GenerateCollageForAlbum(ctx context.Context, username string, period consta
 	return generator.CreateCollage(ctx, albums, displayOptions)
 }
 
-func getAlbums(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Album, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](ctx, constants.ALBUM, username, period, count)
+func getAlbums(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+) ([]*Album, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](
+		ctx,
+		constants.ALBUM,
+		username,
+		period,
+		count,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -108,18 +127,32 @@ func getAlbums(ctx context.Context, username string, period constants.Period, co
 			}
 			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
 			if err != nil {
-				logger.Error().Str("album", album.AlbumName).Str("artist", album.Artist.ArtistName).Err(err).Msg("Error getting album info")
+				logger.Error().
+					Str("album", album.AlbumName).
+					Str("artist", album.Artist.ArtistName).
+					Err(err).
+					Msg("Error getting album info")
 				return
 			}
 			albums[i].ImageUrl = albumInfo.ImageUrl
 		}(i, album)
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "album").Msg("Image URLs fetched")
+	logger.Info().
+		Int("cacheCount", cacheCount).
+		Str("username", username).
+		Int("totalCount", count).
+		Dur("duration", time.Since(start)).
+		Str("method", "album").
+		Msg("Image URLs fetched")
 	return albums, nil
 }
 
-func getAlbumInfo(ctx context.Context, album LastFMAlbum, imageSize string) (*models.AlbumInfo, error) {
+func getAlbumInfo(
+	ctx context.Context,
+	album LastFMAlbum,
+	imageSize string,
+) (*models.AlbumInfo, error) {
 	for _, image := range album.Images {
 		if image.Size == imageSize && image.Link != "" {
 			return &models.AlbumInfo{ImageUrl: image.Link}, nil
@@ -150,8 +183,8 @@ func (a *Album) GetImageUrl() string {
 	return a.ImageUrl
 }
 
-func (a *Album) SetImage(img *image.Image) {
-	a.Image = *img
+func (a *Album) SetImage(img image.Image) {
+	a.Image = img
 }
 
 func (a *Album) GetIdentifier() string {
@@ -165,8 +198,8 @@ func (a *Album) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
-func (a *Album) GetImage() *image.Image {
-	return &a.Image
+func (a *Album) GetImage() image.Image {
+	return a.Image
 }
 
 func (a *Album) GetParameters() map[string]string {

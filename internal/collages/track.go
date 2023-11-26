@@ -61,7 +61,14 @@ func (t *LastFMTopTracks) GetTotalFetched() int {
 	return len(t.TopTracks.Tracks)
 }
 
-func GenerateCollageForTrack(ctx context.Context, username string, period constants.Period, count int, imageSize string, displayOptions generator.DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func GenerateCollageForTrack(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+	displayOptions generator.DisplayOptions,
+) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Tracks {
 		return nil, nil, constants.ErrTooManyImages
@@ -76,8 +83,20 @@ func GenerateCollageForTrack(ctx context.Context, username string, period consta
 	return generator.CreateCollage(ctx, tracks, displayOptions)
 }
 
-func getTracks(ctx context.Context, username string, period constants.Period, count int, imageSize string) ([]*Track, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](ctx, constants.TRACK, username, period, count)
+func getTracks(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+	imageSize string,
+) ([]*Track, error) {
+	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](
+		ctx,
+		constants.TRACK,
+		username,
+		period,
+		count,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +133,11 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 			trackInfo, err := getTrackInfo(ctx, trackName, artistName, imageSize)
 			if err != nil {
-				logger.Error().Str("track", trackName).Str("artist", artistName).Err(err).Msg("Error getting track info")
+				logger.Error().
+					Str("track", trackName).
+					Str("artist", artistName).
+					Err(err).
+					Msg("Error getting track info")
 				return
 			}
 			newTrack.ImageUrl = trackInfo.ImageUrl
@@ -123,12 +146,23 @@ func getTracks(ctx context.Context, username string, period constants.Period, co
 
 	}
 	wg.Wait()
-	logger.Info().Int("cacheCount", cacheCount).Str("username", username).Int("totalCount", count).Dur("duration", time.Since(start)).Str("method", "track").Msg("Image URLs fetched")
+	logger.Info().
+		Int("cacheCount", cacheCount).
+		Str("username", username).
+		Int("totalCount", count).
+		Dur("duration", time.Since(start)).
+		Str("method", "track").
+		Msg("Image URLs fetched")
 
 	return tracks, nil
 }
 
-func getTrackInfo(ctx context.Context, trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+func getTrackInfo(
+	ctx context.Context,
+	trackName string,
+	artistName string,
+	imageSize string,
+) (*models.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
 
 	trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
@@ -144,7 +178,11 @@ func getTrackInfo(ctx context.Context, trackName string, artistName string, imag
 	return nil, constants.ErrNoImageFound
 }
 
-func getTrackInfoFromLastFm(trackName string, artistName string, imageSize string) (*models.TrackInfo, error) {
+func getTrackInfoFromLastFm(
+	trackName string,
+	artistName string,
+	imageSize string,
+) (*models.TrackInfo, error) {
 	result, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
 	if err != nil {
 		return nil, err
@@ -158,7 +196,11 @@ func getTrackInfoFromLastFm(trackName string, artistName string, imageSize strin
 	return result, nil
 }
 
-func getTrackInfoFromSpotify(ctx context.Context, trackName string, artistName string) (*models.TrackInfo, error) {
+func getTrackInfoFromSpotify(
+	ctx context.Context,
+	trackName string,
+	artistName string,
+) (*models.TrackInfo, error) {
 	client, err := spotify.GetSpotifyClient()
 	if err != nil {
 		return nil, err
@@ -191,8 +233,8 @@ func (t *Track) GetImageUrl() string {
 	return t.ImageUrl
 }
 
-func (t *Track) SetImage(img *image.Image) {
-	t.Image = *img
+func (t *Track) SetImage(img image.Image) {
+	t.Image = img
 }
 
 func (t *Track) GetIdentifier() string {
@@ -206,8 +248,8 @@ func (t *Track) GetCacheEntry() cache.CacheEntry {
 	return cache.CacheEntry{Url: t.ImageUrl, Album: t.Album}
 }
 
-func (t *Track) GetImage() *image.Image {
-	return &t.Image
+func (t *Track) GetImage() image.Image {
+	return t.Image
 }
 
 func (t *Track) GetParameters() map[string]string {

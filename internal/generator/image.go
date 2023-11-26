@@ -64,7 +64,13 @@ func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (
 	}
 }
 
-func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions DisplayOptions) float64 {
+func drawText(
+	dc *gg.Context,
+	text string,
+	x float64,
+	y float64,
+	displayOptions DisplayOptions,
+) float64 {
 	x_offset, y_offset := getTextOffset(dc, text, displayOptions)
 	x, y = x+x_offset, y+y_offset
 	dc.SetRGB(0, 0, 0)
@@ -74,7 +80,13 @@ func drawText(dc *gg.Context, text string, x float64, y float64, displayOptions 
 	return (3 + displayOptions.FontSize)
 }
 
-func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOptions, x float64, y float64) {
+func placeText[T Drawable](
+	dc *gg.Context,
+	drawable T,
+	displayOptions DisplayOptions,
+	x float64,
+	y float64,
+) {
 	parameters := drawable.GetParameters()
 	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
@@ -105,41 +117,44 @@ func placeText[T Drawable](dc *gg.Context, drawable T, displayOptions DisplayOpt
 	}
 }
 
-func resizeImage(ctx context.Context, img *image.Image, width uint, height uint) *image.Image {
+func resizeImage(ctx context.Context, img image.Image, width uint, height uint) image.Image {
 	if width == 0 && height == 0 {
 		zerolog.Ctx(ctx).Info().Msg("Unable to resize image, both width and height are 0")
 		return img
-	} else if int(width) == (*img).Bounds().Dx() && int(height) == (*img).Bounds().Dy() {
+	} else if int(width) == (img).Bounds().Dx() && int(height) == (img).Bounds().Dy() {
 		return img
 	} else if height == 0 {
-		height = uint(float64(width) * float64((*img).Bounds().Dy()) / float64((*img).Bounds().Dx()))
+		height = uint(float64(width) * float64((img).Bounds().Dy()) / float64((img).Bounds().Dx()))
 	} else if width == 0 {
-		width = uint(float64(height) * float64((*img).Bounds().Dx()) / float64((*img).Bounds().Dy()))
+		width = uint(float64(height) * float64((img).Bounds().Dx()) / float64((img).Bounds().Dy()))
 	}
-	result := resize.Resize(width, height, *img, resize.Lanczos3)
-	return &result
+	result := resize.Resize(width, height, img, resize.Lanczos3)
+	return result
 }
 
-func webpEncode(buf *bytes.Buffer, collage *image.Image, quality float32) error {
+func webpEncode(buf *bytes.Buffer, collage image.Image, quality float32) error {
 	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, quality)
 	if err != nil {
 		return err
 	}
 	options.LowMemory = true
 
-	err = webp.Encode(buf, *collage, options)
+	err = webp.Encode(buf, collage, options)
 	return err
 }
 
-func convertToGrayscale(imgPtr *image.Image) image.Image {
-	img := *imgPtr
+func convertToGrayscale(img image.Image) image.Image {
 	bounds := img.Bounds()
 	grayImg := image.NewGray(bounds)
 	draw.Draw(grayImg, grayImg.Bounds(), img, img.Bounds().Min, draw.Src)
 	return grayImg
 }
 
-func CreateCollage[T Drawable](ctx context.Context, collageElements []T, displayOptions DisplayOptions) (*image.Image, *bytes.Buffer, error) {
+func CreateCollage[T Drawable](
+	ctx context.Context,
+	collageElements []T,
+	displayOptions DisplayOptions,
+) (image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
 
@@ -157,9 +172,14 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		img := collageElement.GetImage()
-		if *img != nil {
-			img = resizeImage(ctx, img, uint(displayOptions.ImageDimension), uint(displayOptions.ImageDimension))
-			dc.DrawImage(*img, x, y)
+		if img != nil {
+			img = resizeImage(
+				ctx,
+				img,
+				uint(displayOptions.ImageDimension),
+				uint(displayOptions.ImageDimension),
+			)
+			dc.DrawImage(img, x, y)
 			collageElement.ClearImage()
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
@@ -167,11 +187,11 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 	collage := dc.Image()
 
 	if displayOptions.Resize {
-		collage = *resizeImage(ctx, &collage, displayOptions.Width, displayOptions.Height)
+		collage = resizeImage(ctx, collage, displayOptions.Width, displayOptions.Height)
 	}
 
 	if displayOptions.Grayscale {
-		collage = convertToGrayscale(&collage)
+		collage = convertToGrayscale(collage)
 	}
 
 	gcStart := time.Now()
@@ -182,12 +202,16 @@ func CreateCollage[T Drawable](ctx context.Context, collageElements []T, display
 
 	if displayOptions.Webp && !displayOptions.Grayscale {
 		logger.Info().Msg("Converting to Webp image")
-		err := webpEncode(collageBuffer, &collage, compressionQuality)
+		err := webpEncode(collageBuffer, collage, compressionQuality)
 		if err != nil {
 			logger.Err(err).Msg("Unable to create Webp image")
 		}
 	}
 
-	logger.Info().Dur("duration", time.Since(start)).Int("rows", displayOptions.Rows).Int("columns", displayOptions.Columns).Msg("Collage created")
-	return &collage, collageBuffer, nil
+	logger.Info().
+		Dur("duration", time.Since(start)).
+		Int("rows", displayOptions.Rows).
+		Int("columns", displayOptions.Columns).
+		Msg("Collage created")
+	return collage, collageBuffer, nil
 }
