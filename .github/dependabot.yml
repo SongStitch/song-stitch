@@ -8,11 +8,11 @@ updates:
       timezone: 'Australia/Sydney'
     ignore:
       - dependency-name: '*'
-        update-types: ['version-update:semver-major']    
+        update-types: ['version-update:semver-major']
     groups:
       docker:
         patterns:
-          - "*"
+          - '*'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
@@ -23,7 +23,7 @@ updates:
     groups:
       github:
         patterns:
-          - "*"
+          - '*'
 
   - package-ecosystem: 'npm'
     directory: '/ui'
