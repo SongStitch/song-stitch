@@ -39,6 +39,6 @@ WORKDIR /app
 
 COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
 COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
-COPY --chown=nonroot:nonroot assets/NotoSans* /app/assets/*
+COPY --chown=nonroot:nonroot assets/NotoSans-Bold.ttf assets/NotoSans-Regular.ttf /app/assets/
 
 ENTRYPOINT ["/app/song-stitch"]
