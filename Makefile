@@ -26,13 +26,21 @@ format-go:
 	@printf "%s\n" "==== Running go-fmt ====="
 	gofmt -s -w cmd/ internal/
 
+go-staticcheck:
+	# https://github.com/dominikh/go-tools
+	staticcheck ./...
+
+golines-format:
+	@printf "%s\n" "==== Running golines ====="
+	golines --write-output --ignored-dirs=vendor .
+
 format-npm:
 	@printf "%s\n" "==== Running npm format ====="
 	(cd ui && npm run format)
 
-lint: lint-prettier hadolint
+lint: lint-prettier hadolint go-staticcheck
 
-format: format-go format-npm format-prettier
+format: format-go golines-format format-npm format-prettier
 
 format-lint: format lint
 
