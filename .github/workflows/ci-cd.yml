@@ -73,6 +73,22 @@ jobs:
           go install honnef.co/go/tools/cmd/staticcheck@latest
           staticcheck ./...
 
+  golines:
+    name: runner / golines
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: golines
+        run: |
+          go install github.com/segmentio/golines@latest
+          golines --write-output --ignored-dirs=vendor .
+
   go-test-build:
     name: runner / Go Test Build
     runs-on: ubuntu-latest
