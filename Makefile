@@ -31,6 +31,7 @@ go-staticcheck:
 	staticcheck ./...
 
 golines-format:
+	@printf "%s\n" "==== Running golines ====="
 	golines --write-output --ignored-dirs=vendor .
 
 format-npm:
