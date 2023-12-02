@@ -1,15 +1,35 @@
 package tests
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
 
-var testURLs = []string{
-	"https://songstitch.art/collage?username=theden_sh&method=album&period=overall&artist=true&album=true&playcount=true&rows=15&columns=15",
-	"https://songstitch.art/collage?username=theden_sh&method=artist&period=overall&artist=true&playcount=true&rows=10&columns=10",
-	"https://songstitch.art/collage?username=theden_sh&method=track&period=overall&track=true&artist=true&album=true&playcount=true&rows=5&columns=5",
+var testURLs []string
+
+func init() {
+	customDomain := os.Getenv("TEST_DOMAIN")
+	if customDomain == "" {
+		customDomain = "songstitch.art"
+	}
+
+	testURLs = []string{
+		fmt.Sprintf(
+			"https://%s/collage?username=theden_sh&method=album&period=overall&artist=true&album=true&playcount=true&rows=15&columns=15",
+			customDomain,
+		),
+		fmt.Sprintf(
+			"https://%s/collage?username=theden_sh&method=artist&period=overall&artist=true&playcount=true&rows=10&columns=10",
+			customDomain,
+		),
+		fmt.Sprintf(
+			"https://%s/collage?username=theden_sh&method=track&period=overall&track=true&artist=true&album=true&playcount=true&rows=5&columns=5",
+			customDomain,
+		),
+	}
 }
 
 func testEndpoint(t *testing.T, url string) {
