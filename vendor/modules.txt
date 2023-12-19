@@ -71,7 +71,7 @@ github.com/rs/zerolog/log
 # github.com/sethvargo/go-envconfig v0.9.0
 ## explicit; go 1.17
 github.com/sethvargo/go-envconfig
-# golang.org/x/crypto v0.16.0
+# golang.org/x/crypto v0.17.0
 ## explicit; go 1.18
 golang.org/x/crypto/sha3
 # golang.org/x/image v0.14.0
