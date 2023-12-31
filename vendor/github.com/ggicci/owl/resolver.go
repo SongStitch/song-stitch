@@ -43,7 +43,7 @@ func New(structValue interface{}, opts ...Option) (*Resolver, error) {
 	if err != nil {
 		return nil, err
 	}
-	tree = tree.copy()
+	tree = tree.Copy()
 
 	// Apply options, build the context for each resolver.
 	defaultOpts := []Option{WithNamespace(defaultNS)}
@@ -67,15 +67,28 @@ func New(structValue interface{}, opts ...Option) (*Resolver, error) {
 	return tree, nil
 }
 
-func (r *Resolver) copy() *Resolver {
+// Copy returns a copy of the resolver tree. The copy is a deep copy, which
+// means the children are also copied.
+func (r *Resolver) Copy() *Resolver {
 	resolverCopy := new(Resolver)
 	*resolverCopy = *r
-	resolverCopy.Context = context.Background()
 
-	// Copy the children.
+	// Copy index and path.
+	resolverCopy.Index = make([]int, len(r.Index))
+	copy(resolverCopy.Index, r.Index)
+	resolverCopy.Path = make([]string, len(r.Path))
+	copy(resolverCopy.Path, r.Path)
+
+	// Copy the directives.
+	resolverCopy.Directives = make([]*Directive, len(r.Directives))
+	for i, d := range r.Directives {
+		resolverCopy.Directives[i] = d.Copy()
+	}
+
+	// Copy the children and set the parent.
 	resolverCopy.Children = make([]*Resolver, len(r.Children))
 	for i, child := range r.Children {
-		resolverCopy.Children[i] = child.copy()
+		resolverCopy.Children[i] = child.Copy()
 		resolverCopy.Children[i].Parent = resolverCopy
 	}
 	return resolverCopy
@@ -427,6 +440,9 @@ func buildResolver(typ reflect.Type, field reflect.StructField, parent *Resolver
 			// Skip unexported fields. Because we can't set value to them, nor
 			// get value from them by reflection.
 			if !field.IsExported() {
+				continue
+			}
+			if field.Type == root.Type {
 				continue
 			}
 

@@ -19,10 +19,12 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/ggicci/httpin v0.14.2
+# github.com/ggicci/httpin v0.15.2
 ## explicit; go 1.20
 github.com/ggicci/httpin
-# github.com/ggicci/owl v0.6.0
+github.com/ggicci/httpin/core
+github.com/ggicci/httpin/internal
+# github.com/ggicci/owl v0.7.0
 ## explicit; go 1.20
 github.com/ggicci/owl
 # github.com/go-playground/locales v0.14.1
