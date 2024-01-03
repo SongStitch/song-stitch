@@ -286,7 +286,13 @@
       <div class="loader" />
     {/if}
   </div>
-  <input name="submit" class="btn-grad" type="submit" value="Generate" />
+  <input
+    name="submit"
+    class="btn-grad"
+    type="submit"
+    value="Generate"
+    disabled={$isSubmitting}
+  />
   <input
     name="embed"
     class="btn-grad-embed"
