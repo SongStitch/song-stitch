@@ -1,4 +1,4 @@
-package httpin
+package core
 
 import "github.com/ggicci/owl"
 

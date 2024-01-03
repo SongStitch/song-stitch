@@ -50,8 +50,17 @@ func ParseDirective(directive string) (*Directive, error) {
 	return NewDirective(name, argv...), nil
 }
 
-func isValidDirectiveName(name string) bool {
-	return reDirectiveName.MatchString(name)
+// Copy creates a copy of the directive. The copy is a deep copy.
+func (d *Directive) Copy() *Directive {
+	return NewDirective(d.Name, d.Argv...)
+}
+
+// String returns the string representation of the directive.
+func (d *Directive) String() string {
+	if len(d.Argv) == 0 {
+		return d.Name
+	}
+	return d.Name + "=" + strings.Join(d.Argv, ",")
 }
 
 // DirectiveExecutor is the interface that wraps the Execute method.
@@ -107,4 +116,8 @@ type DirectiveRuntime struct {
 	// For the Name field resolver, it has two directives, dirA and dirB. They will use the same context Context_1.
 	// and if in dirA we set a value of "foo" to "bar", then in dirB we can get the value of "foo" as "bar".
 	Context context.Context
+}
+
+func isValidDirectiveName(name string) bool {
+	return reDirectiveName.MatchString(name)
 }
