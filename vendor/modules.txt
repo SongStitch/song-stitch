@@ -70,8 +70,8 @@ github.com/rs/zerolog/hlog/internal/mutil
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
-# github.com/sethvargo/go-envconfig v0.9.0
-## explicit; go 1.17
+# github.com/sethvargo/go-envconfig v1.0.0
+## explicit; go 1.21
 github.com/sethvargo/go-envconfig
 # golang.org/x/crypto v0.17.0
 ## explicit; go 1.18
