@@ -12,7 +12,7 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/zerolog v1.31.0
-	github.com/sethvargo/go-envconfig v0.9.0
+	github.com/sethvargo/go-envconfig v1.0.0
 )
 
 require (
@@ -26,9 +26,9 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rs/xid v1.5.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/image v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/image v0.15.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
