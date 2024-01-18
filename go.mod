@@ -6,8 +6,8 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/SongStitch/go-webp v1.2.0
 	github.com/fogleman/gg v1.3.0
-	github.com/ggicci/httpin v0.15.2
-	github.com/go-playground/validator/v10 v10.16.0
+	github.com/ggicci/httpin v0.15.3
+	github.com/go-playground/validator/v10 v10.17.0
 	github.com/joho/godotenv v1.5.1
 	github.com/justinas/alice v1.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
