@@ -19,7 +19,7 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/ggicci/httpin v0.15.2
+# github.com/ggicci/httpin v0.15.3
 ## explicit; go 1.20
 github.com/ggicci/httpin
 github.com/ggicci/httpin/core
@@ -34,7 +34,7 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.16.0
+# github.com/go-playground/validator/v10 v10.17.0
 ## explicit; go 1.18
 github.com/go-playground/validator/v10
 # github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
