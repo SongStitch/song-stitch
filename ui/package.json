@@ -27,7 +27,7 @@
   "dependencies": {
     "@felte/extender-persist": "^1.0.16",
     "@felte/validator-zod": "^1.0.17",
-    "felte": "^1.2.12",
+    "felte": "^1.2.14",
     "zod": "^3.22.4"
   }
 }
