@@ -1,5 +1,5 @@
-# github.com/PuerkitoBio/goquery v1.8.1
-## explicit; go 1.13
+# github.com/PuerkitoBio/goquery v1.9.0
+## explicit; go 1.18
 github.com/PuerkitoBio/goquery
 # github.com/SongStitch/go-webp v1.2.0
 ## explicit; go 1.10
@@ -34,7 +34,7 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.17.0
+# github.com/go-playground/validator/v10 v10.18.0
 ## explicit; go 1.18
 github.com/go-playground/validator/v10
 # github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -47,9 +47,10 @@ github.com/joho/godotenv
 # github.com/justinas/alice v1.2.0
 ## explicit; go 1.12
 github.com/justinas/alice
-# github.com/leodido/go-urn v1.2.4
-## explicit; go 1.16
+# github.com/leodido/go-urn v1.4.0
+## explicit; go 1.18
 github.com/leodido/go-urn
+github.com/leodido/go-urn/scim/schema
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
@@ -73,7 +74,7 @@ github.com/rs/zerolog/log
 # github.com/sethvargo/go-envconfig v1.0.0
 ## explicit; go 1.21
 github.com/sethvargo/go-envconfig
-# golang.org/x/crypto v0.18.0
+# golang.org/x/crypto v0.19.0
 ## explicit; go 1.18
 golang.org/x/crypto/sha3
 # golang.org/x/image v0.15.0
@@ -83,11 +84,11 @@ golang.org/x/image/font
 golang.org/x/image/font/basicfont
 golang.org/x/image/math/f64
 golang.org/x/image/math/fixed
-# golang.org/x/net v0.20.0
+# golang.org/x/net v0.21.0
 ## explicit; go 1.18
 golang.org/x/net/html
 golang.org/x/net/html/atom
-# golang.org/x/sys v0.16.0
+# golang.org/x/sys v0.17.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
