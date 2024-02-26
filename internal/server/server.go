@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -28,6 +29,7 @@ func getLogger() zerolog.Logger {
 func RunServer() {
 	_ = godotenv.Load()
 	log := getLogger()
+	zerolog.DefaultContextLogger = &log
 
 	err := config.InitConfig()
 	if err != nil {
@@ -47,7 +49,6 @@ func RunServer() {
 				Msg("")
 		}),
 	)
-	c = c.Append(hlog.RemoteAddrHandler("ip"))
 	c = c.Append(hlog.UserAgentHandler("user_agent"))
 	c = c.Append(hlog.RefererHandler("referer"))
 	c = c.Append(hlog.RequestIDHandler("req_id", "Request-Id"))
@@ -56,7 +57,7 @@ func RunServer() {
 		ThenFunc(api.Collage)
 
 	router := http.NewServeMux()
-	router.Handle("/collage", h)
+	router.Handle("GET /collage", h)
 
 	// serve files from public folder
 	fs := http.FileServer(http.Dir("./public"))
@@ -84,7 +85,7 @@ func RunServer() {
 	}
 
 	http.DefaultClient.Timeout = 10 * time.Second
-	spotify.InitSpotifyClient(log)
+	spotify.InitSpotifyClient(context.Background())
 
 	log.Info().Msg("Starting server...")
 	if err := server.ListenAndServe(); err != nil {
