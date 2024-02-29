@@ -3,7 +3,7 @@ module github.com/SongStitch/song-stitch
 go 1.22
 
 require (
-	github.com/PuerkitoBio/goquery v1.9.0
+	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/SongStitch/go-webp v1.2.0
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.16.0
