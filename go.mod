@@ -3,16 +3,16 @@ module github.com/SongStitch/song-stitch
 go 1.22
 
 require (
-	github.com/PuerkitoBio/goquery v1.9.0
+	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/SongStitch/go-webp v1.2.0
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.16.0
-	github.com/go-playground/validator/v10 v10.18.0
+	github.com/go-playground/validator/v10 v10.19.0
 	github.com/joho/godotenv v1.5.1
 	github.com/justinas/alice v1.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/zerolog v1.32.0
-	github.com/sethvargo/go-envconfig v1.0.0
+	github.com/sethvargo/go-envconfig v1.0.1
 )
 
 require (
