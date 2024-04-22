@@ -21,13 +21,13 @@
     "svelte-check": "^3.6.9",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9",
+    "vite": "^5.2.10",
     "watch": "^1.0.2"
   },
   "dependencies": {
     "@felte/extender-persist": "^1.0.16",
     "@felte/validator-zod": "^1.0.17",
     "felte": "^1.2.14",
-    "zod": "^3.22.5"
+    "zod": "^3.23.0"
   }
 }
