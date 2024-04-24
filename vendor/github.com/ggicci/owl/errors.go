@@ -12,6 +12,7 @@ var (
 	ErrMissingExecutor      = errors.New("missing executor")
 	ErrTypeMismatch         = errors.New("type mismatch")
 	ErrScanNilField         = errors.New("scan nil field")
+	ErrInvalidResolveTarget = errors.New("invalid resolve target")
 )
 
 func invalidDirectiveName(name string) error {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -32,7 +31,8 @@ type Resolver struct {
 
 // New builds a resolver tree from a struct value. The given options will be
 // applied to all the resolvers. In the resolver tree, each node is also a
-// Resolver.
+// Resolver. Available options are WithNamespace, WithNestedDirectivesEnabled
+// and WithValue.
 func New(structValue interface{}, opts ...Option) (*Resolver, error) {
 	typ, err := reflectStructType(structValue)
 	if err != nil {
@@ -48,17 +48,7 @@ func New(structValue interface{}, opts ...Option) (*Resolver, error) {
 	// Apply options, build the context for each resolver.
 	defaultOpts := []Option{WithNamespace(defaultNS)}
 	opts = append(defaultOpts, opts...)
-	ctx := context.Background()
-	for _, opt := range opts {
-		ctx = opt.Apply(ctx)
-	}
-
-	// Apply the context to each resolver.
-	tree.Iterate(func(r *Resolver) error {
-		r.Context = ctx
-		r.Directives = getSortedDirectives(ctx, r.Directives)
-		return nil
-	})
+	tree.applyContext(buildContextWithOptionsApplied(context.Background(), opts...))
 
 	if tree.Namespace() == nil {
 		return nil, errors.New("nil namespace")
@@ -152,7 +142,7 @@ func findResolver(root *Resolver, path []string) *Resolver {
 	return nil
 }
 
-func shouldResolveNestedDirectives(r *Resolver, ctx context.Context) bool {
+func shouldResolveNestedDirectives(ctx context.Context, r *Resolver) bool {
 	if r.IsRoot() {
 		return true // always resolve the root
 	}
@@ -188,7 +178,7 @@ func (root *Resolver) iterate(ctx context.Context, fn func(*Resolver) error) err
 		return err
 	}
 
-	if shouldResolveNestedDirectives(root, ctx) {
+	if shouldResolveNestedDirectives(ctx, root) {
 		for _, field := range root.Children {
 			if err := field.iterate(ctx, fn); err != nil {
 				return err
@@ -196,6 +186,14 @@ func (root *Resolver) iterate(ctx context.Context, fn func(*Resolver) error) err
 		}
 	}
 	return nil
+}
+
+// applyContext applies the context to the resolver and its children.
+func (r *Resolver) applyContext(ctx context.Context) {
+	r.Iterate(func(x *Resolver) error {
+		x.Context = ctx
+		return nil
+	})
 }
 
 // Scan scans the struct value by traversing the fields in depth-first order. The value is required
@@ -206,7 +204,7 @@ func (root *Resolver) iterate(ctx context.Context, fn func(*Resolver) error) err
 // based on the struct value, etc.
 //
 // Use WithValue to create an Option that can add custom values to the context, the context can be
-// used by the directive executors during the resolution.
+// used by the directive executors during the scanning.
 //
 // NOTE: Unlike Resolve, it will iterate the whole resolver tree against the given
 // value, try to access each corresponding field. Even scan fails on one of the fields,
@@ -227,12 +225,8 @@ func (r *Resolver) Scan(value any, opts ...Option) error {
 			ErrTypeMismatch, rv.Type(), r.Type)
 	}
 
-	ctx := context.Background()
-	for _, opt := range opts {
-		ctx = opt.Apply(ctx)
-	}
-
 	var errs []error
+	ctx := buildContextWithOptionsApplied(context.Background(), opts...)
 	r.iterate(ctx, func(r *Resolver) error {
 		errs = append(errs, scan(r, ctx, rv))
 		return nil
@@ -270,12 +264,14 @@ func scan(resolver *Resolver, ctx context.Context, rootValue reflect.Value) erro
 	return nil
 }
 
-// Resolve resolves the struct type by traversing the tree in depth-first order. Typically it is
-// used to create a new struct instance by reading from some data source. This method always creates
-// a new value of the type the resolver holds. And runs the directives on each field.
+// Resolve resolves the struct type by traversing the tree in depth-first order.
+// Typically it is used to create a new struct instance by reading from some
+// data source. This method always creates a new value of the type the resolver
+// holds. And runs the directives on each field.
 //
-// Use WithValue to create an Option that can add custom values to the context, the context can be
-// used by the directive executors during the resolution. Example:
+// Use WithValue to create an Option that can add custom values to the context,
+// the context can be used by the directive executors during the resolution.
+// Example:
 //
 //	type Settings struct {
 //	  DarkMode bool `owl:"env=MY_APP_DARK_MODE;cfg=appearance.dark_mode;default=false"`
@@ -283,17 +279,28 @@ func scan(resolver *Resolver, ctx context.Context, rootValue reflect.Value) erro
 //	resolver := owl.New(Settings{})
 //	settings, err := resolver.Resolve(WithValue("app_config", appConfig))
 //
-// NOTE: while iterating the tree, if resolving a field fails, the iteration will be
-// stopped and the error will be returned.
+// NOTE: while iterating the tree, if resolving a field failed, the iteration
+// will be stopped immediately and the error will be returned.
 func (r *Resolver) Resolve(opts ...Option) (reflect.Value, error) {
-	ctx := context.Background()
-	for _, opt := range opts {
-		ctx = opt.Apply(ctx)
-	}
-	rootValue := reflect.New(r.Type)
+	ctx := buildContextWithOptionsApplied(context.Background(), opts...)
+	rootValue := reflect.New(r.Type) // Type:User -> rootValue:*User
 	return rootValue, r.resolve(ctx, rootValue)
 }
 
+// ResolveTo works like Resolve, but it resolves the struct value to the given
+// pointer value instead of creating a new value. The pointer value must be
+// non-nil and a pointer to the type the resolver holds.
+func (r *Resolver) ResolveTo(value any, opts ...Option) (err error) {
+	rv, err := reflectResolveTargetValue(value, r.Type)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInvalidResolveTarget, err)
+	}
+	ctx := buildContextWithOptionsApplied(context.Background(), opts...)
+	return r.resolve(ctx, rv.Addr())
+}
+
+// resolve runs the directives on the current field and resolves the children fields.
+// NOTE: rootValue must be a pointer to a type, i.e. *User, not User.
 func (root *Resolver) resolve(ctx context.Context, rootValue reflect.Value) error {
 	// Run the directives on current field.
 	if err := root.runDirectives(ctx, rootValue); err != nil {
@@ -301,17 +308,19 @@ func (root *Resolver) resolve(ctx context.Context, rootValue reflect.Value) erro
 	}
 
 	// Resolve the children fields.
-	if shouldResolveNestedDirectives(root, ctx) {
-		// If the root is a pointer, we need to allocate memory for it.
-		// We only expect it's a one-level pointer, e.g. *User, not **User.
-		underlyingValue := rootValue
+	if shouldResolveNestedDirectives(ctx, root) {
+		// If the root is a pointer, we need to allocate memory for it when it's
+		// not instantiated yet. We only expect it's a one-level pointer, e.g.
+		// *User, not **User.
+		underlying := rootValue
 		if root.Type.Kind() == reflect.Ptr {
-			underlyingValue = reflect.New(root.Type.Elem())
-			rootValue.Elem().Set(underlyingValue)
+			if rootValue.Elem().IsNil() { // instantiate the pointer on demand
+				rootValue.Elem().Set(reflect.New(root.Type.Elem()))
+			}
+			underlying = rootValue.Elem()
 		}
-
 		for _, child := range root.Children {
-			if err := child.resolve(ctx, underlyingValue.Elem().Field(child.Index[len(child.Index)-1]).Addr()); err != nil {
+			if err := child.resolve(ctx, underlying.Elem().Field(child.Index[len(child.Index)-1]).Addr()); err != nil {
 				return &ResolveError{
 					fieldError: fieldError{
 						Err:      err,
@@ -332,7 +341,7 @@ func (r *Resolver) runDirectives(ctx context.Context, rv reflect.Value) error {
 		ns = nsOverriden.(*Namespace)
 	}
 
-	for _, directive := range getSortedDirectives(ctx, r.Directives) {
+	for _, directive := range r.Directives {
 		dirRuntime := &DirectiveRuntime{
 			Directive: directive,
 			Resolver:  r,
@@ -358,18 +367,6 @@ func (r *Resolver) runDirectives(ctx context.Context, rv reflect.Value) error {
 	}
 
 	return nil
-}
-
-func getSortedDirectives(ctx context.Context, directives []*Directive) []*Directive {
-	if directiveRunOrder := ctx.Value(ckDirectiveRunOrder); directiveRunOrder != nil {
-		var directivesCopy []*Directive
-		directivesCopy = append(directivesCopy, directives...)
-		sort.SliceStable(directivesCopy, func(i, j int) bool {
-			return directiveRunOrder.(DirectiveRunOrder)(directivesCopy[i], directivesCopy[j])
-		})
-		return directivesCopy
-	}
-	return directives // the original one
 }
 
 func (r *Resolver) DebugLayoutText(depth int) string {
@@ -420,9 +417,9 @@ func buildResolver(typ reflect.Type, field reflect.StructField, parent *Resolver
 	}
 
 	if !root.IsRoot() {
-		directives, err := parseDirectives(field.Tag.Get(Tag()))
+		directives, err := parseTag(field.Tag.Get(Tag()))
 		if err != nil {
-			return nil, fmt.Errorf("parse directives: %w", err)
+			return nil, fmt.Errorf("parse directives (tag): %w", err)
 		}
 		root.Directives = directives
 		root.Path = append(root.Parent.Path, field.Name)
@@ -461,6 +458,29 @@ func buildResolver(typ reflect.Type, field reflect.StructField, parent *Resolver
 	return root, nil
 }
 
+// parseTag creates a slice of Directive instances by parsing a struct tag.
+func parseTag(tag string) ([]*Directive, error) {
+	tag = strings.TrimSpace(tag)
+	var directives []*Directive
+	existed := make(map[string]bool)
+	for _, directive := range strings.Split(tag, ";") {
+		directive = strings.TrimSpace(directive)
+		if directive == "" {
+			continue
+		}
+		d, err := ParseDirective(directive)
+		if err != nil {
+			return nil, err
+		}
+		if existed[d.Name] {
+			return nil, duplicateDirective(d.Name)
+		}
+		existed[d.Name] = true
+		directives = append(directives, d)
+	}
+	return directives, nil
+}
+
 func reflectStructType(structValue interface{}) (reflect.Type, error) {
 	typ, ok := structValue.(reflect.Type)
 	if !ok {
@@ -482,24 +502,36 @@ func reflectStructType(structValue interface{}) (reflect.Type, error) {
 	return typ, nil
 }
 
-func parseDirectives(tag string) ([]*Directive, error) {
-	tag = strings.TrimSpace(tag)
-	var directives []*Directive
-	existed := make(map[string]bool)
-	for _, directive := range strings.Split(tag, ";") {
-		directive = strings.TrimSpace(directive)
-		if directive == "" {
-			continue
-		}
-		d, err := ParseDirective(directive)
-		if err != nil {
-			return nil, err
-		}
-		if existed[d.Name] {
-			return nil, duplicateDirective(d.Name)
-		}
-		existed[d.Name] = true
-		directives = append(directives, d)
+func reflectResolveTargetValue(value any, expectedType reflect.Type) (rv reflect.Value, err error) {
+	if value == nil {
+		return rv, errors.New("nil value")
 	}
-	return directives, nil
+
+	rv = reflect.ValueOf(value)
+	if rv.Kind() != reflect.Pointer {
+		return rv, errors.New("non-pointer value")
+	}
+
+	if rv, err = dereference(rv); err != nil {
+		return rv, errors.New("nil pointer value")
+	}
+
+	if rv.Type() != expectedType {
+		return rv, fmt.Errorf("%w: cannot resolve to value of type %q, expecting type %q",
+			ErrTypeMismatch, rv.Type(), expectedType)
+	}
+
+	return rv, nil
+}
+
+// dereference returns the value that v points to, or an error if v is nil.
+// It can be multiple levels deep. e.g. T -> T, *T -> T; **T -> T, etc.
+func dereference(v reflect.Value) (reflect.Value, error) {
+	if v.Kind() != reflect.Pointer {
+		return v, nil
+	}
+	if v.IsNil() {
+		return v, errors.New("nil pointer")
+	}
+	return dereference(v.Elem())
 }
