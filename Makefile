@@ -22,6 +22,10 @@ format-prettier:
 	@printf "%s\n" "==== Running prettier format ====="
 	prettier -w .
 
+typos:
+	@printf "%s\n" "==== Running typos ====="
+	typos
+
 format-go:
 	@printf "%s\n" "==== Running go-fmt ====="
 	gofmt -s -w cmd/ internal/

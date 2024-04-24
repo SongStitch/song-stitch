@@ -3,20 +3,6 @@ name: CI/CD
 on: push
 
 jobs:
-  misspell:
-    name: runner / misspell
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: misspell
-        uses: reviewdog/action-misspell@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          locale: 'US'
-          exclude: |
-            ./.git/*
-            ./.vendor/*
-
   hadolint:
     name: runner / hadolint
     runs-on: ubuntu-latest
@@ -51,6 +37,17 @@ jobs:
       - name: Prettify code
         working-directory: ./ui
         run: npm run prettier
+
+  typocheck:
+    name: runner / Spell Check with Typos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actions Repository
+        uses: actions/checkout@v4
+      - name: Check for typos
+        uses: crate-ci/typos@master
+        with:
+          config: ./.typos.toml
 
   go-staticcheck:
     name: runner / Go package
