@@ -39,7 +39,7 @@ jobs:
         run: npm run prettier
 
   typocheck:
-    name: Spell Check with Typos
+    name: runner / Spell Check with Typos
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
