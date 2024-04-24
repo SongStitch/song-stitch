@@ -1,0 +1,11 @@
+[default]
+locale = "en-au"
+
+[files]
+ignore-vcs = true
+extend-exclude = [
+  "vendor",
+  ".git",
+  "go.mod",
+  "go.sum",
+]
