@@ -76,7 +76,8 @@ func (t *Token) Refresh() error {
 	return nil
 }
 
-func (t *Token) KeepAlive(log zerolog.Logger) {
+func (t *Token) KeepAlive(ctx context.Context) {
+	log := zerolog.Ctx(ctx)
 	for {
 		// Wait until 5 minutes before expiration and then refresh again
 		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
@@ -104,7 +105,8 @@ func GetSpotifyClient() (*SpotifyClient, error) {
 	return spotifyClient, nil
 }
 
-func InitSpotifyClient(log zerolog.Logger) {
+func InitSpotifyClient(ctx context.Context) {
+	log := zerolog.Ctx(ctx)
 	log.Info().Msg("initializing spotify client...")
 	token := &Token{
 		client:   http.DefaultClient,
@@ -115,7 +117,7 @@ func InitSpotifyClient(log zerolog.Logger) {
 		log.Error().Err(err).Msg("failed to get spotify token, not using spotify client")
 		return
 	}
-	go token.KeepAlive(log)
+	go token.KeepAlive(ctx)
 	client := &SpotifyClient{
 		token:    token,
 		endpoint: "https://api.spotify.com/v1/search",

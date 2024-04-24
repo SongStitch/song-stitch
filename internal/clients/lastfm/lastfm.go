@@ -152,7 +152,7 @@ func GetLastFmResponse[T LastFMResponse](
 		}
 
 		var response T
-		err = json.Unmarshal([]byte(body), &response)
+		err = json.Unmarshal(body, &response)
 		if err != nil {
 			return nil, err
 		}
@@ -228,7 +228,7 @@ func GetTrackInfo(
 	}
 
 	var response GetTrackInfoResponse
-	err = json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
 	}
