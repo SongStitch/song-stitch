@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -196,7 +195,7 @@ type TemplateData struct {
 }
 
 func tobase64(file string) (string, error) {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return "", err
 	}
