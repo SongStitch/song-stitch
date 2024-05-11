@@ -17,7 +17,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
-	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type LastFMTrack struct {
@@ -67,7 +66,7 @@ func GenerateCollageForTrack(
 	period constants.Period,
 	count int,
 	imageSize string,
-	displayOptions generator.DisplayOptions,
+	displayOptions DisplayOptions,
 ) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Tracks {
@@ -78,9 +77,7 @@ func GenerateCollageForTrack(
 		return nil, nil, err
 	}
 
-	generator.DownloadImages(ctx, tracks)
-
-	return generator.CreateCollage(ctx, tracks, displayOptions)
+	return CreateCollage(ctx, tracks, displayOptions)
 }
 
 func getTracks(
@@ -89,7 +86,7 @@ func getTracks(
 	period constants.Period,
 	count int,
 	imageSize string,
-) ([]*Track, error) {
+) ([]CollageElement, error) {
 	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](
 		ctx,
 		constants.TRACK,
@@ -104,45 +101,27 @@ func getTracks(
 	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
 
-	tracks := make([]*Track, len(r.TopTracks.Tracks))
+	elements := make([]CollageElement, len(r.TopTracks.Tracks))
 
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopTracks.Tracks))
 	start := time.Now()
 	for i, track := range r.TopTracks.Tracks {
-		newTrack := &Track{
-			Name:      track.Name,
-			Artist:    track.Artist.Name,
-			Playcount: track.Playcount,
-			Mbid:      track.Mbid,
-			ImageSize: imageSize,
-		}
-		tracks[i] = newTrack
-
-		imageCache := cache.GetImageUrlCache()
-		if cacheEntry, ok := imageCache.Get(newTrack.Identifier()); ok {
-			newTrack.imageUrl = cacheEntry.Url
-			newTrack.Album = cacheEntry.Album
-			cacheCount++
-			wg.Done()
-			continue
-		}
-
-		go func(trackName string, artistName string) {
+		go func(i int, lastfmTrack LastFMTrack) {
 			defer wg.Done()
-
-			trackInfo, err := getTrackInfo(ctx, trackName, artistName, imageSize)
+			track := parseLastfmTrack(ctx, lastfmTrack, imageSize, &cacheCount)
+			track.Image, err = DownloadImageWithRetry(ctx, track.ImageUrl)
 			if err != nil {
 				logger.Error().
-					Str("track", trackName).
-					Str("artist", artistName).
 					Err(err).
-					Msg("Error getting track info")
-				return
+					Str("imageUrl", track.ImageUrl).
+					Msg("Error downloading image")
 			}
-			newTrack.imageUrl = trackInfo.ImageUrl
-			newTrack.Album = trackInfo.AlbumName
-		}(track.Name, track.Artist.Name)
+			elements[i] = CollageElement{
+				Parameters: track.Parameters(),
+				Image:      track.Image,
+			}
+		}(i, track)
 
 	}
 	wg.Wait()
@@ -154,7 +133,39 @@ func getTracks(
 		Str("method", "track").
 		Msg("Image URLs fetched")
 
-	return tracks, nil
+	return elements, nil
+}
+
+func parseLastfmTrack(ctx context.Context, track LastFMTrack, imageSize string, cacheCount *int) Track {
+	logger := zerolog.Ctx(ctx)
+	newTrack := Track{
+		Name:      track.Name,
+		Artist:    track.Artist.Name,
+		Playcount: track.Playcount,
+		Mbid:      track.Mbid,
+		ImageSize: imageSize,
+	}
+
+	imageCache := cache.GetImageUrlCache()
+	if cacheEntry, ok := imageCache.Get(newTrack.Identifier()); ok {
+		newTrack.ImageUrl = cacheEntry.Url
+		newTrack.Album = cacheEntry.Album
+		(*cacheCount)++
+		return newTrack
+	}
+
+	trackInfo, err := getTrackInfo(ctx, newTrack.Name, newTrack.Artist, imageSize)
+	if err != nil {
+		logger.Error().
+			Str("track", newTrack.Name).
+			Str("artist", newTrack.Artist).
+			Err(err).
+			Msg("Error getting track info")
+		return newTrack
+	}
+	newTrack.ImageUrl = trackInfo.ImageUrl
+	newTrack.Album = trackInfo.AlbumName
+	return newTrack
 }
 
 func getTrackInfo(
@@ -223,18 +234,10 @@ type Track struct {
 	Artist    string
 	Playcount string
 	Album     string
-	imageUrl  string
-	image     image.Image
+	ImageUrl  string
+	Image     image.Image
 	Mbid      string
 	ImageSize string
-}
-
-func (t *Track) ImageUrl() string {
-	return t.imageUrl
-}
-
-func (t *Track) SetImage(img image.Image) {
-	t.image = img
 }
 
 func (t *Track) Identifier() string {
@@ -245,11 +248,7 @@ func (t *Track) Identifier() string {
 }
 
 func (t *Track) CacheEntry() cache.CacheEntry {
-	return cache.CacheEntry{Url: t.imageUrl, Album: t.Album}
-}
-
-func (t *Track) Image() image.Image {
-	return t.image
+	return cache.CacheEntry{Url: t.ImageUrl, Album: t.Album}
 }
 
 func (t *Track) Parameters() map[string]string {
@@ -259,8 +258,4 @@ func (t *Track) Parameters() map[string]string {
 		"playcount": t.Playcount,
 		"album":     t.Album,
 	}
-}
-
-func (t *Track) ClearImage() {
-	t.image = nil
 }

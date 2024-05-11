@@ -112,7 +112,6 @@ func GetLastFmResponse[T LastFMResponse](
 		q.Set("format", "json")
 		u.RawQuery = q.Encode()
 
-		// We use an anonymous function here since the defer is running within a loop
 		body, err := func() ([]byte, error) {
 			req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 			if err != nil {

@@ -15,7 +15,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
-	"github.com/SongStitch/song-stitch/internal/generator"
 	"github.com/rs/zerolog"
 )
 
@@ -65,7 +64,7 @@ func GenerateCollageForAlbum(
 	period constants.Period,
 	count int,
 	imageSize string,
-	displayOptions generator.DisplayOptions,
+	displayOptions DisplayOptions,
 ) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Albums {
@@ -76,9 +75,7 @@ func GenerateCollageForAlbum(
 		return nil, nil, err
 	}
 
-	generator.DownloadImages(ctx, albums)
-
-	return generator.CreateCollage(ctx, albums, displayOptions)
+	return CreateCollage(ctx, albums, displayOptions)
 }
 
 func getAlbums(
@@ -87,7 +84,7 @@ func getAlbums(
 	period constants.Period,
 	count int,
 	imageSize string,
-) ([]*Album, error) {
+) ([]CollageElement, error) {
 	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](
 		ctx,
 		constants.ALBUM,
@@ -103,39 +100,27 @@ func getAlbums(
 
 	logger := zerolog.Ctx(ctx)
 
-	albums := make([]*Album, len(r.TopAlbums.Albums))
+	elements := make([]CollageElement, len(r.TopAlbums.Albums))
 	var wg sync.WaitGroup
 	wg.Add(len(r.TopAlbums.Albums))
 	start := time.Now()
-	for i, album := range r.TopAlbums.Albums {
-		go func(i int, album LastFMAlbum) {
+	for i, lastfmAlbum := range r.TopAlbums.Albums {
+		go func(i int, lastfmAlbum LastFMAlbum) {
 			defer wg.Done()
-			newAlbum := &Album{
-				Name:      album.AlbumName,
-				Artist:    album.Artist.ArtistName,
-				Playcount: album.Playcount,
-				Mbid:      album.Mbid,
-				ImageSize: imageSize,
-			}
-			albums[i] = newAlbum
+			album := parseLastfmAlbum(ctx, lastfmAlbum, imageSize, &cacheCount)
 
-			imageCache := cache.GetImageUrlCache()
-			if cacheEntry, ok := imageCache.Get(newAlbum.Identifier()); ok {
-				newAlbum.imageUrl = cacheEntry.Url
-				cacheCount++
-				return
-			}
-			albumInfo, err := getAlbumInfo(ctx, album, imageSize)
+			album.Image, err = DownloadImageWithRetry(ctx, album.ImageUrl)
 			if err != nil {
 				logger.Error().
-					Str("album", album.AlbumName).
-					Str("artist", album.Artist.ArtistName).
 					Err(err).
-					Msg("Error getting album info")
-				return
+					Str("imageUrl", album.ImageUrl).
+					Msg("Error downloading image")
 			}
-			albums[i].imageUrl = albumInfo.ImageUrl
-		}(i, album)
+			elements[i] = CollageElement{
+				Parameters: album.Parameters(),
+				Image:      album.Image,
+			}
+		}(i, lastfmAlbum)
 	}
 	wg.Wait()
 	logger.Info().
@@ -145,46 +130,68 @@ func getAlbums(
 		Dur("duration", time.Since(start)).
 		Str("method", "album").
 		Msg("Image URLs fetched")
-	return albums, nil
+	return elements, nil
+}
+
+func parseLastfmAlbum(ctx context.Context, album LastFMAlbum, imageSize string, cacheCount *int) Album {
+	logger := zerolog.Ctx(ctx)
+	newAlbum := Album{
+		Artist:    album.Artist.ArtistName,
+		Name:      album.AlbumName,
+		Playcount: album.Playcount,
+		Mbid:      album.Mbid,
+		ImageSize: imageSize,
+	}
+
+	imageCache := cache.GetImageUrlCache()
+	if cacheEntry, ok := imageCache.Get(newAlbum.Identifier()); ok {
+		newAlbum.ImageUrl = cacheEntry.Url
+		(*cacheCount)++
+		return newAlbum
+	}
+	albumInfo, err := getAlbumInfo(ctx, album, imageSize)
+	if err != nil {
+		logger.Error().
+			Str("album", album.AlbumName).
+			Str("artist", album.Artist.ArtistName).
+			Err(err).
+			Msg("Error getting album info")
+		return newAlbum
+	}
+	newAlbum.ImageUrl = albumInfo.ImageUrl
+	return newAlbum
 }
 
 func getAlbumInfo(
 	ctx context.Context,
 	album LastFMAlbum,
 	imageSize string,
-) (*clients.AlbumInfo, error) {
+) (clients.AlbumInfo, error) {
 	for _, image := range album.Images {
 		if image.Size == imageSize && image.Link != "" {
-			return &clients.AlbumInfo{ImageUrl: image.Link}, nil
+			return clients.AlbumInfo{ImageUrl: image.Link}, nil
 		}
 	}
 	client, err := spotify.GetSpotifyClient()
 	if err != nil {
-		return nil, err
+		return clients.AlbumInfo{}, err
 	}
 	albumInfo, err := client.GetAlbumInfo(ctx, album.AlbumName, album.Artist.ArtistName)
 	if err != nil {
-		return nil, err
+		return clients.AlbumInfo{}, err
 	}
 	return albumInfo, nil
 }
 
 type Album struct {
-	Name      string
+	Image     image.Image
+	ImageUrl  string
 	Artist    string
-	Playcount string
-	imageUrl  string
-	image     image.Image
-	Mbid      string
+	Name      string
+	Playcound string
 	ImageSize string
-}
-
-func (a *Album) ImageUrl() string {
-	return a.imageUrl
-}
-
-func (a *Album) SetImage(img image.Image) {
-	a.image = img
+	Mbid      string
+	Playcount string
 }
 
 func (a *Album) Identifier() string {
@@ -195,11 +202,7 @@ func (a *Album) Identifier() string {
 }
 
 func (a *Album) CacheEntry() cache.CacheEntry {
-	return cache.CacheEntry{Url: a.imageUrl, Album: ""}
-}
-
-func (a *Album) Image() image.Image {
-	return a.image
+	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
 func (a *Album) Parameters() map[string]string {
@@ -208,8 +211,4 @@ func (a *Album) Parameters() map[string]string {
 		"album":     a.Name,
 		"playcount": a.Playcount,
 	}
-}
-
-func (a *Album) ClearImage() {
-	a.image = nil
 }

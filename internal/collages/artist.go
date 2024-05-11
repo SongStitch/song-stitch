@@ -15,7 +15,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
-	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type LastFMArtist struct {
@@ -59,7 +58,7 @@ func GenerateCollageForArtist(
 	period constants.Period,
 	count int,
 	imageSize string,
-	displayOptions generator.DisplayOptions,
+	displayOptions DisplayOptions,
 ) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Artists {
@@ -70,9 +69,7 @@ func GenerateCollageForArtist(
 		return nil, nil, err
 	}
 
-	generator.DownloadImages(ctx, artists)
-
-	return generator.CreateCollage(ctx, artists, displayOptions)
+	return CreateCollage(ctx, artists, displayOptions)
 }
 
 func getArtists(
@@ -81,7 +78,7 @@ func getArtists(
 	period constants.Period,
 	count int,
 	imageSize string,
-) ([]*Artist, error) {
+) ([]CollageElement, error) {
 	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](
 		ctx,
 		constants.ARTIST,
@@ -96,42 +93,25 @@ func getArtists(
 	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
 
-	artists := make([]*Artist, len(r.TopArtists.Artists))
+	elements := make([]CollageElement, len(r.TopArtists.Artists))
 	var wg sync.WaitGroup
-	wg.Add(len(artists))
+	wg.Add(len(elements))
 
 	start := time.Now()
-	for i, artist := range r.TopArtists.Artists {
-		newArtist := &Artist{
-			Name:      artist.Name,
-			Playcount: artist.Playcount,
-			Mbid:      artist.Mbid,
-			Url:       artist.URL,
-			ImageSize: imageSize,
-		}
-		artists[i] = newArtist
-		imageCache := cache.GetImageUrlCache()
-		if cacheEntry, ok := imageCache.Get(newArtist.Identifier()); ok {
-			newArtist.imageUrl = cacheEntry.Url
-			wg.Done()
-			cacheCount++
-			continue
-		}
-
-		// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
-		go func(artist LastFMArtist) {
+	for i, lastfmArtist := range r.TopArtists.Artists {
+		go func(i int, lastfmArtist LastFMArtist) {
 			defer wg.Done()
-			id, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
+			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
+			artist.Image, err = DownloadImageWithRetry(ctx, artist.ImageUrl)
 			if err != nil {
 				logger.Error().
 					Err(err).
-					Str("artist", artist.Name).
-					Str("artistUrl", artist.URL).
-					Msg("Error getting image url for artist")
-				return
+					Str("imageUrl", artist.ImageUrl).
+					Msg("Error downloading image")
 			}
-			newArtist.imageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
-		}(artist)
+
+			elements[i] = CollageElement{Image: artist.Image, Parameters: artist.Parameters()}
+		}(i, lastfmArtist)
 	}
 	wg.Wait()
 	logger.Info().
@@ -141,25 +121,47 @@ func getArtists(
 		Dur("duration", time.Since(start)).
 		Str("method", "artist").
 		Msg("Image URLs fetched")
-	return artists, nil
+	return elements, nil
+}
+
+func parseLastfmArtist(ctx context.Context, artist LastFMArtist, imageSize string, cacheCount *int) Artist {
+	logger := zerolog.Ctx(ctx)
+	newArtist := Artist{
+		Name:      artist.Name,
+		Playcount: artist.Playcount,
+		Mbid:      artist.Mbid,
+		ImageSize: imageSize,
+	}
+
+	imageCache := cache.GetImageUrlCache()
+	if cacheEntry, ok := imageCache.Get(newArtist.Identifier()); ok {
+		newArtist.ImageUrl = cacheEntry.Url
+		(*cacheCount)++
+		return newArtist
+	}
+
+	// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
+	id, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Str("artist", artist.Name).
+			Str("artistUrl", artist.URL).
+			Msg("Error getting image url for artist")
+		return newArtist
+	}
+	newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
+	return newArtist
 }
 
 type Artist struct {
 	Name      string
 	Playcount string
-	image     image.Image
-	imageUrl  string
+	Image     image.Image
+	ImageUrl  string
 	Mbid      string
 	ImageSize string
 	Url       string
-}
-
-func (a *Artist) ImageUrl() string {
-	return a.imageUrl
-}
-
-func (a *Artist) SetImage(img image.Image) {
-	a.image = img
 }
 
 func (a *Artist) Identifier() string {
@@ -170,11 +172,7 @@ func (a *Artist) Identifier() string {
 }
 
 func (a *Artist) CacheEntry() cache.CacheEntry {
-	return cache.CacheEntry{Url: a.imageUrl, Album: ""}
-}
-
-func (a *Artist) Image() image.Image {
-	return a.image
+	return cache.CacheEntry{Url: a.ImageUrl, Album: ""}
 }
 
 func (a *Artist) Parameters() map[string]string {
@@ -182,8 +180,4 @@ func (a *Artist) Parameters() map[string]string {
 		"artist":    a.Name,
 		"playcount": a.Playcount,
 	}
-}
-
-func (a *Artist) ClearImage() {
-	a.image = nil
 }
