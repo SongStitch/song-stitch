@@ -15,7 +15,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/collages"
 	"github.com/SongStitch/song-stitch/internal/config"
 	"github.com/SongStitch/song-stitch/internal/constants"
-	"github.com/SongStitch/song-stitch/internal/generator"
 )
 
 type CollageRequest struct {
@@ -61,7 +60,7 @@ func generateCollage(
 		imageDimension = 300
 	}
 
-	displayOptions := generator.DisplayOptions{
+	displayOptions := collages.DisplayOptions{
 		ArtistName:     request.DisplayArtist,
 		AlbumName:      request.DisplayAlbum,
 		TrackName:      request.DisplayTrack,

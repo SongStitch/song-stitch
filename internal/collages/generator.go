@@ -1,4 +1,4 @@
-package generator
+package collages
 
 import (
 	"bytes"
@@ -35,6 +35,11 @@ type DisplayOptions struct {
 	TrackName      bool
 	Webp           bool
 	AlbumName      bool
+}
+
+type CollageElement struct {
+	Image      image.Image
+	Parameters map[string]string
 }
 
 const (
@@ -80,14 +85,14 @@ func drawText(
 	return (3 + displayOptions.FontSize)
 }
 
-func placeText[T Drawable](
+func placeText(
 	dc *gg.Context,
-	drawable T,
+	drawable CollageElement,
 	displayOptions DisplayOptions,
 	x float64,
 	y float64,
 ) {
-	parameters := drawable.Parameters()
+	parameters := drawable.Parameters
 	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
 		textToDraw = append(textToDraw, val)
@@ -150,9 +155,9 @@ func convertToGrayscale(img image.Image) image.Image {
 	return grayImg
 }
 
-func CreateCollage[T Drawable](
+func CreateCollage(
 	ctx context.Context,
-	collageElements []T,
+	collageElements []CollageElement,
 	displayOptions DisplayOptions,
 ) (image.Image, *bytes.Buffer, error) {
 	start := time.Now()
@@ -171,7 +176,7 @@ func CreateCollage[T Drawable](
 	for i, collageElement := range collageElements {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		img := collageElement.Image()
+		img := collageElement.Image
 		if img != nil {
 			img = resizeImage(
 				ctx,
@@ -180,7 +185,6 @@ func CreateCollage[T Drawable](
 				uint(displayOptions.ImageDimension),
 			)
 			dc.DrawImage(img, x, y)
-			collageElement.ClearImage()
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
