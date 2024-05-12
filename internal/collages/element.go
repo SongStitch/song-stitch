@@ -3,7 +3,6 @@ package collages
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -33,12 +32,13 @@ var (
 )
 
 func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error) {
-	var err error
+	var e error
 	for i := 0; i < maxRetries; i++ {
 		img, err := DownloadImage(ctx, url)
 		if err == nil {
 			return img, nil
 		}
+		e = err
 		zerolog.Ctx(ctx).
 			Warn().
 			Err(err).
@@ -52,12 +52,12 @@ func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error
 			continue
 		}
 	}
-	return nil, fmt.Errorf("failed to download image after %d retries: %w", maxRetries, err)
+	return nil, fmt.Errorf("failed to download image after %d retries: %w", maxRetries, e)
 }
 
 func DownloadImage(ctx context.Context, url string) (image.Image, error) {
-	if url == "" {
-		return nil, errors.New("empty url")
+	if len(url) == 0 {
+		return nil, nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
