@@ -80,9 +80,11 @@ func generateCollage(
 
 	period := constants.GetPeriodFromStr(request.Period)
 	method := constants.GetCollageTypeFromStr(request.Method)
+	var elements []collages.CollageElement
+	var err error
 	switch method {
 	case constants.ALBUM:
-		return collages.GenerateCollageForAlbum(
+		elements, err = collages.GetElementsForAlbum(
 			ctx,
 			request.Username,
 			period,
@@ -90,8 +92,11 @@ func generateCollage(
 			imageSize,
 			displayOptions,
 		)
+		if err != nil {
+			return nil, nil, err
+		}
 	case constants.ARTIST:
-		return collages.GenerateCollageForArtist(
+		elements, err = collages.GetElementsForArtist(
 			ctx,
 			request.Username,
 			period,
@@ -99,8 +104,11 @@ func generateCollage(
 			imageSize,
 			displayOptions,
 		)
+		if err != nil {
+			return nil, nil, err
+		}
 	case constants.TRACK:
-		return collages.GenerateCollageForTrack(
+		elements, err = collages.GetElementsForTrack(
 			ctx,
 			request.Username,
 			period,
@@ -108,9 +116,13 @@ func generateCollage(
 			imageSize,
 			displayOptions,
 		)
+		if err != nil {
+			return nil, nil, err
+		}
 	default:
 		return nil, nil, errors.New("invalid collage type")
 	}
+	return collages.CreateCollage(ctx, elements, displayOptions)
 }
 
 func Collage(w http.ResponseWriter, r *http.Request) {

@@ -1,9 +1,8 @@
 package collages
 
 import (
-	"bytes"
 	"context"
-	"errors"
+	"encoding/json"
 	"image"
 	"strconv"
 	"sync"
@@ -41,41 +40,50 @@ type LastFMTopAlbums struct {
 	} `json:"topalbums"`
 }
 
-func (a *LastFMTopAlbums) Append(l lastfm.LastFMResponse) error {
-	if albums, ok := l.(*LastFMTopAlbums); ok {
-		a.TopAlbums.Albums = append(a.TopAlbums.Albums, albums.TopAlbums.Albums...)
-		return nil
-	}
-	return errors.New("type LastFMResponse is not a LastFMTopAlbums")
-}
-
-func (a *LastFMTopAlbums) TotalPages() int {
-	totalPages, _ := strconv.Atoi(a.TopAlbums.Attr.TotalPages)
-	return totalPages
-}
-
-func (a *LastFMTopAlbums) TotalFetched() int {
-	return len(a.TopAlbums.Albums)
-}
-
-func GenerateCollageForAlbum(
+func GetElementsForAlbum(
 	ctx context.Context,
 	username string,
 	period constants.Period,
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) (image.Image, *bytes.Buffer, error) {
+) ([]CollageElement, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Albums {
-		return nil, nil, constants.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	albums, err := getAlbums(ctx, username, period, count, imageSize)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	return albums, nil
+}
 
-	return CreateCollage(ctx, albums, displayOptions)
+func getLastfmAlbums(ctx context.Context, username string, period constants.Period, count int) ([]LastFMAlbum, error) {
+	albums := []LastFMAlbum{}
+	totalPages := 0
+
+	handler := func(data []byte) (int, int, error) {
+		var lastfmTopAlbums LastFMTopAlbums
+		err := json.Unmarshal(data, &lastfmTopAlbums)
+		if err != nil {
+			return 0, 0, err
+		}
+		albums = append(albums, lastfmTopAlbums.TopAlbums.Albums...)
+		if totalPages == 0 {
+			total, err := strconv.Atoi(lastfmTopAlbums.TopAlbums.Attr.TotalPages)
+			if err != nil {
+				return 0, 0, err
+			}
+			totalPages = total
+		}
+		return len(albums), totalPages, nil
+	}
+	err := lastfm.GetLastFmResponse(ctx, constants.ALBUM, username, period, count, handler)
+	if err != nil {
+		return nil, err
+	}
+	return albums, nil
 }
 
 func getAlbums(
@@ -85,26 +93,19 @@ func getAlbums(
 	count int,
 	imageSize string,
 ) ([]CollageElement, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopAlbums](
-		ctx,
-		constants.ALBUM,
-		username,
-		period,
-		count,
-	)
+	albums, err := getLastfmAlbums(ctx, username, period, count)
 	if err != nil {
 		return nil, err
 	}
-	r := *result
 	cacheCount := 0
 
 	logger := zerolog.Ctx(ctx)
 
-	elements := make([]CollageElement, len(r.TopAlbums.Albums))
+	elements := make([]CollageElement, len(albums))
 	var wg sync.WaitGroup
-	wg.Add(len(r.TopAlbums.Albums))
+	wg.Add(len(albums))
 	start := time.Now()
-	for i, lastfmAlbum := range r.TopAlbums.Albums {
+	for i, lastfmAlbum := range albums {
 		go func(i int, lastfmAlbum LastFMAlbum) {
 			defer wg.Done()
 			album := parseLastfmAlbum(ctx, lastfmAlbum, imageSize, &cacheCount)
