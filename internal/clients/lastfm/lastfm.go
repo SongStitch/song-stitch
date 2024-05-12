@@ -21,12 +21,12 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMImage struct {
+type LastfmImage struct {
 	Size string `json:"size"`
 	Link string `json:"#text"`
 }
 
-type LastFMUser struct {
+type LastfmUser struct {
 	User       string `json:"user"`
 	TotalPages string `json:"totalPages"`
 	Page       string `json:"page"`
@@ -64,24 +64,22 @@ func cleanError(err error) error {
 	return CleanError{errStr: modifiedString}
 }
 
-func GetLastFmResponse[T LastFMResponse](
+func GetLastFmResponse(
 	ctx context.Context,
 	collageType constants.CollageType,
 	username string,
 	period constants.Period,
 	count int,
-) (*T, error) {
+	handler func(data []byte) (int, int, error),
+) error {
 	config := config.GetConfig()
-	endpoint := config.LastFM.Endpoint
-	apiKey := config.LastFM.APIKey
+	endpoint := config.Lastfm.Endpoint
+	apiKey := config.Lastfm.APIKey
 
 	// Image URLs stop getting returned by the API at around 500
 	const maxPerPage = 500
 	totalFetched := 0
 	page := 1
-
-	var result T
-	initialised := false
 
 	logger := zerolog.Ctx(ctx)
 	logger.Info().Msg("Fetching LastFM data")
@@ -147,38 +145,27 @@ func GetLastFmResponse[T LastFMResponse](
 			return body, nil
 		}()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		var response T
-		err = json.Unmarshal(body, &response)
+		fetched, totalPages, err := handler(body)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if !initialised {
-			result = response
-			initialised = true
-		} else {
-			err = result.Append(response)
-			if err != nil {
-				return nil, err
-			}
-		}
-		totalFetched = result.TotalFetched()
-		totalPages := result.TotalPages()
 		if totalPages == page || totalPages == 0 {
 			break
 		}
+		totalFetched = fetched
 		page++
 	}
-	return &result, nil // No more pages to fetch
+	return nil // No more pages to fetch
 }
 
 type GetTrackInfoResponse struct {
 	Track struct {
 		Album struct {
 			AlbumName string        `json:"title"`
-			Images    []LastFMImage `json:"image"`
+			Images    []LastfmImage `json:"image"`
 		} `json:"Album"`
 	} `json:"track"`
 }
@@ -187,10 +174,10 @@ func GetTrackInfo(
 	trackName string,
 	artistName string,
 	imageSize string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	config := config.GetConfig()
-	endpoint := config.LastFM.Endpoint
-	apiKey := config.LastFM.APIKey
+	endpoint := config.Lastfm.Endpoint
+	apiKey := config.Lastfm.APIKey
 
 	u, err := url.Parse(endpoint)
 	if err != nil {
@@ -207,40 +194,40 @@ func GetTrackInfo(
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		// ensure sensitive information is not returned in error message
-		return nil, cleanError(err)
+		return clients.TrackInfo{}, cleanError(err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return nil, errors.New("track not found")
+		return clients.TrackInfo{}, errors.New("track not found")
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 
 	var response GetTrackInfoResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 
 	for _, image := range response.Track.Album.Images {
 		if image.Size == imageSize {
-			return &clients.TrackInfo{
+			return clients.TrackInfo{
 				AlbumName: response.Track.Album.AlbumName,
 				ImageUrl:  image.Link,
 			}, nil
 		}
 	}
-	return nil, errors.New("no image found")
+	return clients.TrackInfo{}, errors.New("no image found")
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {

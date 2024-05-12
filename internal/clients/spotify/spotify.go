@@ -180,7 +180,7 @@ func (c *SpotifyClient) doTrackRequest(
 	trackName string,
 	artistName string,
 	market string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	body, err := c.doRequest(
 		ctx,
 		"track",
@@ -188,38 +188,38 @@ func (c *SpotifyClient) doTrackRequest(
 		market,
 	)
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 	var response TracksResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 
 	for _, item := range response.SearchResult.Items {
 		if strings.EqualFold(item.Artists[0].Name, artistName) {
 			for _, image := range item.Album.Images {
 				if image.Height == 300 {
-					return &clients.TrackInfo{ImageUrl: image.URL, AlbumName: item.Album.Name}, nil
+					return clients.TrackInfo{ImageUrl: image.URL, AlbumName: item.Album.Name}, nil
 				}
 			}
 			// if no images 300x300, just return the first image
 			if len(item.Album.Images) > 0 {
-				return &clients.TrackInfo{
+				return clients.TrackInfo{
 					ImageUrl:  item.Album.Images[0].URL,
 					AlbumName: item.Album.Name,
 				}, nil
 			}
 		}
 	}
-	return nil, errors.New("track not found in market")
+	return clients.TrackInfo{}, errors.New("track not found in market")
 }
 
 func (c *SpotifyClient) GetTrackInfo(
 	ctx context.Context,
 	trackName string,
 	artistName string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
 	logger.Info().Str("track", trackName).Str("artist", artistName).Msg("Fetching Spotify data")
 	for _, market := range spotifyMarkets {
@@ -237,7 +237,7 @@ func (c *SpotifyClient) GetTrackInfo(
 			return track, nil
 		}
 	}
-	return nil, errors.New("track not found in any market")
+	return clients.TrackInfo{}, errors.New("track not found in any market")
 }
 
 func (c *SpotifyClient) doAlbumRequest(

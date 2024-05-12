@@ -1,9 +1,8 @@
 package collages
 
 import (
-	"bytes"
 	"context"
-	"errors"
+	"encoding/json"
 	"image"
 	"strconv"
 	"sync"
@@ -17,7 +16,7 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMArtist struct {
+type LastfmArtist struct {
 	Mbid      string `json:"mbid"`
 	URL       string `json:"url"`
 	Playcount string `json:"playcount"`
@@ -25,51 +24,60 @@ type LastFMArtist struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
 	Name   string               `json:"name"`
-	Images []lastfm.LastFMImage `json:"image"`
+	Images []lastfm.LastfmImage `json:"image"`
 }
 
-type LastFMTopArtists struct {
+type LastfmTopArtists struct {
 	TopArtists struct {
-		Attr    lastfm.LastFMUser `json:"@attr"`
-		Artists []LastFMArtist    `json:"artist"`
+		Attr    lastfm.LastfmUser `json:"@attr"`
+		Artists []LastfmArtist    `json:"artist"`
 	} `json:"topartists"`
 }
 
-func (a *LastFMTopArtists) Append(l lastfm.LastFMResponse) error {
-	if artists, ok := l.(*LastFMTopArtists); ok {
-		a.TopArtists.Artists = append(a.TopArtists.Artists, artists.TopArtists.Artists...)
-		return nil
-	}
-	return errors.New("type LastFMResponse is not a LastFMTopArtists")
-}
-
-func (a *LastFMTopArtists) TotalPages() int {
-	totalPages, _ := strconv.Atoi(a.TopArtists.Attr.TotalPages)
-	return totalPages
-}
-
-func (a *LastFMTopArtists) TotalFetched() int {
-	return len(a.TopArtists.Artists)
-}
-
-func GenerateCollageForArtist(
+func GetElementsForArtist(
 	ctx context.Context,
 	username string,
 	period constants.Period,
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) (image.Image, *bytes.Buffer, error) {
+) ([]CollageElement, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Artists {
-		return nil, nil, constants.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	artists, err := getArtists(ctx, username, period, count, imageSize)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	return artists, nil
+}
 
-	return CreateCollage(ctx, artists, displayOptions)
+func getLastfmArtists(ctx context.Context, username string, period constants.Period, count int) ([]LastfmArtist, error) {
+	artists := []LastfmArtist{}
+	totalPages := 0
+
+	handler := func(data []byte) (int, int, error) {
+		var lastfmTopArtists LastfmTopArtists
+		err := json.Unmarshal(data, &lastfmTopArtists)
+		if err != nil {
+			return 0, 0, err
+		}
+		artists = append(artists, lastfmTopArtists.TopArtists.Artists...)
+		if totalPages == 0 {
+			total, err := strconv.Atoi(lastfmTopArtists.TopArtists.Attr.TotalPages)
+			if err != nil {
+				return 0, 0, err
+			}
+			totalPages = total
+		}
+		return len(artists), totalPages, nil
+	}
+	err := lastfm.GetLastFmResponse(ctx, constants.ARTIST, username, period, count, handler)
+	if err != nil {
+		return nil, err
+	}
+	return artists, nil
 }
 
 func getArtists(
@@ -79,27 +87,20 @@ func getArtists(
 	count int,
 	imageSize string,
 ) ([]CollageElement, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopArtists](
-		ctx,
-		constants.ARTIST,
-		username,
-		period,
-		count,
-	)
+	artists, err := getLastfmArtists(ctx, username, period, count)
 	if err != nil {
 		return nil, err
 	}
-	r := *result
 	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
 
-	elements := make([]CollageElement, len(r.TopArtists.Artists))
+	elements := make([]CollageElement, len(artists))
 	var wg sync.WaitGroup
 	wg.Add(len(elements))
 
 	start := time.Now()
-	for i, lastfmArtist := range r.TopArtists.Artists {
-		go func(i int, lastfmArtist LastFMArtist) {
+	for i, lastfmArtist := range artists {
+		go func(i int, lastfmArtist LastfmArtist) {
 			defer wg.Done()
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
 			artist.Image, err = DownloadImageWithRetry(ctx, artist.ImageUrl)
@@ -124,7 +125,7 @@ func getArtists(
 	return elements, nil
 }
 
-func parseLastfmArtist(ctx context.Context, artist LastFMArtist, imageSize string, cacheCount *int) Artist {
+func parseLastfmArtist(ctx context.Context, artist LastfmArtist, imageSize string, cacheCount *int) Artist {
 	logger := zerolog.Ctx(ctx)
 	newArtist := Artist{
 		Name:      artist.Name,

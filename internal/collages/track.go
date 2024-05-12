@@ -1,9 +1,8 @@
 package collages
 
 import (
-	"bytes"
 	"context"
-	"errors"
+	"encoding/json"
 	"image"
 	"strconv"
 	"sync"
@@ -19,7 +18,7 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMTrack struct {
+type LastfmTrack struct {
 	Artist struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
@@ -33,53 +32,61 @@ type LastFMTrack struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
 	Playcount string               `json:"playcount"`
-	Images    []lastfm.LastFMImage `json:"image"`
+	Images    []lastfm.LastfmImage `json:"image"`
 }
 
-type LastFMTopTracks struct {
+type LastfmTopTracks struct {
 	TopTracks struct {
-		Attr   lastfm.LastFMUser `json:"@attr"`
-		Tracks []LastFMTrack     `json:"track"`
+		Attr   lastfm.LastfmUser `json:"@attr"`
+		Tracks []LastfmTrack     `json:"track"`
 	} `json:"toptracks"`
 }
 
-func (t *LastFMTopTracks) Append(l lastfm.LastFMResponse) error {
-	if tracks, ok := l.(*LastFMTopTracks); ok {
-		t.TopTracks.Tracks = append(t.TopTracks.Tracks, tracks.TopTracks.Tracks...)
-		return nil
-	}
-	return errors.New("type LastFMResponse is not a LastFMTopAlbums")
-}
-
-func (t *LastFMTopTracks) TotalPages() int {
-	totalPages, _ := strconv.Atoi(t.TopTracks.Attr.TotalPages)
-	return totalPages
-}
-
-func (t *LastFMTopTracks) TotalFetched() int {
-	return len(t.TopTracks.Tracks)
-}
-
-func GenerateCollageForTrack(
+func GetElementsForTrack(
 	ctx context.Context,
 	username string,
 	period constants.Period,
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) (image.Image, *bytes.Buffer, error) {
+) ([]CollageElement, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Tracks {
-		return nil, nil, constants.ErrTooManyImages
+		return nil, constants.ErrTooManyImages
 	}
 	tracks, err := getTracks(ctx, username, period, count, imageSize)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	return CreateCollage(ctx, tracks, displayOptions)
+	return tracks, nil
 }
 
+func getLastfmTracks(ctx context.Context, username string, period constants.Period, count int) ([]LastfmTrack, error) {
+	tracks := []LastfmTrack{}
+	totalPages := 0
+
+	handler := func(data []byte) (int, int, error) {
+		var lastfmTopTracks LastfmTopTracks
+		err := json.Unmarshal(data, &lastfmTopTracks)
+		if err != nil {
+			return 0, 0, err
+		}
+		tracks = append(tracks, lastfmTopTracks.TopTracks.Tracks...)
+		if totalPages == 0 {
+			total, err := strconv.Atoi(lastfmTopTracks.TopTracks.Attr.TotalPages)
+			if err != nil {
+				return 0, 0, err
+			}
+			totalPages = total
+		}
+		return len(tracks), totalPages, nil
+	}
+	err := lastfm.GetLastFmResponse(ctx, constants.TRACK, username, period, count, handler)
+	if err != nil {
+		return nil, err
+	}
+	return tracks, nil
+}
 func getTracks(
 	ctx context.Context,
 	username string,
@@ -87,27 +94,20 @@ func getTracks(
 	count int,
 	imageSize string,
 ) ([]CollageElement, error) {
-	result, err := lastfm.GetLastFmResponse[*LastFMTopTracks](
-		ctx,
-		constants.TRACK,
-		username,
-		period,
-		count,
-	)
+	tracks, err := getLastfmTracks(ctx, username, period, count)
 	if err != nil {
 		return nil, err
 	}
-	r := *result
 	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
 
-	elements := make([]CollageElement, len(r.TopTracks.Tracks))
+	elements := make([]CollageElement, len(tracks))
 
 	var wg sync.WaitGroup
-	wg.Add(len(r.TopTracks.Tracks))
+	wg.Add(len(tracks))
 	start := time.Now()
-	for i, track := range r.TopTracks.Tracks {
-		go func(i int, lastfmTrack LastFMTrack) {
+	for i, track := range tracks {
+		go func(i int, lastfmTrack LastfmTrack) {
 			defer wg.Done()
 			track := parseLastfmTrack(ctx, lastfmTrack, imageSize, &cacheCount)
 			track.Image, err = DownloadImageWithRetry(ctx, track.ImageUrl)
@@ -136,7 +136,7 @@ func getTracks(
 	return elements, nil
 }
 
-func parseLastfmTrack(ctx context.Context, track LastFMTrack, imageSize string, cacheCount *int) Track {
+func parseLastfmTrack(ctx context.Context, track LastfmTrack, imageSize string, cacheCount *int) Track {
 	logger := zerolog.Ctx(ctx)
 	newTrack := Track{
 		Name:      track.Name,
@@ -173,7 +173,7 @@ func getTrackInfo(
 	trackName string,
 	artistName string,
 	imageSize string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	logger := zerolog.Ctx(ctx)
 
 	trackInfo, err := getTrackInfoFromLastFm(trackName, artistName, imageSize)
@@ -186,23 +186,20 @@ func getTrackInfo(
 		return trackInfo, nil
 	}
 	logger.Warn().Err(err).Msg("Error getting track info from spotify")
-	return nil, constants.ErrNoImageFound
+	return trackInfo, constants.ErrNoImageFound
 }
 
 func getTrackInfoFromLastFm(
 	trackName string,
 	artistName string,
 	imageSize string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	result, err := lastfm.GetTrackInfo(trackName, artistName, imageSize)
 	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, constants.ErrNoImageFound
+		return result, err
 	}
 	if result.ImageUrl == "" {
-		return nil, constants.ErrNoImageFound
+		return result, constants.ErrNoImageFound
 	}
 	return result, nil
 }
@@ -211,20 +208,17 @@ func getTrackInfoFromSpotify(
 	ctx context.Context,
 	trackName string,
 	artistName string,
-) (*clients.TrackInfo, error) {
+) (clients.TrackInfo, error) {
 	client, err := spotify.GetSpotifyClient()
 	if err != nil {
-		return nil, err
+		return clients.TrackInfo{}, err
 	}
 	result, err := client.GetTrackInfo(ctx, trackName, artistName)
 	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, constants.ErrNoImageFound
+		return clients.TrackInfo{}, err
 	}
 	if result.ImageUrl == "" {
-		return nil, constants.ErrNoImageFound
+		return clients.TrackInfo{}, constants.ErrNoImageFound
 	}
 	return result, nil
 }

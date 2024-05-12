@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	LastFM struct {
+	Lastfm struct {
 		Endpoint string `env:"LASTFM_ENDPOINT,required"`
 		APIKey   string `env:"LASTFM_API_KEY,required"`
 	}
