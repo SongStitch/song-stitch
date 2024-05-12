@@ -21,12 +21,12 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMImage struct {
+type LastfmImage struct {
 	Size string `json:"size"`
 	Link string `json:"#text"`
 }
 
-type LastFMUser struct {
+type LastfmUser struct {
 	User       string `json:"user"`
 	TotalPages string `json:"totalPages"`
 	Page       string `json:"page"`
@@ -73,8 +73,8 @@ func GetLastFmResponse(
 	handler func(data []byte) (int, int, error),
 ) error {
 	config := config.GetConfig()
-	endpoint := config.LastFM.Endpoint
-	apiKey := config.LastFM.APIKey
+	endpoint := config.Lastfm.Endpoint
+	apiKey := config.Lastfm.APIKey
 
 	// Image URLs stop getting returned by the API at around 500
 	const maxPerPage = 500
@@ -165,7 +165,7 @@ type GetTrackInfoResponse struct {
 	Track struct {
 		Album struct {
 			AlbumName string        `json:"title"`
-			Images    []LastFMImage `json:"image"`
+			Images    []LastfmImage `json:"image"`
 		} `json:"Album"`
 	} `json:"track"`
 }
@@ -176,8 +176,8 @@ func GetTrackInfo(
 	imageSize string,
 ) (clients.TrackInfo, error) {
 	config := config.GetConfig()
-	endpoint := config.LastFM.Endpoint
-	apiKey := config.LastFM.APIKey
+	endpoint := config.Lastfm.Endpoint
+	apiKey := config.Lastfm.APIKey
 
 	u, err := url.Parse(endpoint)
 	if err != nil {

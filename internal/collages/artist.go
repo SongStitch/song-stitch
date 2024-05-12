@@ -16,7 +16,7 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMArtist struct {
+type LastfmArtist struct {
 	Mbid      string `json:"mbid"`
 	URL       string `json:"url"`
 	Playcount string `json:"playcount"`
@@ -24,13 +24,13 @@ type LastFMArtist struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
 	Name   string               `json:"name"`
-	Images []lastfm.LastFMImage `json:"image"`
+	Images []lastfm.LastfmImage `json:"image"`
 }
 
-type LastFMTopArtists struct {
+type LastfmTopArtists struct {
 	TopArtists struct {
-		Attr    lastfm.LastFMUser `json:"@attr"`
-		Artists []LastFMArtist    `json:"artist"`
+		Attr    lastfm.LastfmUser `json:"@attr"`
+		Artists []LastfmArtist    `json:"artist"`
 	} `json:"topartists"`
 }
 
@@ -53,12 +53,12 @@ func GetElementsForArtist(
 	return artists, nil
 }
 
-func getLastfmArtists(ctx context.Context, username string, period constants.Period, count int) ([]LastFMArtist, error) {
-	artists := []LastFMArtist{}
+func getLastfmArtists(ctx context.Context, username string, period constants.Period, count int) ([]LastfmArtist, error) {
+	artists := []LastfmArtist{}
 	totalPages := 0
 
 	handler := func(data []byte) (int, int, error) {
-		var lastfmTopArtists LastFMTopArtists
+		var lastfmTopArtists LastfmTopArtists
 		err := json.Unmarshal(data, &lastfmTopArtists)
 		if err != nil {
 			return 0, 0, err
@@ -100,7 +100,7 @@ func getArtists(
 
 	start := time.Now()
 	for i, lastfmArtist := range artists {
-		go func(i int, lastfmArtist LastFMArtist) {
+		go func(i int, lastfmArtist LastfmArtist) {
 			defer wg.Done()
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
 			artist.Image, err = DownloadImageWithRetry(ctx, artist.ImageUrl)
@@ -125,7 +125,7 @@ func getArtists(
 	return elements, nil
 }
 
-func parseLastfmArtist(ctx context.Context, artist LastFMArtist, imageSize string, cacheCount *int) Artist {
+func parseLastfmArtist(ctx context.Context, artist LastfmArtist, imageSize string, cacheCount *int) Artist {
 	logger := zerolog.Ctx(ctx)
 	newArtist := Artist{
 		Name:      artist.Name,

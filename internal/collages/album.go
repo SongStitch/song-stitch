@@ -17,7 +17,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type LastFMAlbum struct {
+type LastfmAlbum struct {
 	Artist struct {
 		URL        string `json:"url"`
 		ArtistName string `json:"name"`
@@ -30,13 +30,13 @@ type LastFMAlbum struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
 	AlbumName string               `json:"name"`
-	Images    []lastfm.LastFMImage `json:"image"`
+	Images    []lastfm.LastfmImage `json:"image"`
 }
 
-type LastFMTopAlbums struct {
+type LastfmTopAlbums struct {
 	TopAlbums struct {
-		Attr   lastfm.LastFMUser `json:"@attr"`
-		Albums []LastFMAlbum     `json:"album"`
+		Attr   lastfm.LastfmUser `json:"@attr"`
+		Albums []LastfmAlbum     `json:"album"`
 	} `json:"topalbums"`
 }
 
@@ -59,12 +59,12 @@ func GetElementsForAlbum(
 	return albums, nil
 }
 
-func getLastfmAlbums(ctx context.Context, username string, period constants.Period, count int) ([]LastFMAlbum, error) {
-	albums := []LastFMAlbum{}
+func getLastfmAlbums(ctx context.Context, username string, period constants.Period, count int) ([]LastfmAlbum, error) {
+	albums := []LastfmAlbum{}
 	totalPages := 0
 
 	handler := func(data []byte) (int, int, error) {
-		var lastfmTopAlbums LastFMTopAlbums
+		var lastfmTopAlbums LastfmTopAlbums
 		err := json.Unmarshal(data, &lastfmTopAlbums)
 		if err != nil {
 			return 0, 0, err
@@ -106,7 +106,7 @@ func getAlbums(
 	wg.Add(len(albums))
 	start := time.Now()
 	for i, lastfmAlbum := range albums {
-		go func(i int, lastfmAlbum LastFMAlbum) {
+		go func(i int, lastfmAlbum LastfmAlbum) {
 			defer wg.Done()
 			album := parseLastfmAlbum(ctx, lastfmAlbum, imageSize, &cacheCount)
 
@@ -134,7 +134,7 @@ func getAlbums(
 	return elements, nil
 }
 
-func parseLastfmAlbum(ctx context.Context, album LastFMAlbum, imageSize string, cacheCount *int) Album {
+func parseLastfmAlbum(ctx context.Context, album LastfmAlbum, imageSize string, cacheCount *int) Album {
 	logger := zerolog.Ctx(ctx)
 	newAlbum := Album{
 		Artist:    album.Artist.ArtistName,
@@ -165,7 +165,7 @@ func parseLastfmAlbum(ctx context.Context, album LastFMAlbum, imageSize string, 
 
 func getAlbumInfo(
 	ctx context.Context,
-	album LastFMAlbum,
+	album LastfmAlbum,
 	imageSize string,
 ) (clients.AlbumInfo, error) {
 	for _, image := range album.Images {

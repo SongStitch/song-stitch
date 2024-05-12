@@ -18,7 +18,7 @@ import (
 	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type LastFMTrack struct {
+type LastfmTrack struct {
 	Artist struct {
 		URL  string `json:"url"`
 		Name string `json:"name"`
@@ -32,13 +32,13 @@ type LastFMTrack struct {
 		Rank string `json:"rank"`
 	} `json:"@attr"`
 	Playcount string               `json:"playcount"`
-	Images    []lastfm.LastFMImage `json:"image"`
+	Images    []lastfm.LastfmImage `json:"image"`
 }
 
-type LastFMTopTracks struct {
+type LastfmTopTracks struct {
 	TopTracks struct {
-		Attr   lastfm.LastFMUser `json:"@attr"`
-		Tracks []LastFMTrack     `json:"track"`
+		Attr   lastfm.LastfmUser `json:"@attr"`
+		Tracks []LastfmTrack     `json:"track"`
 	} `json:"toptracks"`
 }
 
@@ -61,12 +61,12 @@ func GetElementsForTrack(
 	return tracks, nil
 }
 
-func getLastfmTracks(ctx context.Context, username string, period constants.Period, count int) ([]LastFMTrack, error) {
-	tracks := []LastFMTrack{}
+func getLastfmTracks(ctx context.Context, username string, period constants.Period, count int) ([]LastfmTrack, error) {
+	tracks := []LastfmTrack{}
 	totalPages := 0
 
 	handler := func(data []byte) (int, int, error) {
-		var lastfmTopTracks LastFMTopTracks
+		var lastfmTopTracks LastfmTopTracks
 		err := json.Unmarshal(data, &lastfmTopTracks)
 		if err != nil {
 			return 0, 0, err
@@ -107,7 +107,7 @@ func getTracks(
 	wg.Add(len(tracks))
 	start := time.Now()
 	for i, track := range tracks {
-		go func(i int, lastfmTrack LastFMTrack) {
+		go func(i int, lastfmTrack LastfmTrack) {
 			defer wg.Done()
 			track := parseLastfmTrack(ctx, lastfmTrack, imageSize, &cacheCount)
 			track.Image, err = DownloadImageWithRetry(ctx, track.ImageUrl)
@@ -136,7 +136,7 @@ func getTracks(
 	return elements, nil
 }
 
-func parseLastfmTrack(ctx context.Context, track LastFMTrack, imageSize string, cacheCount *int) Track {
+func parseLastfmTrack(ctx context.Context, track LastfmTrack, imageSize string, cacheCount *int) Track {
 	logger := zerolog.Ctx(ctx)
 	newTrack := Track{
 		Name:      track.Name,
