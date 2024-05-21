@@ -4,15 +4,43 @@
   export let text: string;
   export let name: string;
 
+  export let tooltipText: string = "";
+  let isHovered = false;
+  let x: number;
+  let y: number;
+
+  function mouseOver(event) {
+    isHovered = true;
+    x = event.pageX + 5;
+    y = event.pageY + 5;
+  }
+  function mouseMove(event) {
+    x = event.pageX + 5;
+    y = event.pageY + 5;
+  }
+  function mouseLeave() {
+    isHovered = false;
+  }
+
   $: color = checked ? "black" : "darkgrey";
   $: display = visible ? "block" : "none";
 </script>
 
 <div class="checkbox-wrapper" style="display: {display}">
   <input checked type="checkbox" class="switch" {name} id={name} />
-  <label class="checkbox-label" style="color: {color};" for={name}>{text}</label
+  <label
+    class="checkbox-label"
+    style="color: {color};"
+    for={name}
+    on:mouseover={mouseOver}
+    on:mouseleave={mouseLeave}
+    on:mousemove={mouseMove}>{text}</label
   >
 </div>
+
+{#if isHovered && tooltipText}
+  <div style="top: {y}px; left: {x}px;" class="tooltip">{tooltipText}</div>
+{/if}
 
 <style>
   .checkbox-wrapper {
@@ -152,5 +180,13 @@
   }
   :global(body.dark-mode) .checkbox-label {
     filter: invert(1);
+  }
+  .tooltip {
+    border: 1px solid #ddd;
+    box-shadow: 1px 1px 1px #ddd;
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    position: absolute;
   }
 </style>

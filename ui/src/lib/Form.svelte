@@ -41,6 +41,7 @@
     WebPLossyCompression: z.boolean().optional(),
     showBoldtext: z.boolean().optional(),
     grayscaleImage: z.boolean().optional(),
+    skipCache: z.boolean().optional(),
 
     textSize: z.string().optional(),
     textLocation: z.string().optional(),
@@ -81,6 +82,9 @@
       }
       if (values.grayscaleImage) {
         params.append("grayscale", values.grayscaleImage.toString());
+      }
+      if (values.skipCache) {
+        params.append("cacheid", Date.now().toString());
       }
     }
 
@@ -277,6 +281,15 @@
           name="WebPLossyCompression"
           visible={$data.advancedOptions}
           bind:checked={$data.WebPLossyCompression}
+        />
+      </div>
+      <div>
+        <Checkbox
+          text="Skip cache"
+          name="skipCache"
+          visible={$data.advancedOptions}
+          tooltipText="By default, the collage will be cached. Enabled this option to bypass the cache and generate a new collage."
+          bind:checked={$data.skipCache}
         />
       </div>
     </div>
