@@ -165,6 +165,7 @@ func parseLastfmTrack(ctx context.Context, track LastfmTrack, imageSize string, 
 	}
 	newTrack.ImageUrl = trackInfo.ImageUrl
 	newTrack.Album = trackInfo.AlbumName
+	imageCache.Set(newTrack.Identifier(), newTrack.CacheEntry())
 	return newTrack
 }
 

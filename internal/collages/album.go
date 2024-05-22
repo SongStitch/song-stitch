@@ -160,6 +160,7 @@ func parseLastfmAlbum(ctx context.Context, album LastfmAlbum, imageSize string, 
 		return newAlbum
 	}
 	newAlbum.ImageUrl = albumInfo.ImageUrl
+	imageCache.Set(newAlbum.Identifier(), newAlbum.CacheEntry())
 	return newAlbum
 }
 

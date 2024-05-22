@@ -152,6 +152,7 @@ func parseLastfmArtist(ctx context.Context, artist LastfmArtist, imageSize strin
 		return newArtist
 	}
 	newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
+	imageCache.Set(newArtist.Identifier(), newArtist.CacheEntry())
 	return newArtist
 }
 
