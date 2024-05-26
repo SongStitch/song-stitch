@@ -1,21 +1,21 @@
 FROM node:21-alpine@sha256:d44678a321331f2f003b51303cc5105f9787637e0524cf94d4323d08050a99c9 AS node-builder
 
-WORKDIR /app/ui 
-COPY ui ./  
+WORKDIR /app/ui
+COPY ui ./
 RUN npm install && npm run build
 
 FROM golang:1.22-bookworm@sha256:5c56bd47228dd572d8a82971cf1f946cd8bb1862a8ec6dc9f3d387cc94136976 AS builder
 
-WORKDIR /app 
+WORKDIR /app
 
-COPY go.mod go.sum Makefile ./    
-COPY vendor ./vendor  
-COPY cmd ./cmd  
-COPY internal ./internal  
-COPY assets ./assets  
-COPY --from=node-builder /app/public ./public  
+COPY go.mod go.sum Makefile ./
+COPY vendor ./vendor
+COPY cmd ./cmd
+COPY internal ./internal
+COPY assets ./assets
+COPY --from=node-builder /app/public ./public
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]    
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Minify Assets
 # hadolint ignore=DL3008
@@ -37,10 +37,10 @@ RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w -linkmode 'external' -extl
 
 FROM gcr.io/distroless/static-debian12:nonroot@sha256:e9ac71e2b8e279a8372741b7a0293afda17650d926900233ec3a7b2b7c22a246 AS build-release-stage
 
-WORKDIR /app 
+WORKDIR /app
 
-COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch  
-COPY --chown=nonroot:nonroot --from=builder /app/public /app/public  
-COPY --chown=nonroot:nonroot assets/NotoSans-Bold.ttf assets/NotoSans-Regular.ttf /app/assets/   
+COPY --chown=nonroot:nonroot --from=builder /app/bin/song-stitch /app/song-stitch
+COPY --chown=nonroot:nonroot --from=builder /app/public /app/public
+COPY --chown=nonroot:nonroot assets/NotoSans-Bold.ttf assets/NotoSans-Regular.ttf /app/assets/
 
-ENTRYPOINT ["/app/song-stitch"] 
+ENTRYPOINT ["/app/song-stitch"]
