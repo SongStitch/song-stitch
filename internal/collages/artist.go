@@ -131,6 +131,7 @@ func parseLastfmArtist(ctx context.Context, artist LastfmArtist, imageSize strin
 		Name:      artist.Name,
 		Playcount: artist.Playcount,
 		Mbid:      artist.Mbid,
+		Url:       artist.URL,
 		ImageSize: imageSize,
 	}
 
