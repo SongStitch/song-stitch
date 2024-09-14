@@ -53,7 +53,12 @@ func GetElementsForArtist(
 	return artists, nil
 }
 
-func getLastfmArtists(ctx context.Context, username string, period constants.Period, count int) ([]LastfmArtist, error) {
+func getLastfmArtists(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+) ([]LastfmArtist, error) {
 	artists := []LastfmArtist{}
 	totalPages := 0
 
@@ -125,7 +130,12 @@ func getArtists(
 	return elements, nil
 }
 
-func parseLastfmArtist(ctx context.Context, artist LastfmArtist, imageSize string, cacheCount *int) Artist {
+func parseLastfmArtist(
+	ctx context.Context,
+	artist LastfmArtist,
+	imageSize string,
+	cacheCount *int,
+) Artist {
 	logger := zerolog.Ctx(ctx)
 	newArtist := Artist{
 		Name:      artist.Name,

@@ -33,7 +33,7 @@ func RunServer() {
 
 	err := config.InitConfig()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize config")
+		log.Fatal().Err(err).Msg("Failed to initialise config")
 	}
 
 	c := alice.New()

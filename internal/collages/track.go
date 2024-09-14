@@ -61,7 +61,12 @@ func GetElementsForTrack(
 	return tracks, nil
 }
 
-func getLastfmTracks(ctx context.Context, username string, period constants.Period, count int) ([]LastfmTrack, error) {
+func getLastfmTracks(
+	ctx context.Context,
+	username string,
+	period constants.Period,
+	count int,
+) ([]LastfmTrack, error) {
 	tracks := []LastfmTrack{}
 	totalPages := 0
 
@@ -136,7 +141,12 @@ func getTracks(
 	return elements, nil
 }
 
-func parseLastfmTrack(ctx context.Context, track LastfmTrack, imageSize string, cacheCount *int) Track {
+func parseLastfmTrack(
+	ctx context.Context,
+	track LastfmTrack,
+	imageSize string,
+	cacheCount *int,
+) Track {
 	logger := zerolog.Ctx(ctx)
 	newTrack := Track{
 		Name:      track.Name,

@@ -126,7 +126,7 @@ func resizeImage(ctx context.Context, img image.Image, width uint, height uint) 
 	if width == 0 && height == 0 {
 		zerolog.Ctx(ctx).Info().Msg("Unable to resize image, both width and height are 0")
 		return img
-	} else if int(width) == (img).Bounds().Dx() && int(height) == (img).Bounds().Dy() {
+	} else if int(width) == (img).Bounds().Dx() && int(height) == (img).Bounds().Dy() /* #nosec G115 */ {
 		return img
 	} else if height == 0 {
 		height = uint(float64(width) * float64((img).Bounds().Dy()) / float64((img).Bounds().Dx()))
@@ -181,8 +181,8 @@ func CreateCollage(
 			img = resizeImage(
 				ctx,
 				img,
-				uint(displayOptions.ImageDimension),
-				uint(displayOptions.ImageDimension),
+				uint(displayOptions.ImageDimension), // #nosec G115
+				uint(displayOptions.ImageDimension), // #nosec G115
 			)
 			dc.DrawImage(img, x, y)
 		}

@@ -100,14 +100,14 @@ var spotifyClient *SpotifyClient
 
 func GetSpotifyClient() (*SpotifyClient, error) {
 	if spotifyClient == nil {
-		return nil, constants.ErrSpotifyClientNotInitialized
+		return nil, constants.ErrSpotifyClientNotInitialised
 	}
 	return spotifyClient, nil
 }
 
 func InitSpotifyClient(ctx context.Context) {
 	log := zerolog.Ctx(ctx)
-	log.Info().Msg("initializing spotify client...")
+	log.Info().Msg("initialising spotify client...")
 	token := &Token{
 		client:   http.DefaultClient,
 		endpoint: "https://accounts.spotify.com/api/token",
