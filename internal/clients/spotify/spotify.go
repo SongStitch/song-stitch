@@ -3,11 +3,10 @@ package spotify
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -36,7 +35,7 @@ func (t *Token) Refresh() error {
 	client_secret := config.Spotify.ClientSecret
 
 	if client_id == "" || client_secret == "" {
-		return errors.New("spotify credentials not set")
+		return fmt.Errorf("spotify credentials not set")
 	}
 
 	data := url.Values{}
@@ -58,7 +57,7 @@ func (t *Token) Refresh() error {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return errors.New("spotify authentication failed")
+		return fmt.Errorf("spotify authentication failed, status code: %d", res.StatusCode)
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -164,7 +163,7 @@ func (c *SpotifyClient) doRequest(
 
 	if res.StatusCode != http.StatusOK {
 		logger.Warn().Int("status", res.StatusCode).Msg("Spotify returned non-200 status")
-		return nil, errors.New("unexpected status code: " + strconv.Itoa(res.StatusCode))
+		return nil, fmt.Errorf("unexpected status code from spotify request: %d", res.StatusCode)
 
 	}
 
@@ -212,7 +211,7 @@ func (c *SpotifyClient) doTrackRequest(
 			}
 		}
 	}
-	return clients.TrackInfo{}, errors.New("track not found in market")
+	return clients.TrackInfo{}, fmt.Errorf("track not found in market")
 }
 
 func (c *SpotifyClient) GetTrackInfo(
@@ -237,7 +236,7 @@ func (c *SpotifyClient) GetTrackInfo(
 			return track, nil
 		}
 	}
-	return clients.TrackInfo{}, errors.New("track not found in any market")
+	return clients.TrackInfo{}, fmt.Errorf("track not found in any market")
 }
 
 func (c *SpotifyClient) doAlbumRequest(
@@ -274,7 +273,7 @@ func (c *SpotifyClient) doAlbumRequest(
 			}
 		}
 	}
-	return clients.AlbumInfo{}, errors.New("album not found in market")
+	return clients.AlbumInfo{}, fmt.Errorf("album not found in market")
 }
 
 func (c *SpotifyClient) GetAlbumInfo(
@@ -299,5 +298,5 @@ func (c *SpotifyClient) GetAlbumInfo(
 			return album, nil
 		}
 	}
-	return clients.AlbumInfo{}, errors.New("album not found in any market")
+	return clients.AlbumInfo{}, fmt.Errorf("album not found in any market")
 }
