@@ -5,7 +5,6 @@ import (
 	"context"
 	"image"
 	"image/draw"
-	"runtime"
 	"slices"
 	"time"
 
@@ -197,10 +196,6 @@ func CreateCollage(
 	if displayOptions.Grayscale {
 		collage = convertToGrayscale(collage)
 	}
-
-	gcStart := time.Now()
-	runtime.GC()
-	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
 
 	collageBuffer := new(bytes.Buffer)
 
