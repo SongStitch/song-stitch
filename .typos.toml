@@ -1,6 +1,13 @@
 [default]
 locale = "en-au"
 
+[default.extend-identifiers]
+center = "center"
+optimize = "optimize"
+optimized = "optimized"
+optimizeLegibility = "optimizeLegibility"
+Authorization = "Authorization"
+
 [files]
 ignore-vcs = true
 extend-exclude = [
@@ -8,4 +15,6 @@ extend-exclude = [
   ".git",
   "go.mod",
   "go.sum",
+  "LICENSE.md",
+  "PRIVACY.md",
 ]

@@ -84,6 +84,7 @@
       }
     }
 
+    params.append("cacheid", Date.now().toString());
     const url = `/collage?${params.toString()}`;
     return url;
   };

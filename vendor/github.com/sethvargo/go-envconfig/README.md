@@ -104,11 +104,11 @@ examples.
 
     type ServerConfig struct {
       // CacheConfig will process values from $CACHE_REDIS_HOST and
-      // $CACHE_REDIS respectively.
+      // $CACHE_REDIS_USER respectively.
       CacheConfig *RedisConfig `env:", prefix=CACHE_"`
 
       // RateLimitConfig will process values from $RATE_LIMIT_REDIS_HOST and
-      // $RATE_LIMIT_REDIS respectively.
+      // $RATE_LIMIT_REDIS_USER respectively.
       RateLimitConfig *RedisConfig `env:", prefix=RATE_LIMIT_"`
     }
     ```
@@ -289,7 +289,8 @@ lookuper := envconfig.MapLookuper(map[string]string{
 })
 
 var config Config
-envconfig.ProcessWith(ctx, &config, &envconfig.Config{
+envconfig.ProcessWith(ctx, &envconfig.Config{
+  Target:   &config,
   Lookuper: lookuper,
 })
 ```

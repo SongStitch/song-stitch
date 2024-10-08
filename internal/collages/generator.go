@@ -1,11 +1,10 @@
-package generator
+package collages
 
 import (
 	"bytes"
 	"context"
 	"image"
 	"image/draw"
-	"runtime"
 	"slices"
 	"time"
 
@@ -35,6 +34,11 @@ type DisplayOptions struct {
 	TrackName      bool
 	Webp           bool
 	AlbumName      bool
+}
+
+type CollageElement struct {
+	Image      image.Image
+	Parameters map[string]string
 }
 
 const (
@@ -80,14 +84,14 @@ func drawText(
 	return (3 + displayOptions.FontSize)
 }
 
-func placeText[T Drawable](
+func placeText(
 	dc *gg.Context,
-	drawable T,
+	drawable CollageElement,
 	displayOptions DisplayOptions,
 	x float64,
 	y float64,
 ) {
-	parameters := drawable.Parameters()
+	parameters := drawable.Parameters
 	textToDraw := []string{}
 	if val, ok := parameters["track"]; ok && displayOptions.TrackName && len(val) > 0 {
 		textToDraw = append(textToDraw, val)
@@ -121,7 +125,7 @@ func resizeImage(ctx context.Context, img image.Image, width uint, height uint) 
 	if width == 0 && height == 0 {
 		zerolog.Ctx(ctx).Info().Msg("Unable to resize image, both width and height are 0")
 		return img
-	} else if int(width) == (img).Bounds().Dx() && int(height) == (img).Bounds().Dy() {
+	} else if int(width) == (img).Bounds().Dx() && int(height) == (img).Bounds().Dy() /* #nosec G115 */ {
 		return img
 	} else if height == 0 {
 		height = uint(float64(width) * float64((img).Bounds().Dy()) / float64((img).Bounds().Dx()))
@@ -150,9 +154,9 @@ func convertToGrayscale(img image.Image) image.Image {
 	return grayImg
 }
 
-func CreateCollage[T Drawable](
+func CreateCollage(
 	ctx context.Context,
-	collageElements []T,
+	collageElements []CollageElement,
 	displayOptions DisplayOptions,
 ) (image.Image, *bytes.Buffer, error) {
 	start := time.Now()
@@ -171,16 +175,15 @@ func CreateCollage[T Drawable](
 	for i, collageElement := range collageElements {
 		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		img := collageElement.Image()
+		img := collageElement.Image
 		if img != nil {
 			img = resizeImage(
 				ctx,
 				img,
-				uint(displayOptions.ImageDimension),
-				uint(displayOptions.ImageDimension),
+				uint(displayOptions.ImageDimension), // #nosec G115
+				uint(displayOptions.ImageDimension), // #nosec G115
 			)
 			dc.DrawImage(img, x, y)
-			collageElement.ClearImage()
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
 	}
@@ -193,10 +196,6 @@ func CreateCollage[T Drawable](
 	if displayOptions.Grayscale {
 		collage = convertToGrayscale(collage)
 	}
-
-	gcStart := time.Now()
-	runtime.GC()
-	logger.Info().Dur("duration", time.Since(gcStart)).Msg("Garbage collection")
 
 	collageBuffer := new(bytes.Buffer)
 

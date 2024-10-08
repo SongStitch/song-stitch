@@ -8,4 +8,4 @@ var ErrUserNotFound = errors.New("user not found")
 
 var ErrNoImageFound = errors.New("no image found")
 
-var ErrSpotifyClientNotInitialized = errors.New("spotify client not initialized")
+var ErrSpotifyClientNotInitialised = errors.New("spotify client not initialised")

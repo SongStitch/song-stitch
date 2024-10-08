@@ -264,17 +264,43 @@ type Config struct {
 	// default value is false.
 	DefaultRequired bool
 
-	// Mutators is an optiona list of mutators to apply to lookups.
+	// Mutators is an optional list of mutators to apply to lookups.
 	Mutators []Mutator
 }
 
 // Process decodes the struct using values from environment variables. See
 // [ProcessWith] for a more customizable version.
+//
+// As a special case, if the input for the target is a [*Config], then this
+// function will call [ProcessWith] using the provided config, with any mutation
+// appended.
 func Process(ctx context.Context, i any, mus ...Mutator) error {
+	if v, ok := i.(*Config); ok {
+		v.Mutators = append(v.Mutators, mus...)
+		return ProcessWith(ctx, v)
+	}
 	return ProcessWith(ctx, &Config{
 		Target:   i,
 		Mutators: mus,
 	})
+}
+
+// MustProcess is a helper that calls [Process] and panics if an error is
+// encountered. Unlike [Process], the input value is returned, making it ideal
+// for anonymous initializations:
+//
+//	var env = envconfig.MustProcess(context.Background(), &struct{
+//	  Field string `env:"FIELD,required"`
+//	})
+//
+// This is not recommend for production services, but it can be useful for quick
+// CLIs and scripts that want to take advantage of envconfig's environment
+// parsing at the expense of testability and graceful error handling.
+func MustProcess[T any](ctx context.Context, i T, mus ...Mutator) T {
+	if err := Process(ctx, i, mus...); err != nil {
+		panic(err)
+	}
+	return i
 }
 
 // ProcessWith executes the decoding process using the provided [Config].
@@ -529,7 +555,7 @@ func processWith(ctx context.Context, c *Config) error {
 
 // SplitString splits the given string on the provided rune, unless the rune is
 // escaped by the escape character.
-func splitString(s string, on string, esc string) []string {
+func splitString(s, on, esc string) []string {
 	a := strings.Split(s, on)
 
 	for i := len(a) - 2; i >= 0; i-- {
