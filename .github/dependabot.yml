@@ -31,6 +31,9 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Australia/Sydney'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       npm:
         patterns:
