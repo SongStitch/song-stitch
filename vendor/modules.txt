@@ -51,8 +51,8 @@ github.com/justinas/alice
 ## explicit; go 1.18
 github.com/leodido/go-urn
 github.com/leodido/go-urn/scim/schema
-# github.com/mattn/go-colorable v0.1.13
-## explicit; go 1.15
+# github.com/mattn/go-colorable v0.1.14
+## explicit; go 1.18
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
@@ -77,7 +77,7 @@ github.com/sethvargo/go-envconfig
 # golang.org/x/crypto v0.32.0
 ## explicit; go 1.20
 golang.org/x/crypto/sha3
-# golang.org/x/image v0.18.0
+# golang.org/x/image v0.23.0
 ## explicit; go 1.18
 golang.org/x/image/draw
 golang.org/x/image/font
@@ -92,6 +92,7 @@ golang.org/x/net/html/atom
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.21.0
 ## explicit; go 1.18
 golang.org/x/text/internal/language
