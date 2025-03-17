@@ -4,7 +4,8 @@
   font-weight: 400;
 
   background-color: #ffffff;
-  background: radial-gradient(circle, #f1f1f1 10%, transparent 11%),
+  background:
+    radial-gradient(circle, #f1f1f1 10%, transparent 11%),
     radial-gradient(circle at bottom left, #f1f1f1 5%, transparent 6%),
     radial-gradient(circle at bottom right, #f1f1f1 5%, transparent 6%),
     radial-gradient(circle at top left, #f1f1f1 5%, transparent 6%),
