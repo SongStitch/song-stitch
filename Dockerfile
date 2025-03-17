@@ -4,7 +4,7 @@ WORKDIR /app/ui
 COPY ui ./
 RUN npm install && npm run build
 
-FROM golang:1.23-bookworm@sha256:1a5326b07cbab12f4fd7800425f2cf25ff2bd62c404ef41b56cb99669a710a83 AS builder
+FROM golang:1.24-bookworm@sha256:d7d795d0a9f51b00d9c9bfd17388c2c626004a50c6ed7c581e095122507fe1ab AS builder
 
 WORKDIR /app
 
@@ -19,23 +19,21 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Minify Assets
 # hadolint ignore=DL3008
-RUN apt-get update \
-    && dpkg --add-architecture amd64 && apt-get update && \
-    apt-get install -y --no-install-recommends \
-    minify:amd64=2.12.4-2 \
-    libwebp-dev:amd64=1.2.4-0.2+deb12u1 \
-    && find ./public -type f \( \
-    -name "*.html" \
-    -o -name '*.js' \
-    -o -name '*.css' \
-    \) \
-    -print0 | \
-    xargs -0 \
-    -I '{}' sh -c 'minify -o "{}" "{}"'
+RUN dpkg --add-architecture amd64 && apt-get update && apt-get update \
+  && apt-get install -y --no-install-recommends \
+  minify=2.12.4-2 \
+  libwebp-dev=1.2.4-0.2+deb12u1 \
+  && find ./public -type f \( \
+  -name "*.html" \
+  -o -name '*.js' \
+  -o -name '*.css' \
+  \) \
+  -print0 | \
+  xargs -0  -I '{}' sh -c 'minify -o "{}" "{}"'
 
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w -linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go
 
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:42d15c647a762d3ce3a67eab394220f5268915d6ddba9006871e16e4698c3a24 AS build-release-stage
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:6ec5aa99dc335666e79dc64e4a6c8b89c33a543a1967f20d360922a80dd21f02 AS build-release-stage
 
 WORKDIR /app
 
