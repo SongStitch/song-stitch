@@ -78,10 +78,10 @@ linux-amd64:
 	env GOOS=linux GOARCH=amd64 go build -o bin/${BINARY_NAME}_linux_amd64 cmd/*.go
 
 docker-build: format-lint
-	docker-compose build song-stitch
+	docker compose build song-stitch
 
 docker-run:
-	docker-compose up
+	docker compose up
 
 clean:
 	rm -rf bin/*
