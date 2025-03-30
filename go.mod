@@ -7,11 +7,11 @@ require (
 	github.com/SongStitch/go-webp v1.2.0
 	github.com/fogleman/gg v1.3.0
 	github.com/ggicci/httpin v0.19.0
-	github.com/go-playground/validator/v10 v10.25.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/joho/godotenv v1.5.1
 	github.com/justinas/alice v1.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/sethvargo/go-envconfig v1.1.1
 )
 
@@ -25,7 +25,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/rs/xid v1.5.0 // indirect
+	github.com/rs/xid v1.6.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
