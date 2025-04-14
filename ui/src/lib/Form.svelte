@@ -135,9 +135,9 @@
     showTrack = $data.method === "track";
     showAlbum = $data.method !== "artist";
     maxRows =
-      $data.method === "track" ? 5 : $data.method === "artist" ? 10 : 20;
+      $data.method === "track" ? 10 : $data.method === "artist" ? 20 : 20;
     maxColumns =
-      $data.method === "track" ? 5 : $data.method === "artist" ? 10 : 20;
+      $data.method === "track" ? 10 : $data.method === "artist" ? 20 : 20;
     if ($isSubmitting && !$isValid) {
       window.location.href = "#top";
     }

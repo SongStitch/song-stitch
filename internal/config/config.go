@@ -17,8 +17,8 @@ type Config struct {
 	}
 	MaxImages struct {
 		Albums  int `env:"MAX_ALBUM_IMAGES,default=400"`
-		Artists int `env:"MAX_ARTIST_IMAGES,default=100"`
-		Tracks  int `env:"MAX_TRACK_IMAGES,default=25"`
+		Artists int `env:"MAX_ARTIST_IMAGES,default=400"`
+		Tracks  int `env:"MAX_TRACK_IMAGES,default=100"`
 	}
 	ImageSizeCutoffs struct {
 		ExtraLarge int `env:"IMAGE_SIZE_CUTOFF_EXTRA_LARGE,default=100"`
