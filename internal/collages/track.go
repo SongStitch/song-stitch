@@ -85,7 +85,7 @@ func getLastfmTracks(
 		}
 		return len(tracks), totalPages, nil
 	}
-	err := lastfm.GetLastFmResponse(ctx, lastfm.TRACK, username, period, count, handler)
+	err := lastfm.GetLastFmResponse(ctx, lastfm.MethodTrack, username, period, count, handler)
 	if err != nil {
 		return nil, err
 	}

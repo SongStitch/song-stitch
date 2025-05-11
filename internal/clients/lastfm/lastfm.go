@@ -33,13 +33,13 @@ type LastfmUser struct {
 	Total      string `json:"total"`
 }
 
-func getMethodForCollageType(collageType CollageType) string {
+func getMethodForCollageType(collageType Method) string {
 	switch collageType {
-	case ALBUM:
+	case MethodAlbum:
 		return "user.gettopalbums"
-	case ARTIST:
+	case MethodArtist:
 		return "user.gettopartists"
-	case TRACK:
+	case MethodTrack:
 		return "user.gettoptracks"
 	default:
 		return ""
@@ -65,7 +65,7 @@ func cleanError(err error) error {
 
 func GetLastFmResponse(
 	ctx context.Context,
-	collageType CollageType,
+	collageType Method,
 	username string,
 	period Period,
 	count int,

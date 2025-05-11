@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ggicci/httpin"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
@@ -76,7 +75,6 @@ func RunServer() {
 	c = c.Append(hlog.RefererHandler("referer"))
 	c = c.Append(hlog.RequestIDHandler("req_id", "Request-Id"))
 	h := c.
-		Append(httpin.NewInput(api.CollageRequest{})).
 		ThenFunc(api.Collage)
 
 	router := http.NewServeMux()

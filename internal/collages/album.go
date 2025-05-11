@@ -83,7 +83,7 @@ func getLastfmAlbums(
 		}
 		return len(albums), totalPages, nil
 	}
-	err := lastfm.GetLastFmResponse(ctx, lastfm.ALBUM, username, period, count, handler)
+	err := lastfm.GetLastFmResponse(ctx, lastfm.MethodAlbum, username, period, count, handler)
 	if err != nil {
 		return nil, err
 	}

@@ -20,11 +20,11 @@ import (
 type DisplayOptions struct {
 	TextLocation   lastfm.TextLocation
 	Height         uint
+	Width          uint
 	ImageDimension int
 	Columns        int
 	Rows           int
 	FontSize       float64
-	Width          uint
 	PlayCount      bool
 	Resize         bool
 	BoldFont       bool
@@ -51,17 +51,17 @@ func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (
 	width, height := dc.MeasureString(text)
 	imageSize := float64(dc.Width()/displayOptions.Columns - 20)
 	switch displayOptions.TextLocation {
-	case lastfm.TOP_LEFT:
+	case lastfm.LocationTopLeft:
 		return 0, 0
-	case lastfm.TOP_CENTRE:
+	case lastfm.LocationTopCentre:
 		return imageSize/2 - width/2, 0
-	case lastfm.TOP_RIGHT:
+	case lastfm.LocationTopRight:
 		return imageSize - width, 0
-	case lastfm.BOTTOM_LEFT:
+	case lastfm.LocationBottomLeft:
 		return 0, imageSize - height
-	case lastfm.BOTTOM_CENTRE:
+	case lastfm.LocationBottomCentre:
 		return imageSize/2 - width/2, imageSize - height
-	case lastfm.BOTTOM_RIGHT:
+	case lastfm.LocationBottomRight:
 		return imageSize - width, imageSize - height
 	default:
 		return 0, 0
