@@ -19,8 +19,8 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/ggicci/httpin v0.19.0
-## explicit; go 1.20
+# github.com/ggicci/httpin v0.20.0
+## explicit; go 1.23
 github.com/ggicci/httpin
 github.com/ggicci/httpin/core
 github.com/ggicci/httpin/internal
@@ -71,7 +71,7 @@ github.com/rs/zerolog/hlog/internal/mutil
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
-# github.com/sethvargo/go-envconfig v1.2.0
+# github.com/sethvargo/go-envconfig v1.3.0
 ## explicit; go 1.20
 github.com/sethvargo/go-envconfig
 # golang.org/x/crypto v0.37.0
