@@ -18,7 +18,6 @@ import (
 
 	"github.com/SongStitch/song-stitch/internal/clients"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
 type LastfmImage struct {
@@ -34,13 +33,13 @@ type LastfmUser struct {
 	Total      string `json:"total"`
 }
 
-func getMethodForCollageType(collageType constants.CollageType) string {
+func getMethodForCollageType(collageType CollageType) string {
 	switch collageType {
-	case constants.ALBUM:
+	case ALBUM:
 		return "user.gettopalbums"
-	case constants.ARTIST:
+	case ARTIST:
 		return "user.gettopartists"
-	case constants.TRACK:
+	case TRACK:
 		return "user.gettoptracks"
 	default:
 		return ""
@@ -66,9 +65,9 @@ func cleanError(err error) error {
 
 func GetLastFmResponse(
 	ctx context.Context,
-	collageType constants.CollageType,
+	collageType CollageType,
 	username string,
-	period constants.Period,
+	period Period,
 	count int,
 	handler func(data []byte) (int, int, error),
 ) error {
@@ -131,7 +130,7 @@ func GetLastFmResponse(
 			}
 
 			if res.StatusCode == http.StatusNotFound {
-				return nil, constants.ErrUserNotFound
+				return nil, ErrUserNotFound
 			}
 
 			if res.StatusCode != http.StatusOK {

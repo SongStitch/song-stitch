@@ -44,9 +44,6 @@ github.com/golang/freetype/truetype
 # github.com/joho/godotenv v1.5.1
 ## explicit; go 1.12
 github.com/joho/godotenv
-# github.com/justinas/alice v1.2.0
-## explicit; go 1.12
-github.com/justinas/alice
 # github.com/leodido/go-urn v1.4.0
 ## explicit; go 1.18
 github.com/leodido/go-urn

@@ -12,9 +12,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/collages"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
 type CollageRequest struct {
@@ -36,10 +36,7 @@ type CollageRequest struct {
 	Webp          bool   `in:"query=webp;default=false"`
 }
 
-func generateCollage(
-	ctx context.Context,
-	request *CollageRequest,
-) (image.Image, *bytes.Buffer, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 
 	count := request.Rows * request.Columns
@@ -75,15 +72,15 @@ func generateCollage(
 		Webp:           request.Webp,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
-		TextLocation:   constants.GetTextLocationFromStr(request.TextLocation),
+		TextLocation:   lastfm.GetTextLocationFromStr(request.TextLocation),
 	}
 
-	period := constants.GetPeriodFromStr(request.Period)
-	method := constants.GetCollageTypeFromStr(request.Method)
+	period := lastfm.GetPeriodFromStr(request.Period)
+	method := lastfm.GetCollageTypeFromStr(request.Method)
 	var elements []collages.CollageElement
 	var err error
 	switch method {
-	case constants.ALBUM:
+	case lastfm.ALBUM:
 		elements, err = collages.GetElementsForAlbum(
 			ctx,
 			request.Username,
@@ -95,7 +92,7 @@ func generateCollage(
 		if err != nil {
 			return nil, nil, err
 		}
-	case constants.ARTIST:
+	case lastfm.ARTIST:
 		elements, err = collages.GetElementsForArtist(
 			ctx,
 			request.Username,
@@ -107,7 +104,7 @@ func generateCollage(
 		if err != nil {
 			return nil, nil, err
 		}
-	case constants.TRACK:
+	case lastfm.TRACK:
 		elements, err = collages.GetElementsForTrack(
 			ctx,
 			request.Username,
@@ -169,10 +166,10 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		switch err {
-		case constants.ErrUserNotFound:
+		case lastfm.ErrUserNotFound:
 			logger.Warn().Err(err).Str("username", request.Username).Msg("User not found")
 			http.Error(w, "User not found", http.StatusNotFound)
-		case constants.ErrTooManyImages:
+		case lastfm.ErrTooManyImages:
 			logger.Warn().
 				Err(err).
 				Str("method", request.Method).

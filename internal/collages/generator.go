@@ -10,7 +10,7 @@ import (
 
 	"github.com/SongStitch/go-webp/encoder"
 	"github.com/SongStitch/go-webp/webp"
-	"github.com/SongStitch/song-stitch/internal/constants"
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/fogleman/gg"
 
 	"github.com/nfnt/resize"
@@ -18,7 +18,7 @@ import (
 )
 
 type DisplayOptions struct {
-	TextLocation   constants.TextLocation
+	TextLocation   lastfm.TextLocation
 	Height         uint
 	ImageDimension int
 	Columns        int
@@ -51,17 +51,17 @@ func getTextOffset(dc *gg.Context, text string, displayOptions DisplayOptions) (
 	width, height := dc.MeasureString(text)
 	imageSize := float64(dc.Width()/displayOptions.Columns - 20)
 	switch displayOptions.TextLocation {
-	case constants.TOP_LEFT:
+	case lastfm.TOP_LEFT:
 		return 0, 0
-	case constants.TOP_CENTRE:
+	case lastfm.TOP_CENTRE:
 		return imageSize/2 - width/2, 0
-	case constants.TOP_RIGHT:
+	case lastfm.TOP_RIGHT:
 		return imageSize - width, 0
-	case constants.BOTTOM_LEFT:
+	case lastfm.BOTTOM_LEFT:
 		return 0, imageSize - height
-	case constants.BOTTOM_CENTRE:
+	case lastfm.BOTTOM_CENTRE:
 		return imageSize/2 - width/2, imageSize - height
-	case constants.BOTTOM_RIGHT:
+	case lastfm.BOTTOM_RIGHT:
 		return imageSize - width, imageSize - height
 	default:
 		return 0, 0

@@ -9,7 +9,6 @@ require (
 	github.com/ggicci/httpin v0.19.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/joho/godotenv v1.5.1
-	github.com/justinas/alice v1.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/zerolog v1.34.0
 	github.com/sethvargo/go-envconfig v1.2.0

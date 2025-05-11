@@ -1,19 +1,20 @@
 package api
 
 import (
-	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 )
 
 func validatePeriod(fl validator.FieldLevel) bool {
-	period := constants.Period(fl.Field().String())
+	period := lastfm.Period(fl.Field().String())
 	switch period {
-	case constants.OVERALL,
-		constants.SEVEN_DAYS,
-		constants.ONE_MONTH,
-		constants.THREE_MONTHS,
-		constants.SIX_MONTHS,
-		constants.TWELVE_MONTHS:
+	case lastfm.OVERALL,
+		lastfm.SEVEN_DAYS,
+		lastfm.ONE_MONTH,
+		lastfm.THREE_MONTHS,
+		lastfm.SIX_MONTHS,
+		lastfm.TWELVE_MONTHS:
 		return true
 	default:
 		return false
@@ -21,14 +22,14 @@ func validatePeriod(fl validator.FieldLevel) bool {
 }
 
 func validateTextLocation(fl validator.FieldLevel) bool {
-	textLocation := constants.TextLocation(fl.Field().String())
+	textLocation := lastfm.TextLocation(fl.Field().String())
 	switch textLocation {
-	case constants.TOP_LEFT,
-		constants.TOP_CENTRE,
-		constants.TOP_RIGHT,
-		constants.BOTTOM_LEFT,
-		constants.BOTTOM_CENTRE,
-		constants.BOTTOM_RIGHT:
+	case lastfm.TOP_LEFT,
+		lastfm.TOP_CENTRE,
+		lastfm.TOP_RIGHT,
+		lastfm.BOTTOM_LEFT,
+		lastfm.BOTTOM_CENTRE,
+		lastfm.BOTTOM_RIGHT:
 		return true
 	default:
 		return false

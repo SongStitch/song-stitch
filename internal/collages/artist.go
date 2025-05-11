@@ -13,7 +13,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/cache"
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
 type LastfmArtist struct {
@@ -37,14 +36,14 @@ type LastfmTopArtists struct {
 func GetElementsForArtist(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
 ) ([]CollageElement, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Artists {
-		return nil, constants.ErrTooManyImages
+		return nil, lastfm.ErrTooManyImages
 	}
 	artists, err := getArtists(ctx, username, period, count, imageSize)
 	if err != nil {
@@ -56,7 +55,7 @@ func GetElementsForArtist(
 func getLastfmArtists(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 ) ([]LastfmArtist, error) {
 	artists := []LastfmArtist{}
@@ -78,7 +77,7 @@ func getLastfmArtists(
 		}
 		return len(artists), totalPages, nil
 	}
-	err := lastfm.GetLastFmResponse(ctx, constants.ARTIST, username, period, count, handler)
+	err := lastfm.GetLastFmResponse(ctx, lastfm.ARTIST, username, period, count, handler)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func getLastfmArtists(
 func getArtists(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 	imageSize string,
 ) ([]CollageElement, error) {
