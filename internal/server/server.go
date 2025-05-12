@@ -53,7 +53,7 @@ func RunServer() {
 	log := getLogger()
 	zerolog.DefaultContextLogger = &log
 
-	err := config.InitConfig()
+	err := config.Init()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialise config")
 	}
