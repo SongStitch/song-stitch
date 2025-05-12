@@ -104,7 +104,7 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	logger := zerolog.Ctx(ctx)
 	logger.Info().Msg("Received request")
 
-	request, err := ParseRequest(r)
+	request, err := ParseQueryValues(r.URL.Query())
 	if err != nil {
 		logger.Warn().Err(err).Msg("Request was invalid")
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -104,6 +104,9 @@ jobs:
       - name: build
         run: go build cmd/*go
 
+      - name: test
+        run: go test ./...
+
   build-push-songstitch:
     name: runner / Build and Push SongStitch Image
     runs-on: ubuntu-latest

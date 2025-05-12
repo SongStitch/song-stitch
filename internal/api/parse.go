@@ -3,8 +3,9 @@ package api
 import (
 	"errors"
 	"fmt"
-	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 )
@@ -69,9 +70,19 @@ func parseBoolWithDefault(value string, d bool) (bool, error) {
 	}
 }
 
-func ParseRequest(r *http.Request) (*CollageRequest, error) {
+func ParseQueryValues(query url.Values) (*CollageRequest, error) {
 	params := &CollageRequest{}
-	q := r.URL.Query()
+
+	// Convert keys to lowercase as they should be case insensitive
+	q := make(url.Values, len(query))
+	for key, value := range query {
+		k := strings.ToLower(key)
+		if len(value) == 0 {
+			q.Set(k, "")
+		} else {
+			q.Set(k, value[0])
+		}
+	}
 
 	{
 		method := q.Get("method")
@@ -220,10 +231,10 @@ func ParseRequest(r *http.Request) (*CollageRequest, error) {
 	}
 
 	{
-		Webp := q.Get("Webp")
+		Webp := q.Get("webp")
 		value, err := parseBoolWithDefault(Webp, false)
 		if err != nil {
-			return nil, fmt.Errorf("invalid Webp: %w", err)
+			return nil, fmt.Errorf("invalid webp: %w", err)
 		}
 		params.Webp = value
 	}
