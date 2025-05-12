@@ -52,7 +52,7 @@ func parseUintWithDefaultAndRange(value string, d uint, min, max uint64) (uint, 
 			return 0, err
 		}
 		if value < min || value > max {
-			return 0, ErrInvalidValue
+			return 0, fmt.Errorf("value must be between %d and %d: %w", min, max, ErrInvalidValue)
 		} else {
 			return uint(value), nil
 		}
@@ -68,7 +68,7 @@ func parseIntWithDefaultAndRange(value string, d, min, max int) (int, error) {
 			return -1, err
 		}
 		if value < min || value > max {
-			return -1, ErrInvalidValue
+			return -1, fmt.Errorf("value must be between %d and %d: %w", min, max, ErrInvalidValue)
 		}
 		return value, nil
 	}
