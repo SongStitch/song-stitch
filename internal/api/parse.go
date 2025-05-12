@@ -96,7 +96,7 @@ func ParseQueryValues(query url.Values) (*CollageRequest, error) {
 		if len(value) == 0 {
 			q.Set(k, "")
 		} else {
-			q.Set(k, value[0])
+			q.Set(k, strings.TrimSpace(value[0]))
 		}
 	}
 
