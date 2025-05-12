@@ -43,6 +43,22 @@ func parseIntWithDefault(value string, d int) (int, error) {
 	}
 }
 
+func parseUintWithDefaultAndRange(value string, d uint, min, max uint64) (uint, error) {
+	if value == "" {
+		return d, nil
+	} else {
+		value, err := strconv.ParseUint(value, 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		if value < min || value > max {
+			return 0, ErrInvalidValue
+		} else {
+			return uint(value), nil
+		}
+	}
+}
+
 func parseIntWithDefaultAndRange(value string, d, min, max int) (int, error) {
 	if value == "" {
 		return d, nil
@@ -133,20 +149,20 @@ func ParseQueryValues(query url.Values) (*CollageRequest, error) {
 
 	{
 		height := q.Get("height")
-		value, err := parseIntWithDefaultAndRange(height, 0, 0, 3000)
+		value, err := parseUintWithDefaultAndRange(height, 0, 0, 3000)
 		if err != nil {
 			return nil, fmt.Errorf("invalid height: %w", err)
 		}
-		params.Height = uint(value)
+		params.Height = value
 	}
 
 	{
 		width := q.Get("width")
-		value, err := parseIntWithDefaultAndRange(width, 0, 0, 3000)
+		value, err := parseUintWithDefaultAndRange(width, 0, 0, 3000)
 		if err != nil {
 			return nil, fmt.Errorf("invalid width: %w", err)
 		}
-		params.Width = uint(value)
+		params.Width = value
 	}
 
 	{
