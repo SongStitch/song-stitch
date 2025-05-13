@@ -15,7 +15,6 @@ import (
 	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/clients/spotify"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
 type LastfmTrack struct {
@@ -45,14 +44,14 @@ type LastfmTopTracks struct {
 func GetElementsForTrack(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
 ) ([]CollageElement, error) {
 	config := config.GetConfig()
 	if count > config.MaxImages.Tracks {
-		return nil, constants.ErrTooManyImages
+		return nil, lastfm.ErrTooManyImages
 	}
 	tracks, err := getTracks(ctx, username, period, count, imageSize)
 	if err != nil {
@@ -64,7 +63,7 @@ func GetElementsForTrack(
 func getLastfmTracks(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 ) ([]LastfmTrack, error) {
 	tracks := []LastfmTrack{}
@@ -86,7 +85,7 @@ func getLastfmTracks(
 		}
 		return len(tracks), totalPages, nil
 	}
-	err := lastfm.GetLastFmResponse(ctx, constants.TRACK, username, period, count, handler)
+	err := lastfm.GetLastFmResponse(ctx, lastfm.MethodTrack, username, period, count, handler)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +94,7 @@ func getLastfmTracks(
 func getTracks(
 	ctx context.Context,
 	username string,
-	period constants.Period,
+	period lastfm.Period,
 	count int,
 	imageSize string,
 ) ([]CollageElement, error) {
@@ -197,7 +196,7 @@ func getTrackInfo(
 		return trackInfo, nil
 	}
 	logger.Warn().Err(err).Msg("Error getting track info from spotify")
-	return trackInfo, constants.ErrNoImageFound
+	return trackInfo, lastfm.ErrNoImageFound
 }
 
 func getTrackInfoFromLastFm(
@@ -210,7 +209,7 @@ func getTrackInfoFromLastFm(
 		return result, err
 	}
 	if result.ImageUrl == "" {
-		return result, constants.ErrNoImageFound
+		return result, lastfm.ErrNoImageFound
 	}
 	return result, nil
 }
@@ -229,7 +228,7 @@ func getTrackInfoFromSpotify(
 		return clients.TrackInfo{}, err
 	}
 	if result.ImageUrl == "" {
-		return clients.TrackInfo{}, constants.ErrNoImageFound
+		return clients.TrackInfo{}, lastfm.ErrNoImageFound
 	}
 	return result, nil
 }

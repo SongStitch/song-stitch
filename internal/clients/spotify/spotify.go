@@ -3,6 +3,7 @@ package spotify
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,9 +13,10 @@ import (
 
 	"github.com/SongStitch/song-stitch/internal/clients"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 	"github.com/rs/zerolog"
 )
+
+var ErrClientNotInitialised = errors.New("spotify client not initialised")
 
 type SpotifyAuthResponse struct {
 	AccessToken string `json:"access_token"`
@@ -99,7 +101,7 @@ var spotifyClient *SpotifyClient
 
 func GetSpotifyClient() (*SpotifyClient, error) {
 	if spotifyClient == nil {
-		return nil, constants.ErrSpotifyClientNotInitialised
+		return nil, ErrClientNotInitialised
 	}
 	return spotifyClient, nil
 }

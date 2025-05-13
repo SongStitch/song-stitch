@@ -8,38 +8,14 @@ import (
 	"image/jpeg"
 	"net/http"
 
-	"github.com/ggicci/httpin"
-	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 
+	"github.com/SongStitch/song-stitch/internal/clients/lastfm"
 	"github.com/SongStitch/song-stitch/internal/collages"
 	"github.com/SongStitch/song-stitch/internal/config"
-	"github.com/SongStitch/song-stitch/internal/constants"
 )
 
-type CollageRequest struct {
-	Method        string `in:"query=method;default=album"         validate:"required,oneof=album artist track"`
-	TextLocation  string `in:"query=textlocation;default=topleft" validate:"validateTextLocation"`
-	Username      string `in:"query=username;required"            validate:"required"`
-	Period        string `in:"query=period;default=7day"          validate:"required,validatePeriod"`
-	Height        uint   `in:"query=height;default=0"             validate:"gte=0,lte=3000"`
-	Width         uint   `in:"query=width;default=0"              validate:"gte=0,lte=3000"`
-	Rows          int    `in:"query=rows;default=3"               validate:"required"`
-	FontSize      int    `in:"query=fontsize;default=12"          validate:"gte=8,lte=30"`
-	Columns       int    `in:"query=columns;default=3"            validate:"required"`
-	DisplayAlbum  bool   `in:"query=album;default=false"`
-	DisplayTrack  bool   `in:"query=track;default=false"`
-	PlayCount     bool   `in:"query=playcount;default=false"`
-	DisplayArtist bool   `in:"query=artist;default=false"`
-	BoldFont      bool   `in:"query=boldfont;default=false"`
-	Grayscale     bool   `in:"query=grayscale;default=false"`
-	Webp          bool   `in:"query=webp;default=false"`
-}
-
-func generateCollage(
-	ctx context.Context,
-	request *CollageRequest,
-) (image.Image, *bytes.Buffer, error) {
+func generateCollage(ctx context.Context, request *CollageRequest) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 
 	count := request.Rows * request.Columns
@@ -75,19 +51,17 @@ func generateCollage(
 		Webp:           request.Webp,
 		Rows:           request.Rows,
 		Columns:        request.Columns,
-		TextLocation:   constants.GetTextLocationFromStr(request.TextLocation),
+		TextLocation:   request.TextLocation,
 	}
 
-	period := constants.GetPeriodFromStr(request.Period)
-	method := constants.GetCollageTypeFromStr(request.Method)
 	var elements []collages.CollageElement
 	var err error
-	switch method {
-	case constants.ALBUM:
+	switch request.Method {
+	case lastfm.MethodAlbum:
 		elements, err = collages.GetElementsForAlbum(
 			ctx,
 			request.Username,
-			period,
+			request.Period,
 			count,
 			imageSize,
 			displayOptions,
@@ -95,11 +69,11 @@ func generateCollage(
 		if err != nil {
 			return nil, nil, err
 		}
-	case constants.ARTIST:
+	case lastfm.MethodArtist:
 		elements, err = collages.GetElementsForArtist(
 			ctx,
 			request.Username,
-			period,
+			request.Period,
 			count,
 			imageSize,
 			displayOptions,
@@ -107,11 +81,11 @@ func generateCollage(
 		if err != nil {
 			return nil, nil, err
 		}
-	case constants.TRACK:
+	case lastfm.MethodTrack:
 		elements, err = collages.GetElementsForTrack(
 			ctx,
 			request.Username,
-			period,
+			request.Period,
 			count,
 			imageSize,
 			displayOptions,
@@ -127,15 +101,10 @@ func generateCollage(
 
 func Collage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	request := ctx.Value(httpin.Input).(*CollageRequest)
 	logger := zerolog.Ctx(ctx)
 	logger.Info().Msg("Received request")
 
-	validate := validator.New()
-	validate.RegisterValidation("validatePeriod", validatePeriod)
-	validate.RegisterValidation("validateTextLocation", validateTextLocation)
-
-	err := validate.Struct(request)
+	request, err := ParseQueryValues(r.URL.Query())
 	if err != nil {
 		logger.Warn().Err(err).Msg("Request was invalid")
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -146,14 +115,14 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 		Str("username", request.Username).
 		Int("rows", request.Rows).
 		Int("columns", request.Columns).
-		Str("period", request.Period).
+		Str("period", string(request.Period)).
 		Bool("artist", request.DisplayArtist).
 		Bool("album", request.DisplayAlbum).
 		Bool("track", request.DisplayTrack).
 		Bool("playcount", request.PlayCount).
 		Uint("width", request.Width).
 		Uint("height", request.Height).
-		Str("method", request.Method).
+		Str("method", string(request.Method)).
 		Int("fontsize", request.FontSize).
 		Bool("boldfont", request.BoldFont).
 		Bool("grayscale", request.Grayscale).
@@ -169,13 +138,13 @@ func Collage(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		switch err {
-		case constants.ErrUserNotFound:
+		case lastfm.ErrUserNotFound:
 			logger.Warn().Err(err).Str("username", request.Username).Msg("User not found")
 			http.Error(w, "User not found", http.StatusNotFound)
-		case constants.ErrTooManyImages:
+		case lastfm.ErrTooManyImages:
 			logger.Warn().
 				Err(err).
-				Str("method", request.Method).
+				Str("method", string(request.Method)).
 				Int("rows", request.Rows).
 				Int("columns", request.Columns).
 				Msg("Too many images requested for the collage type")

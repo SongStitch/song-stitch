@@ -6,9 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ggicci/httpin"
 	"github.com/joho/godotenv"
-	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 
@@ -26,17 +24,41 @@ func getLogger() zerolog.Logger {
 	}
 }
 
+type Middleware func(http.Handler) http.Handler
+type MiddlewareChain struct {
+	m []Middleware
+}
+
+func (mc MiddlewareChain) Append(m Middleware) MiddlewareChain {
+	mc.m = append(mc.m, m)
+	return mc
+}
+
+func (mc MiddlewareChain) Then(h http.Handler) http.Handler {
+	for i := range mc.m {
+		h = mc.m[len(mc.m)-1-i](h)
+	}
+	return h
+}
+
+func (mc MiddlewareChain) ThenFunc(fn http.HandlerFunc) http.Handler {
+	if fn == nil {
+		return mc.Then(nil)
+	}
+	return mc.Then(fn)
+}
+
 func RunServer() {
 	_ = godotenv.Load()
 	log := getLogger()
 	zerolog.DefaultContextLogger = &log
 
-	err := config.InitConfig()
+	err := config.Init()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialise config")
 	}
 
-	c := alice.New()
+	c := MiddlewareChain{}
 	c = c.Append(hlog.NewHandler(log))
 	c = c.Append(
 		hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
@@ -53,7 +75,6 @@ func RunServer() {
 	c = c.Append(hlog.RefererHandler("referer"))
 	c = c.Append(hlog.RequestIDHandler("req_id", "Request-Id"))
 	h := c.
-		Append(httpin.NewInput(api.CollageRequest{})).
 		ThenFunc(api.Collage)
 
 	router := http.NewServeMux()
