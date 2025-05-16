@@ -4,7 +4,7 @@ WORKDIR /app/ui
 COPY ui ./
 RUN npm install && npm run build
 
-FROM golang:1.24-bookworm@sha256:d7d795d0a9f51b00d9c9bfd17388c2c626004a50c6ed7c581e095122507fe1ab AS builder
+FROM golang:1.24-bookworm@sha256:89a04cc2e2fbafef82d4a45523d4d4ae4ecaf11a197689036df35fef3bde444a AS builder
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN dpkg --add-architecture amd64 && apt-get update && apt-get update \
 
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w -linkmode 'external' -extldflags '-static'" -o ./bin/song-stitch cmd/*.go
 
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:6ec5aa99dc335666e79dc64e4a6c8b89c33a543a1967f20d360922a80dd21f02 AS build-release-stage
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc AS build-release-stage
 
 WORKDIR /app
 
