@@ -7,6 +7,7 @@ optimize = "optimize"
 optimized = "optimized"
 optimizeLegibility = "optimizeLegibility"
 Authorization = "Authorization"
+Organization = "Organization"
 
 [files]
 ignore-vcs = true
