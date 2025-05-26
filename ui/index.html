@@ -8,7 +8,11 @@
       name="description"
       content="Generate an image collage of your most played albums, artists, or tracks!"
     />
-    <meta name="keywords" content="lastfm, collage, image, music, albums" />
+    <meta
+      name="keywords"
+      content="lastfm, collage, image, music, albums, artists, tracks, playlist, music collage, SongStitch"
+    />
+    <meta name="author" content="SongStitch Team" />
     <!-- Social Media Meta Tags -->
     <meta property="og:title" content="SongStitch" />
     <meta
@@ -17,7 +21,7 @@
     />
     <meta
       property="og:image"
-      content="/src/assets/images/songstitch_background.png"
+      content="https://songstitch.art/songstitch_background.png"
     />
     <meta property="og:url" content="https://songstitch.art/" />
     <!-- Canonical URL -->
@@ -26,8 +30,55 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SongStitch" />
+    <meta
+      property="og:description"
+      content="Generate an image collage of your most played albums, artists, or tracks"
+    />
+    <meta
+      property="og:image"
+      content="https://songstitch.art/songstitch_background.png"
+    />
+    <meta property="og:url" content="https://songstitch.art/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SongStitch" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SongStitch" />
+    <meta
+      name="twitter:description"
+      content="Generate an image collage of your most played albums, artists, or tracks"
+    />
+    <meta
+      name="twitter:image"
+      content="https://songstitch.art/songstitch_background.png"
+    />
+
     <!-- manifest -->
     <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "SongStitch",
+        "url": "https://songstitch.art/",
+        "description": "Generate an image collage of your most played albums, artists, or tracks on Last.fm.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "SongStitch",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://songstitch.art/songstitch_background.png"
+          }
+        }
+      }
+    </script>
+
     <title>SongStitch</title>
   </head>
   <body>
