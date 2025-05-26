@@ -15,7 +15,10 @@ import (
 	"github.com/SongStitch/song-stitch/internal/config"
 )
 
-func generateCollage(ctx context.Context, request *CollageRequest) (image.Image, *bytes.Buffer, error) {
+func generateCollage(
+	ctx context.Context,
+	request *CollageRequest,
+) (image.Image, *bytes.Buffer, error) {
 	config := config.GetConfig()
 
 	count := request.Rows * request.Columns

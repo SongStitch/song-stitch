@@ -67,7 +67,11 @@ func TestParseQueryValues(t *testing.T) {
 			wantErr: true,
 		},
 		"valid custom dimensions": {
-			query: url.Values{"username": []string{"test"}, "height": []string{"500"}, "width": []string{"800"}},
+			query: url.Values{
+				"username": []string{"test"},
+				"height":   []string{"500"},
+				"width":    []string{"800"},
+			},
 			expectedFunc: func(c *api.CollageRequest) {
 				c.Username = "test"
 				c.Height = 500
@@ -75,7 +79,11 @@ func TestParseQueryValues(t *testing.T) {
 			},
 		},
 		"custom rows and columns": {
-			query: url.Values{"username": []string{"test"}, "rows": []string{"5"}, "columns": []string{"4"}},
+			query: url.Values{
+				"username": []string{"test"},
+				"rows":     []string{"5"},
+				"columns":  []string{"4"},
+			},
 			expectedFunc: func(c *api.CollageRequest) {
 				c.Username = "test"
 				c.Rows = 5
@@ -122,7 +130,11 @@ func TestParseQueryValues(t *testing.T) {
 			},
 		},
 		"case insensitive parameters": {
-			query: url.Values{"USERNAME": []string{"test"}, "METHOD": []string{"artist"}, "PERIOD": []string{"overall"}},
+			query: url.Values{
+				"USERNAME": []string{"test"},
+				"METHOD":   []string{"artist"},
+				"PERIOD":   []string{"overall"},
+			},
 			expectedFunc: func(c *api.CollageRequest) {
 				c.Username = "test"
 				c.Method = lastfm.MethodArtist
