@@ -152,7 +152,7 @@ func parseLastfmArtist(
 	}
 
 	// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
-	id, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
+	id, err := lastfm.GetImageIdForArtistWithRetry(ctx, artist.URL)
 	if err != nil {
 		logger.Error().
 			Err(err).
