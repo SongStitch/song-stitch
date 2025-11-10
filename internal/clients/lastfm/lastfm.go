@@ -226,7 +226,7 @@ func GetTrackInfo(
 	return clients.TrackInfo{}, errors.New("no image found")
 }
 
-const maxRetries = 5
+const maxRetries = 10
 
 var (
 	backoffSchedule = []time.Duration{
@@ -271,6 +271,9 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 		return "", err
 	}
 	defer resp.Body.Close()
+  if resp.StatusCode != 200 {
+    return "", fmt.Errorf("invalid status: %s", resp.Status)
+  }
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
