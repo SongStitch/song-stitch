@@ -90,10 +90,7 @@ func GetLastFmResponse(
 			Int("count", count).
 			Msg("Fetching page")
 		// Determine the limit for this request
-		limit := count - totalFetched
-		if limit > maxPerPage {
-			limit = maxPerPage
-		}
+		limit := min(count - totalFetched, maxPerPage)
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			panic(err)
@@ -229,6 +226,39 @@ func GetTrackInfo(
 	return clients.TrackInfo{}, errors.New("no image found")
 }
 
+const maxRetries = 5
+
+var (
+	backoffSchedule = []time.Duration{
+		200 * time.Millisecond,
+		500 * time.Millisecond,
+		1 * time.Second,
+	}
+)
+
+func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string, error) {
+  var e error
+  for i := range maxRetries {
+    url, err := GetImageIdForArtist(ctx, artistUrl)
+    if err == nil {
+      return url, nil
+    }
+
+    e = err
+    elem := min(len(backoffSchedule)-1, i)
+		delay := backoffSchedule[elem]
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		case <-time.After(delay):
+			continue
+		}
+  }
+
+  return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
+
+}
+
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
 	url := artistUrl + "/+images"
 	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
@@ -246,7 +276,8 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	href := (doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", ""))
+
+	href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
 	if href == "" {
 		return "", errors.New("no image found")
 	}

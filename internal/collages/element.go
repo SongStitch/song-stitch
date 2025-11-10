@@ -33,7 +33,7 @@ var (
 
 func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error) {
 	var e error
-	for i := 0; i < maxRetries; i++ {
+	for i := range maxRetries {
 		img, err := DownloadImage(ctx, url)
 		if err == nil {
 			return img, nil
