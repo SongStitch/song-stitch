@@ -226,7 +226,7 @@ func GetTrackInfo(
 	return clients.TrackInfo{}, errors.New("no image found")
 }
 
-const maxRetries = 5
+const maxRetries = 3
 
 var (
 	backoffSchedule = []time.Duration{
@@ -266,6 +266,8 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 	if err != nil {
 		return "", err
 	}
+  req.Header.Add("Accept", "text/html")
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
