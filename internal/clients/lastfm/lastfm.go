@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -260,26 +262,40 @@ func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
-	url := artistUrl + "/+images"
-	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
+	url := strings.TrimRight(artistUrl, "/") + "/+images"
+	logger := zerolog.Ctx(ctx)
+
+	logger.Info().Str("artistUrl", url).Msg("Getting image for artist")
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
-
+	req.Header.Set("Accept", "text/html")
 	req.Header.Set(
 		"User-Agent",
 		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
 	)
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+
+	if dumpReq, err := httputil.DumpRequestOut(req, false); err == nil {
+		logger.Debug().Msgf("Outgoing request:\n%s", dumpReq)
+	} else {
+		logger.Error().Err(err).Msg("Failed to dump outgoing request")
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+
+	if dumpResp, err := httputil.DumpResponse(resp, true); err == nil {
+		logger.Debug().Msgf("Incoming response:\n%s", dumpResp)
+	} else {
+		logger.Error().Err(err).Msg("Failed to dump incoming response")
+	}
+
+	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("invalid status: %s", resp.Status)
 	}
 
