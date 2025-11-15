@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -90,7 +91,7 @@ func GetLastFmResponse(
 			Int("count", count).
 			Msg("Fetching page")
 		// Determine the limit for this request
-		limit := min(count - totalFetched, maxPerPage)
+		limit := min(count-totalFetched, maxPerPage)
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			panic(err)
@@ -237,15 +238,15 @@ var (
 )
 
 func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string, error) {
-  var e error
-  for i := range maxRetries {
-    url, err := GetImageIdForArtist(ctx, artistUrl)
-    if err == nil {
-      return url, nil
-    }
+	var e error
+	for i := range maxRetries {
+		url, err := GetImageIdForArtist(ctx, artistUrl)
+		if err == nil {
+			return url, nil
+		}
 
-    e = err
-    elem := min(len(backoffSchedule)-1, i)
+		e = err
+		elem := min(len(backoffSchedule)-1, i)
 		delay := backoffSchedule[elem]
 		select {
 		case <-ctx.Done():
@@ -253,38 +254,124 @@ func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string
 		case <-time.After(delay):
 			continue
 		}
-  }
+	}
 
-  return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
+	return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
 
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
-	url := artistUrl + "/+images"
-	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-  req.Header.Add("Accept", "text/html")
+	logger := zerolog.Ctx(ctx)
+	url := strings.TrimRight(artistUrl, "/") + "/+images"
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-  if resp.StatusCode != 200 {
-    return "", fmt.Errorf("invalid status: %s", resp.Status)
-  }
+	const maxAttempts = 3
+	const baseBackoff = time.Second
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return "", err
+	logger.Info().Str("artistUrl", url).Msg("Getting image for artist")
+
+	var lastErr error
+	var resultID string
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return "", err
+		}
+
+		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+		req.Header.Set(
+			"User-Agent",
+			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
+		)
+		req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			lastErr = err
+			logger.Warn().
+				Err(err).
+				Int("attempt", attempt).
+				Msg("Error doing HTTP request for artist image")
+			break
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			lastErr = fmt.Errorf("rate limited by last.fm (429 Too Many Requests)")
+			logger.Warn().
+				Int("attempt", attempt).
+				Str("artistUrl", url).
+				Msg("Received 429 from last.fm, backing off")
+
+			resp.Body.Close()
+
+			if attempt == maxAttempts {
+				break
+			}
+
+			delay := baseBackoff * (1 << (attempt - 1))
+			if ra := resp.Header.Get("Retry-After"); ra != "" {
+				if secs, err := strconv.Atoi(ra); err == nil && secs > 0 {
+					delay = time.Duration(secs) * time.Second
+				}
+			}
+
+			logger.Info().
+				Int("attempt", attempt).
+				Dur("backoff", delay).
+				Msg("Sleeping before retry after 429")
+
+			time.Sleep(delay)
+			continue
+		}
+
+		if resp.StatusCode == http.StatusNotAcceptable {
+			logger.Warn().
+				Int("attempt", attempt).
+				Str("artistUrl", url).
+				Msg("Received 406 Not Acceptable from last.fm; treating as no image")
+
+			resp.Body.Close()
+			// No error: caller can just use a fallback image / omit
+			return "", nil
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			lastErr = fmt.Errorf("invalid status: %s", resp.Status)
+			resp.Body.Close()
+			logger.Error().
+				Int("attempt", attempt).
+				Int("status", resp.StatusCode).
+				Msg("Non-OK status fetching artist image")
+			break
+		}
+
+		doc, err := goquery.NewDocumentFromReader(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			lastErr = err
+			logger.Error().Err(err).Int("attempt", attempt).Msg("Failed to parse artist image HTML")
+			break
+		}
+
+		href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
+		if href == "" {
+			lastErr = errors.New("no image found")
+			logger.Warn().Int("attempt", attempt).Msg("No image href found in artist page")
+			break
+		}
+
+		resultID = path.Base(href)
+		logger.Info().
+			Int("attempt", attempt).
+			Str("image_id", resultID).
+			Msg("Successfully fetched artist image id")
+
+		lastErr = nil
+		break
 	}
 
-	href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
-	if href == "" {
-		return "", errors.New("no image found")
+	if lastErr != nil {
+		return "", lastErr
 	}
-	return path.Base(href), nil
+	return resultID, nil
 }
