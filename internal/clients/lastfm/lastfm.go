@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"path"
 	"regexp"
@@ -262,51 +261,107 @@ func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
-	url := strings.TrimRight(artistUrl, "/") + "/+images"
 	logger := zerolog.Ctx(ctx)
+	url := strings.TrimRight(artistUrl, "/") + "/+images"
+
+	const maxAttempts = 3
+	const baseBackoff = time.Second
 
 	logger.Info().Str("artistUrl", url).Msg("Getting image for artist")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Accept", "text/html")
-	req.Header.Set(
-		"User-Agent",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
-	)
+	var lastErr error
+	var resultID string
 
-	if dumpReq, err := httputil.DumpRequestOut(req, false); err == nil {
-		logger.Debug().Msgf("Outgoing request:\n%s", dumpReq)
-	} else {
-		logger.Error().Err(err).Msg("Failed to dump outgoing request")
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return "", err
+		}
+
+		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+		req.Header.Set(
+			"User-Agent",
+			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
+		)
+		req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			lastErr = err
+			logger.Warn().
+				Err(err).
+				Int("attempt", attempt).
+				Msg("Error doing HTTP request for artist image")
+			break
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			lastErr = fmt.Errorf("rate limited by last.fm (429 Too Many Requests)")
+			logger.Warn().
+				Int("attempt", attempt).
+				Str("artistUrl", url).
+				Msg("Received 429 from last.fm, backing off")
+
+			resp.Body.Close()
+
+			if attempt == maxAttempts {
+				break
+			}
+
+			// Calculate backoff
+			delay := baseBackoff * (1 << (attempt - 1))
+			if ra := resp.Header.Get("Retry-After"); ra != "" {
+				if secs, err := strconv.Atoi(ra); err == nil && secs > 0 {
+					delay = time.Duration(secs) * time.Second
+				}
+			}
+
+			logger.Info().
+				Int("attempt", attempt).
+				Dur("backoff", delay).
+				Msg("Sleeping before retry after 429")
+
+			time.Sleep(delay)
+			continue
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			lastErr = fmt.Errorf("invalid status: %s", resp.Status)
+			resp.Body.Close()
+			logger.Error().
+				Int("attempt", attempt).
+				Int("status", resp.StatusCode).
+				Msg("Non-OK status fetching artist image")
+			break
+		}
+
+		doc, err := goquery.NewDocumentFromReader(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			lastErr = err
+			logger.Error().Err(err).Int("attempt", attempt).Msg("Failed to parse artist image HTML")
+			break
+		}
+
+		href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
+		if href == "" {
+			lastErr = errors.New("no image found")
+			logger.Warn().Int("attempt", attempt).Msg("No image href found in artist page")
+			break
+		}
+
+		resultID = path.Base(href)
+		logger.Info().
+			Int("attempt", attempt).
+			Str("image_id", resultID).
+			Msg("Successfully fetched artist image id")
+
+		lastErr = nil
+		break
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
+	if lastErr != nil {
+		return "", lastErr
 	}
-	defer resp.Body.Close()
-
-	if dumpResp, err := httputil.DumpResponse(resp, true); err == nil {
-		logger.Debug().Msgf("Incoming response:\n%s", dumpResp)
-	} else {
-		logger.Error().Err(err).Msg("Failed to dump incoming response")
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("invalid status: %s", resp.Status)
-	}
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
-	if href == "" {
-		return "", errors.New("no image found")
-	}
-	return path.Base(href), nil
+	return resultID, nil
 }
