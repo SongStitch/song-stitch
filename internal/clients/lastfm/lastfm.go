@@ -308,7 +308,6 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 				break
 			}
 
-			// Calculate backoff
 			delay := baseBackoff * (1 << (attempt - 1))
 			if ra := resp.Header.Get("Retry-After"); ra != "" {
 				if secs, err := strconv.Atoi(ra); err == nil && secs > 0 {
@@ -323,6 +322,17 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 
 			time.Sleep(delay)
 			continue
+		}
+
+		if resp.StatusCode == http.StatusNotAcceptable {
+			logger.Warn().
+				Int("attempt", attempt).
+				Str("artistUrl", url).
+				Msg("Received 406 Not Acceptable from last.fm; treating as no image")
+
+			resp.Body.Close()
+			// No error: caller can just use a fallback image / omit
+			return "", nil
 		}
 
 		if resp.StatusCode != http.StatusOK {
