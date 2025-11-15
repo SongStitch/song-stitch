@@ -90,7 +90,7 @@ func GetLastFmResponse(
 			Int("count", count).
 			Msg("Fetching page")
 		// Determine the limit for this request
-		limit := min(count - totalFetched, maxPerPage)
+		limit := min(count-totalFetched, maxPerPage)
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			panic(err)
@@ -237,15 +237,15 @@ var (
 )
 
 func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string, error) {
-  var e error
-  for i := range maxRetries {
-    url, err := GetImageIdForArtist(ctx, artistUrl)
-    if err == nil {
-      return url, nil
-    }
+	var e error
+	for i := range maxRetries {
+		url, err := GetImageIdForArtist(ctx, artistUrl)
+		if err == nil {
+			return url, nil
+		}
 
-    e = err
-    elem := min(len(backoffSchedule)-1, i)
+		e = err
+		elem := min(len(backoffSchedule)-1, i)
 		delay := backoffSchedule[elem]
 		select {
 		case <-ctx.Done():
@@ -253,9 +253,9 @@ func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string
 		case <-time.After(delay):
 			continue
 		}
-  }
+	}
 
-  return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
+	return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
 
 }
 
@@ -266,16 +266,22 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-  req.Header.Add("Accept", "text/html")
+
+	req.Header.Set(
+		"User-Agent",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
+	)
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-  if resp.StatusCode != 200 {
-    return "", fmt.Errorf("invalid status: %s", resp.Status)
-  }
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("invalid status: %s", resp.Status)
+	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
