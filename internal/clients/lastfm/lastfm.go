@@ -263,15 +263,6 @@ func GetTrackInfo(
 	return clients.TrackInfo{}, errors.New("no image found for requested size")
 }
 
-// MusicBrainz artist search response.
-type mbArtistSearchResponse struct {
-	Artists []struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Score int    `json:"score"`
-	} `json:"artists"`
-}
-
 // fanart.tv image info.
 type fanartImage struct {
 	URL   string `json:"url"`
