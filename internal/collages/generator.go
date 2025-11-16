@@ -6,7 +6,13 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/gif"
+	"image/jpeg"
+	"io"
+	"reflect"
 	"slices"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/SongStitch/go-webp/encoder"
@@ -38,7 +44,9 @@ type DisplayOptions struct {
 }
 
 type CollageElement struct {
-	Image      image.Image
+	Index      int
+	ImageBytes io.ReadCloser
+	ImageExt   string
 	Parameters map[string]string
 }
 
@@ -109,7 +117,6 @@ func placeText(
 
 	if !displayOptions.TextLocation.IsTop() {
 		slices.Reverse(textToDraw)
-
 	}
 	textLocation := (8 + displayOptions.FontSize)
 	for _, text := range textToDraw {
@@ -155,10 +162,46 @@ func convertToGrayscale(img image.Image) image.Image {
 	return grayImg
 }
 
+func getImage(data io.ReadCloser, extension string) (image.Image, error) {
+	isNil := func(i any) bool {
+		if i == nil {
+			return true
+		}
+		v := reflect.ValueOf(i)
+		return v.Kind() == reflect.Ptr && v.IsNil()
+	}
+	if isNil(data) {
+		return nil, nil
+	}
+
+  defer data.Close()
+
+	switch strings.ToLower(extension) {
+	case jpgFileType:
+		img, err := jpeg.Decode(data)
+		if err != nil {
+			return nil, err
+		}
+		return img, nil
+	case gifFileType:
+		img, err := gif.Decode(data)
+		if err != nil {
+			return nil, err
+		}
+		return img, nil
+	default:
+		img, _, err := image.Decode(data)
+		if err != nil {
+			return nil, err
+		}
+		return img, nil
+	}
+}
+
 func CreateCollage(
 	ctx context.Context,
-	collageElements []CollageElement,
 	displayOptions DisplayOptions,
+	jobChan <-chan CollageElement,
 ) (image.Image, *bytes.Buffer, error) {
 	start := time.Now()
 	logger := zerolog.Ctx(ctx)
@@ -173,16 +216,35 @@ func CreateCollage(
 	}
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
-	for i, collageElement := range collageElements {
-		x := (i % displayOptions.Columns) * displayOptions.ImageDimension
-		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-		img := collageElement.Image
-		if img != nil {
-			img = normaliseToSquare(img, displayOptions.ImageDimension)
-			dc.DrawImage(img, x, y)
-		}
-		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
-	}
+  var wg sync.WaitGroup
+  var mu sync.Mutex
+  for worker := range 5 {
+    wg.Add(1)
+
+    go func() {
+      defer wg.Done()
+
+      for element := range jobChan {
+        i := element.Index
+        zerolog.Ctx(ctx).Info().Int("worker", worker).Int("index", i).Msg("processing image")
+
+        x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+        y := (i / displayOptions.Columns) * displayOptions.ImageDimension
+        img, err := getImage(element.ImageBytes, element.ImageExt)
+        if err != nil {
+          zerolog.Ctx(ctx).Error().Err(err).Int("index", i).Msg("failed parsing image")
+        } else if img != nil {
+          img = normaliseToSquare(img, displayOptions.ImageDimension)
+          dc.DrawImage(img, x, y)
+        }
+
+        mu.Lock()
+        placeText(dc, element, displayOptions, float64(x), float64(y))
+        mu.Unlock()
+      }
+    }()
+  }
+  wg.Wait()
 	collage := dc.Image()
 
 	if displayOptions.Resize {

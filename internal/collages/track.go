@@ -3,7 +3,6 @@ package collages
 import (
 	"context"
 	"encoding/json"
-	"image"
 	"strconv"
 	"sync"
 	"time"
@@ -48,16 +47,13 @@ func GetElementsForTrack(
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	config := config.GetConfig()
 	if count > config.MaxImages.Tracks {
-		return nil, lastfm.ErrTooManyImages
+		return lastfm.ErrTooManyImages
 	}
-	tracks, err := getTracks(ctx, username, period, count, imageSize)
-	if err != nil {
-		return nil, err
-	}
-	return tracks, nil
+	return getTracks(ctx, username, period, count, imageSize, jobChan)
 }
 
 func getLastfmTracks(
@@ -97,15 +93,14 @@ func getTracks(
 	period lastfm.Period,
 	count int,
 	imageSize string,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	tracks, err := getLastfmTracks(ctx, username, period, count)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	cacheCount := 0
 	logger := zerolog.Ctx(ctx)
-
-	elements := make([]CollageElement, len(tracks))
 
 	var wg sync.WaitGroup
 	wg.Add(len(tracks))
@@ -114,16 +109,18 @@ func getTracks(
 		go func(i int, lastfmTrack LastfmTrack) {
 			defer wg.Done()
 			track := parseLastfmTrack(ctx, lastfmTrack, imageSize, &cacheCount)
-			track.Image, err = DownloadImageWithRetry(ctx, track.ImageUrl)
+			img, ext, err := DownloadImageWithRetry(ctx, track.ImageUrl)
 			if err != nil {
 				logger.Error().
 					Err(err).
 					Str("imageUrl", track.ImageUrl).
 					Msg("Error downloading image")
 			}
-			elements[i] = CollageElement{
+			jobChan <- CollageElement{
+        Index: i,
 				Parameters: track.Parameters(),
-				Image:      track.Image,
+				ImageBytes: img,
+				ImageExt:   ext,
 			}
 		}(i, track)
 
@@ -137,7 +134,7 @@ func getTracks(
 		Str("method", "track").
 		Msg("Image URLs fetched")
 
-	return elements, nil
+	return nil
 }
 
 func parseLastfmTrack(
@@ -239,7 +236,6 @@ type Track struct {
 	Playcount string
 	Album     string
 	ImageUrl  string
-	Image     image.Image
 	Mbid      string
 	ImageSize string
 }
