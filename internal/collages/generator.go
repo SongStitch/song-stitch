@@ -178,7 +178,7 @@ func CreateCollage(
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		img := collageElement.Image
 		if img != nil {
-			img = normalizeToSquare(img, displayOptions.ImageDimension)
+			img = normaliseToSquare(img, displayOptions.ImageDimension)
 			dc.DrawImage(img, x, y)
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
@@ -211,7 +211,7 @@ func CreateCollage(
 	return collage, collageBuffer, nil
 }
 
-func normalizeToSquare(img image.Image, size int) image.Image {
+func normaliseToSquare(img image.Image, size int) image.Image {
 	if img == nil {
 		return nil
 	}

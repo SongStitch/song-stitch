@@ -330,7 +330,7 @@ type deezerArtistSearchResponse struct {
 	Total int `json:"total"`
 }
 
-// artistNameFromLastfmURL extracts and normalizes the artist name from a Last.fm artist URL.
+// artistNameFromLastfmURL extracts and normalises the artist name from a Last.fm artist URL.
 func artistNameFromLastfmURL(raw string) (string, error) {
 	u, err := url.Parse(raw)
 	if err != nil {
@@ -504,8 +504,8 @@ var wikiTitleReplacer = strings.NewReplacer(
 	"”", `"`,
 )
 
-// normalizeForWikipediaTitle normalizes quote characters to match typical Wikipedia page titles
-func normalizeForWikipediaTitle(s string) string {
+// normaliseForWikipediaTitle normalises quote characters to match typical Wikipedia page titles
+func normaliseForWikipediaTitle(s string) string {
 	return wikiTitleReplacer.Replace(s)
 }
 
@@ -517,7 +517,7 @@ func fetchArtistImageFromWikipedia(ctx context.Context, artistName string) (stri
 		return "", nil
 	}
 
-	artistName = normalizeForWikipediaTitle(artistName)
+	artistName = normaliseForWikipediaTitle(artistName)
 
 	q := url.Values{}
 	q.Set("action", "query")
@@ -809,7 +809,7 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 	return wikiURL, nil
 }
 
-// BuildArtistImageURL normalizes either a raw URL or a legacy Last.fm image ID
+// BuildArtistImageURL normalises either a raw URL or a legacy Last.fm image ID
 // into a full HTTP URL.
 func BuildArtistImageURL(idOrURL string) string {
 	idOrURL = strings.TrimSpace(idOrURL)
