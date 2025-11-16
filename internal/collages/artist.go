@@ -6,6 +6,7 @@ import (
 	"image"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -95,37 +96,48 @@ func getArtists(
 	if err != nil {
 		return nil, err
 	}
-	cacheCount := 0
+
+	var cacheCount int64
 	logger := zerolog.Ctx(ctx)
 
 	elements := make([]CollageElement, len(artists))
 	var wg sync.WaitGroup
-	wg.Add(len(elements))
 
 	start := time.Now()
 	for i, lastfmArtist := range artists {
+		wg.Add(1)
+
 		go func(i int, lastfmArtist LastfmArtist) {
 			defer wg.Done()
+
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
-			artist.Image, err = DownloadImageWithRetry(ctx, artist.ImageUrl)
-			if err != nil {
+
+			img, imgErr := DownloadImageWithRetry(ctx, artist.ImageUrl)
+			if imgErr != nil {
 				logger.Error().
-					Err(err).
+					Err(imgErr).
 					Str("imageUrl", artist.ImageUrl).
 					Msg("Error downloading image")
 			}
 
-			elements[i] = CollageElement{Image: artist.Image, Parameters: artist.Parameters()}
+			artist.Image = img
+			elements[i] = CollageElement{
+				Image:      artist.Image,
+				Parameters: artist.Parameters(),
+			}
 		}(i, lastfmArtist)
 	}
+
 	wg.Wait()
+
 	logger.Info().
-		Int("cacheCount", cacheCount).
+		Int64("cacheCount", atomic.LoadInt64(&cacheCount)).
 		Str("username", username).
 		Int("totalCount", count).
 		Dur("duration", time.Since(start)).
 		Str("method", "artist").
 		Msg("Image URLs fetched")
+
 	return elements, nil
 }
 
@@ -133,9 +145,10 @@ func parseLastfmArtist(
 	ctx context.Context,
 	artist LastfmArtist,
 	imageSize string,
-	cacheCount *int,
+	cacheCount *int64,
 ) Artist {
 	logger := zerolog.Ctx(ctx)
+
 	newArtist := Artist{
 		Name:      artist.Name,
 		Playcount: artist.Playcount,
@@ -144,15 +157,18 @@ func parseLastfmArtist(
 		ImageSize: imageSize,
 	}
 
-	imageCache := cache.GetImageUrlCache()
-	if cacheEntry, ok := imageCache.Get(newArtist.Identifier()); ok {
-		newArtist.ImageUrl = cacheEntry.Url
-		(*cacheCount)++
-		return newArtist
+	key := newArtist.Identifier()
+	if key != "" {
+		imageCache := cache.GetImageUrlCache()
+		if cacheEntry, ok := imageCache.Get(key); ok {
+			newArtist.ImageUrl = cacheEntry.Url
+			atomic.AddInt64(cacheCount, 1)
+			logger.Info().Msg("Image URL found in cache")
+			return newArtist
+		}
 	}
 
-	// last.fm api doesn't return images for artists, so we can fetch the images from the website directly
-	id, err := lastfm.GetImageIdForArtistWithRetry(ctx, artist.URL)
+	idOrURL, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
 	if err != nil {
 		logger.Error().
 			Err(err).
@@ -161,8 +177,20 @@ func parseLastfmArtist(
 			Msg("Error getting image url for artist")
 		return newArtist
 	}
-	newArtist.ImageUrl = "https://lastfm.freetls.fastly.net/i/u/300x300/" + id
-	imageCache.Set(newArtist.Identifier(), newArtist.CacheEntry())
+
+	imageURL := lastfm.BuildArtistImageURL(idOrURL)
+	if imageURL == "" {
+		logger.Warn().Msg("No image URL found for artist")
+		return newArtist
+	}
+
+	newArtist.ImageUrl = imageURL
+
+	if key != "" {
+		imageCache := cache.GetImageUrlCache()
+		imageCache.Set(key, newArtist.CacheEntry())
+	}
+
 	return newArtist
 }
 

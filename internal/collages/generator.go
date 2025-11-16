@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"image/color"
 	"image/draw"
 	"slices"
 	"time"
@@ -177,12 +178,7 @@ func CreateCollage(
 		y := (i / displayOptions.Columns) * displayOptions.ImageDimension
 		img := collageElement.Image
 		if img != nil {
-			img = resizeImage(
-				ctx,
-				img,
-				uint(displayOptions.ImageDimension), // #nosec G115
-				uint(displayOptions.ImageDimension), // #nosec G115
-			)
+			img = normaliseToSquare(img, displayOptions.ImageDimension)
 			dc.DrawImage(img, x, y)
 		}
 		placeText(dc, collageElement, displayOptions, float64(x), float64(y))
@@ -213,4 +209,46 @@ func CreateCollage(
 		Int("columns", displayOptions.Columns).
 		Msg("Collage created")
 	return collage, collageBuffer, nil
+}
+
+func normaliseToSquare(img image.Image, size int) image.Image {
+	if img == nil {
+		return nil
+	}
+
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	if w == 0 || h == 0 {
+		return img
+	}
+
+	// Already exactly the size we want, just return the original image.
+	if w == size && h == size {
+		return img
+	}
+
+	scale := float64(size) / float64(w)
+	if float64(h)*scale > float64(size) {
+		scale = float64(size) / float64(h)
+	}
+
+	newW := int(float64(w)*scale + 0.5)
+	newH := int(float64(h)*scale + 0.5)
+
+	resized := resize.Resize(uint(newW), uint(newH), img, resize.Lanczos3) // #nosec G115
+
+	dst := image.NewRGBA(image.Rect(0, 0, size, size))
+	draw.Draw(dst, dst.Bounds(), &image.Uniform{color.Black}, image.Point{}, draw.Src)
+
+	offsetX := (size - newW) / 2
+	offsetY := (size - newH) / 2
+	draw.Draw(
+		dst,
+		image.Rect(offsetX, offsetY, offsetX+newW, offsetY+newH),
+		resized,
+		resized.Bounds().Min,
+		draw.Over,
+	)
+
+	return dst
 }

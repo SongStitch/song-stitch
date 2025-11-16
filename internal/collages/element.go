@@ -32,6 +32,9 @@ var (
 )
 
 func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error) {
+  if url == "" {
+    return nil, nil
+  }
 	var e error
 	for i := range maxRetries {
 		img, err := DownloadImage(ctx, url)
@@ -63,6 +66,10 @@ func DownloadImage(ctx context.Context, url string) (image.Image, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("User-Agent", "songstitch/1.0 (+https://songstitch.art)")
+	req.Header.Set("Accept", "image/*,*/*;q=0.8")
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err

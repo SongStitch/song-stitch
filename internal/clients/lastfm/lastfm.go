@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog"
+	"golang.org/x/time/rate"
 
 	"github.com/SongStitch/song-stitch/internal/clients"
 	"github.com/SongStitch/song-stitch/internal/config"
@@ -56,11 +56,34 @@ func (e CleanError) Error() string {
 
 // strip sensitive information from error message
 func cleanError(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	errStr := err.Error()
-	pattern := `(&|\?)api_key=[^&]+(&|\b)`
-	regex := regexp.MustCompile(pattern)
-	modifiedString := regex.ReplaceAllString(errStr, "$1")
-	return CleanError{errStr: modifiedString}
+	modified := apiKeyRedactionRegex.ReplaceAllString(errStr, "$1")
+	return CleanError{errStr: modified}
+}
+
+var (
+	musicBrainzLimiter = rate.NewLimiter(rate.Every(1*time.Second), 1)
+
+	defaultHTTPClient = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	apiKeyRedactionRegex = regexp.MustCompile(`([&?])api_key=[^&]+(&|\b)`)
+
+	defaultUserAgent = "songstitch/1.0 (+https://songstitch.art)"
+)
+
+// doMusicBrainzRequest wraps all HTTP calls to MusicBrainz so we never
+// send more than 1 request per second from this process.
+func doMusicBrainzRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
+	if err := musicBrainzLimiter.Wait(ctx); err != nil {
+		return nil, err
+	}
+	return defaultHTTPClient.Do(req)
 }
 
 func GetLastFmResponse(
@@ -69,31 +92,38 @@ func GetLastFmResponse(
 	username string,
 	period Period,
 	count int,
-	handler func(data []byte) (int, int, error),
+	handler func(data []byte) (fetched int, totalPages int, err error),
 ) error {
-	config := config.GetConfig()
-	endpoint := config.Lastfm.Endpoint
-	apiKey := config.Lastfm.APIKey
+	cfg := config.GetConfig()
+	endpoint := cfg.Lastfm.Endpoint
+	apiKey := cfg.Lastfm.APIKey
 
-	// Image URLs stop getting returned by the API at around 500
+	logger := zerolog.Ctx(ctx)
+	logger.Info().Msg("Fetching Last.fm data")
+
+	method := getMethodForCollageType(collageType)
+	if method == "" {
+		return fmt.Errorf("unsupported collage type: %v", collageType)
+	}
+
 	const maxPerPage = 500
+
 	totalFetched := 0
 	page := 1
 
-	logger := zerolog.Ctx(ctx)
-	logger.Info().Msg("Fetching LastFM data")
-	method := getMethodForCollageType(collageType)
 	for count > totalFetched {
 		logger.Info().
 			Int("page", page).
 			Int("totalFetched", totalFetched).
 			Int("count", count).
-			Msg("Fetching page")
-		// Determine the limit for this request
-		limit := min(count - totalFetched, maxPerPage)
+			Msg("Fetching Last.fm page")
+
+		limit := min(count-totalFetched, maxPerPage)
+
 		u, err := url.Parse(endpoint)
 		if err != nil {
-			panic(err)
+			logger.Error().Err(err).Msg("invalid Last.fm endpoint")
+			return fmt.Errorf("invalid lastfm endpoint: %w", err)
 		}
 
 		q := u.Query()
@@ -107,22 +137,24 @@ func GetLastFmResponse(
 		u.RawQuery = q.Encode()
 
 		body, err := func() ([]byte, error) {
-			req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 			if err != nil {
 				return nil, err
 			}
 
 			start := time.Now()
-			res, err := http.DefaultClient.Do(req)
+			res, err := defaultHTTPClient.Do(req)
 			if res != nil {
 				defer res.Body.Close()
 			}
+
 			logger.Info().
 				Dur("duration", time.Since(start)).
 				Str("method", method).
+				Int("status", statusCodeOrZero(res)).
 				Msg("Last.fm request completed")
+
 			if err != nil {
-				// ensure sensitive information is not returned in error message
 				return nil, cleanError(err)
 			}
 
@@ -131,13 +163,14 @@ func GetLastFmResponse(
 			}
 
 			if res.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
+				return nil, fmt.Errorf("lastfm unexpected status code: %d", res.StatusCode)
 			}
 
 			body, err := io.ReadAll(res.Body)
 			if err != nil {
 				return nil, err
 			}
+
 			return body, nil
 		}()
 		if err != nil {
@@ -148,13 +181,24 @@ func GetLastFmResponse(
 		if err != nil {
 			return err
 		}
+
+		totalFetched = fetched
+
 		if totalPages == page || totalPages == 0 {
 			break
 		}
-		totalFetched = fetched
+
 		page++
 	}
-	return nil // No more pages to fetch
+
+	return nil
+}
+
+func statusCodeOrZero(res *http.Response) int {
+	if res == nil {
+		return 0
+	}
+	return res.StatusCode
 }
 
 type GetTrackInfoResponse struct {
@@ -162,7 +206,7 @@ type GetTrackInfoResponse struct {
 		Album struct {
 			AlbumName string        `json:"title"`
 			Images    []LastfmImage `json:"image"`
-		} `json:"Album"`
+		} `json:"album"`
 	} `json:"track"`
 }
 
@@ -171,13 +215,13 @@ func GetTrackInfo(
 	artistName string,
 	imageSize string,
 ) (clients.TrackInfo, error) {
-	config := config.GetConfig()
-	endpoint := config.Lastfm.Endpoint
-	apiKey := config.Lastfm.APIKey
+	cfg := config.GetConfig()
+	endpoint := cfg.Lastfm.Endpoint
+	apiKey := cfg.Lastfm.APIKey
 
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		panic(err)
+		return clients.TrackInfo{}, fmt.Errorf("invalid lastfm endpoint: %w", err)
 	}
 
 	q := u.Query()
@@ -188,14 +232,12 @@ func GetTrackInfo(
 	q.Set("format", "json")
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return clients.TrackInfo{}, err
 	}
-
-	res, err := http.DefaultClient.Do(req)
+	res, err := defaultHTTPClient.Do(req)
 	if err != nil {
-		// ensure sensitive information is not returned in error message
 		return clients.TrackInfo{}, cleanError(err)
 	}
 	defer res.Body.Close()
@@ -204,14 +246,20 @@ func GetTrackInfo(
 		return clients.TrackInfo{}, errors.New("track not found")
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return clients.TrackInfo{}, fmt.Errorf(
+			"lastfm track.getInfo unexpected status code: %d",
+			res.StatusCode,
+		)
+	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return clients.TrackInfo{}, err
 	}
 
 	var response GetTrackInfoResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return clients.TrackInfo{}, err
 	}
 
@@ -223,68 +271,462 @@ func GetTrackInfo(
 			}, nil
 		}
 	}
-	return clients.TrackInfo{}, errors.New("no image found")
+
+	return clients.TrackInfo{}, errors.New("no image found for requested size")
 }
 
-const maxRetries = 3
+// MusicBrainz artist search response.
+type mbArtistSearchResponse struct {
+	Artists []struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Score int    `json:"score"`
+	} `json:"artists"`
+}
 
-var (
-	backoffSchedule = []time.Duration{
-		200 * time.Millisecond,
-		500 * time.Millisecond,
-		1 * time.Second,
+// fanart.tv image info.
+type fanartImage struct {
+	URL   string `json:"url"`
+	Likes string `json:"likes"`
+}
+
+// fanart.tv artist response.
+type fanartArtistResponse struct {
+	Name             string        `json:"name"`
+	MBID             string        `json:"mbid_id"`
+	ArtistThumb      []fanartImage `json:"artistthumb"`
+	ArtistBackground []fanartImage `json:"artistbackground"`
+	HDMusicLogo      []fanartImage `json:"hdmusiclogo"`
+	MusicBanner      []fanartImage `json:"musicbanner"`
+	MusicLogo        []fanartImage `json:"musiclogo"`
+}
+
+// Wikipedia pageimages response.
+type wikipediaQueryResponse struct {
+	Query struct {
+		Pages map[string]struct {
+			Title     string `json:"title"`
+			Thumbnail struct {
+				Source string `json:"source"`
+				Width  int    `json:"width"`
+				Height int    `json:"height"`
+			} `json:"thumbnail"`
+		} `json:"pages"`
+	} `json:"query"`
+}
+
+// Deezer artist search response.
+type deezerArtistSearchResponse struct {
+	Data []struct {
+		ID            int    `json:"id"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+		PictureSmall  string `json:"picture_small"`
+		PictureMedium string `json:"picture_medium"`
+		PictureBig    string `json:"picture_big"`
+		PictureXL     string `json:"picture_xl"`
+	} `json:"data"`
+	Total int `json:"total"`
+}
+
+// artistNameFromLastfmURL extracts and normalises the artist name from a Last.fm artist URL.
+func artistNameFromLastfmURL(raw string) (string, error) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "", fmt.Errorf("invalid artistUrl: %w", err)
 	}
-)
 
-func GetImageIdForArtistWithRetry(ctx context.Context, artistUrl string) (string, error) {
-  var e error
-  for i := range maxRetries {
-    url, err := GetImageIdForArtist(ctx, artistUrl)
-    if err == nil {
-      return url, nil
-    }
+	segments := strings.Split(strings.Trim(u.Path, "/"), "/")
+	if len(segments) == 0 {
+		return "", fmt.Errorf("no path segments in artistUrl %q", raw)
+	}
 
-    e = err
-    elem := min(len(backoffSchedule)-1, i)
-		delay := backoffSchedule[elem]
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case <-time.After(delay):
-			continue
-		}
-  }
+	last := segments[len(segments)-1]
 
-  return "", fmt.Errorf("failed to get artist image after %d retries: %w", maxRetries, e)
+	last, err = url.PathUnescape(last)
+	if err != nil {
+		// Fallback to raw segment if unescape fails.
+		last = segments[len(segments)-1]
+	}
 
+	name := strings.ReplaceAll(last, "+", " ")
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "", fmt.Errorf("could not infer artist name from %q", raw)
+	}
+	return name, nil
 }
 
-func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
-	url := artistUrl + "/+images"
-	zerolog.Ctx(ctx).Info().Str("artistUrl", url).Msg("Getting image for artist")
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+// searchArtistMBID looks up a MusicBrainz ID for the given artist name.
+// Returns an empty string if no artist is found or MusicBrainz is unavailable.
+func searchArtistMBID(ctx context.Context, artistName string) (string, error) {
+	q := url.Values{}
+	q.Set("query", fmt.Sprintf(`artist:"%s"`, artistName))
+	q.Set("fmt", "json")
+	q.Set("limit", "1")
+
+	endpoint := "https://musicbrainz.org/ws/2/artist/?" + q.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
 	}
-  req.Header.Add("Accept", "text/html")
+	req.Header.Set("User-Agent", defaultUserAgent)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := doMusicBrainzRequest(ctx, req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-  if resp.StatusCode != 200 {
-    return "", fmt.Errorf("invalid status: %s", resp.Status)
-  }
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	// If MusicBrainz says "Service Unavailable", treat it like "no MBID"
+	// so we fall back to Wikipedia/Deezer instead of hammering MB further.
+	if resp.StatusCode == http.StatusServiceUnavailable {
+		return "", nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("musicbrainz artist search status: %s", resp.Status)
+	}
+
+	var payload mbArtistSearchResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", err
+	}
+	if len(payload.Artists) == 0 {
+		return "", nil
+	}
+
+	return payload.Artists[0].ID, nil
+}
+
+func fetchArtistArtworkFromFanart(
+	ctx context.Context,
+	mbid, apiKey string,
+) (*fanartArtistResponse, error) {
+	if mbid == "" {
+		return nil, nil
+	}
+	if apiKey == "" {
+		return nil, fmt.Errorf("fanart.tv API key is empty")
+	}
+
+	endpoint := fmt.Sprintf("https://webservice.fanart.tv/v3/music/%s?api_key=%s", mbid, apiKey)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", defaultUserAgent)
+
+	resp, err := defaultHTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("fanart.tv status: %s", resp.Status)
+	}
+
+	var payload fanartArtistResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return nil, err
+	}
+	return &payload, nil
+}
+
+// bestArtistThumbURL picks the "best" artist thumb URL from a fanart.tv response.
+// In case of multiple candidates, the one with the highest "likes" count is chosen
+func bestArtistThumbURL(f *fanartArtistResponse) string {
+	if f == nil {
+		return ""
+	}
+
+	candidates := [][]fanartImage{
+		f.ArtistThumb,
+		f.ArtistBackground,
+		f.HDMusicLogo,
+		f.MusicLogo,
+		f.MusicBanner,
+	}
+
+	for _, group := range candidates {
+		if len(group) == 0 {
+			continue
+		}
+
+		best := bestByLikes(group)
+		if best.URL != "" {
+			return best.URL
+		}
+	}
+
+	return ""
+}
+
+func bestByLikes(images []fanartImage) fanartImage {
+	if len(images) == 0 {
+		return fanartImage{}
+	}
+
+	best := images[0]
+	bestLikes := parseLikes(best.Likes)
+
+	for _, img := range images[1:] {
+		if l := parseLikes(img.Likes); l > bestLikes {
+			bestLikes = l
+			best = img
+		}
+	}
+
+	return best
+}
+
+func parseLikes(s string) int {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+// Hack to normalise quote characters for Wikipedia titles
+var wikiTitleReplacer = strings.NewReplacer(
+	"’", "'",
+	"‘", "'",
+	"“", `"`,
+	"”", `"`,
+)
+
+// normaliseForWikipediaTitle normalises quote characters to match typical Wikipedia page titles
+func normaliseForWikipediaTitle(s string) string {
+	return wikiTitleReplacer.Replace(s)
+}
+
+const wikipediaThumbSize = "600"
+
+func fetchArtistImageFromWikipedia(ctx context.Context, artistName string) (string, error) {
+	artistName = strings.TrimSpace(artistName)
+	if artistName == "" {
+		return "", nil
+	}
+
+	artistName = normaliseForWikipediaTitle(artistName)
+
+	q := url.Values{}
+	q.Set("action", "query")
+	q.Set("format", "json")
+	q.Set("prop", "pageimages")
+	q.Set("piprop", "thumbnail")
+	q.Set("pithumbsize", wikipediaThumbSize)
+	q.Set("redirects", "1")
+	q.Set("titles", artistName)
+
+	endpoint := "https://en.wikipedia.org/w/api.php?" + q.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", defaultUserAgent)
+
+	resp, err := defaultHTTPClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("wikipedia status: %s", resp.Status)
+	}
+
+	var payload wikipediaQueryResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", err
+	}
+
+	for _, page := range payload.Query.Pages {
+		if page.Thumbnail.Source != "" {
+			return page.Thumbnail.Source, nil
+		}
+	}
+
+	return "", nil
+}
+
+// fetchArtistImageFromDeezer fetches an artist image from the Deezer search API as a fallback.
+func fetchArtistImageFromDeezer(ctx context.Context, artistName string) (string, error) {
+	artistName = strings.TrimSpace(artistName)
+	if artistName == "" {
+		return "", nil
+	}
+
+	q := url.Values{}
+	q.Set("q", artistName)
+
+	endpoint := "https://api.deezer.com/search/artist?" + q.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
 	}
 
-	href := doc.Find(".image-list-item-wrapper").First().Find("a").First().AttrOr("href", "")
-	if href == "" {
-		return "", errors.New("no image found")
+	resp, err := defaultHTTPClient.Do(req)
+	if err != nil {
+		return "", err
 	}
-	return path.Base(href), nil
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("deezer status: %s", resp.Status)
+	}
+
+	var payload deezerArtistSearchResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", err
+	}
+	if len(payload.Data) == 0 {
+		return "", nil
+	}
+
+  getImageUrl := func(payload deezerArtistSearchResponse) string {
+    a := payload.Data[0]
+    switch {
+    case a.PictureXL != "":
+      return a.PictureXL
+    case a.PictureBig != "":
+      return a.PictureBig
+    case a.PictureMedium != "":
+      return a.PictureMedium
+    case a.PictureSmall != "":
+      return a.PictureSmall
+    case a.Picture != "":
+      return a.Picture
+    default:
+      return ""
+    }
+  }
+
+  url := getImageUrl(payload)
+  isValidUrl := func(url string) bool {
+    // format is https://cdn-images.dzcdn.net/images/artist/<id>/1000x1000-000000-80-0-0.jpg
+    // if <id> is missing, we return false
+
+    s := strings.Split(url, "artist/")
+    if len(s) != 2 {
+      return false
+    }
+
+    // <id>/1000x1000-000000-80-0-0.jpg
+    s2 := strings.Split(s[1], "/")
+    if len(s2) != 2 {
+      return false
+    }
+
+    return s2[0] != ""
+  }
+
+  valid := isValidUrl(url)
+  if valid {
+    return url, nil
+  }
+  return "", nil
+}
+
+func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
+	logger := zerolog.Ctx(ctx)
+	cfg := config.GetConfig()
+
+	logger.Info().
+		Str("artistUrl", artistUrl).
+		Msg("Getting artist artwork via MusicBrainz + fanart.tv (+ Wikipedia + Deezer fallback)")
+
+	artistName, err := artistNameFromLastfmURL(artistUrl)
+	if err != nil {
+		logger.Error().Err(err).Msg("Failed to parse artist name from Last.fm URL")
+		return "", err
+	}
+
+	deezerURL, err := fetchArtistImageFromDeezer(ctx, artistName)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Str("artistName", artistName).
+			Msg("Deezer artwork lookup failed")
+	} else if deezerURL != "" {
+    logger.Info().
+      Str("artistName", artistName).
+      Str("artwork_url", deezerURL).
+      Msg("Successfully resolved artist artwork URL from Deezer (no MBID)")
+    return deezerURL, nil
+	}
+
+	wikiURL, err := fetchArtistImageFromWikipedia(ctx, artistName)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Str("artistName", artistName).
+			Msg("Wikipedia artwork lookup failed")
+	} else if wikiURL != "" {
+		logger.Info().
+			Str("artistName", artistName).
+			Str("artwork_url", wikiURL).
+			Msg("Successfully resolved artist artwork URL from Wikipedia (no MBID)")
+		return wikiURL, nil
+	}
+
+	mbid, err := searchArtistMBID(ctx, artistName)
+	if err != nil {
+    return "", fmt.Errorf("failed to lookup MBID: %w", err)
+	}
+
+	if mbid == "" {
+		logger.Warn().
+			Str("artistName", artistName).
+			Msg("No MusicBrainz artist found")
+    return "", fmt.Errorf("failed to find MusicBrainz id")
+	}
+
+	fa, err := fetchArtistArtworkFromFanart(ctx, mbid, cfg.Fanart.APIKey)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Str("mbid", mbid).
+			Msg("fanart.tv artwork lookup failed")
+    return "", fmt.Errorf("failed to lookup fanart: %w", err)
+  }
+
+  artURL := bestArtistThumbURL(fa)
+	if artURL != "" {
+		logger.Info().
+			Str("artistName", artistName).
+			Str("mbid", mbid).
+			Str("artwork_url", artURL).
+			Msg("Successfully resolved artist artwork URL from fanart.tv")
+		return artURL, nil
+	}
+
+  return "", fmt.Errorf("no image found")
+}
+
+// BuildArtistImageURL normalises either a raw URL or a legacy Last.fm image ID
+// into a full HTTP URL.
+func BuildArtistImageURL(idOrURL string) string {
+	idOrURL = strings.TrimSpace(idOrURL)
+	if idOrURL == "" {
+		return ""
+	}
+
+	if strings.HasPrefix(idOrURL, "http://") || strings.HasPrefix(idOrURL, "https://") {
+		return idOrURL
+	}
+
+	return "https://lastfm.freetls.fastly.net/i/u/300x300/" + idOrURL
 }
