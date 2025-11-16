@@ -57,9 +57,9 @@ func generateCollage(
 	}
 
 	jobChan := make(chan collages.CollageElement, 100)
-  logger := zerolog.Ctx(ctx)
+	logger := zerolog.Ctx(ctx)
 	go func() {
-    var err error
+		var err error
 		switch request.Method {
 		case lastfm.MethodAlbum:
 			err = collages.GetElementsForAlbum(
@@ -69,7 +69,7 @@ func generateCollage(
 				count,
 				imageSize,
 				displayOptions,
-        jobChan,
+				jobChan,
 			)
 		case lastfm.MethodArtist:
 			err = collages.GetElementsForArtist(
@@ -79,7 +79,7 @@ func generateCollage(
 				count,
 				imageSize,
 				displayOptions,
-        jobChan,
+				jobChan,
 			)
 		case lastfm.MethodTrack:
 			err = collages.GetElementsForTrack(
@@ -92,9 +92,9 @@ func generateCollage(
 				jobChan,
 			)
 		}
-    if err != nil {
-      logger.Error().Err(err).Msg("failed to fetch image data")
-    }
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to fetch image data")
+		}
 		close(jobChan)
 	}()
 	return collages.CreateCollage(ctx, displayOptions, jobChan)

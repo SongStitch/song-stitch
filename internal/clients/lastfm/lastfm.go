@@ -66,7 +66,7 @@ func cleanError(err error) error {
 
 var (
 	defaultHTTPClient = &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 60 * time.Second,
 	}
 
 	apiKeyRedactionRegex = regexp.MustCompile(`([&?])api_key=[^&]+(&|\b)`)

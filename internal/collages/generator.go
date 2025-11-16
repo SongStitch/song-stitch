@@ -178,23 +178,12 @@ func getImage(data io.ReadCloser, extension string) (image.Image, error) {
 
 	switch strings.ToLower(extension) {
 	case jpgFileType:
-		img, err := jpeg.Decode(data)
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
+		return jpeg.Decode(data)
 	case gifFileType:
-		img, err := gif.Decode(data)
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
+		return gif.Decode(data)
 	default:
 		img, _, err := image.Decode(data)
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
+		return img, err
 	}
 }
 
@@ -218,7 +207,7 @@ func CreateCollage(
 
   var wg sync.WaitGroup
   var mu sync.Mutex
-  for worker := range 5 {
+  for range 5 {
     wg.Add(1)
 
     go func() {
@@ -226,7 +215,6 @@ func CreateCollage(
 
       for element := range jobChan {
         i := element.Index
-        zerolog.Ctx(ctx).Info().Int("worker", worker).Int("index", i).Msg("processing image")
 
         x := (i % displayOptions.Columns) * displayOptions.ImageDimension
         y := (i / displayOptions.Columns) * displayOptions.ImageDimension
