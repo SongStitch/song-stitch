@@ -596,22 +596,48 @@ func fetchArtistImageFromDeezer(ctx context.Context, artistName string) (string,
 		return "", nil
 	}
 
-	a := payload.Data[0]
+  getImageUrl := func(payload deezerArtistSearchResponse) string {
+    a := payload.Data[0]
+    switch {
+    case a.PictureXL != "":
+      return a.PictureXL
+    case a.PictureBig != "":
+      return a.PictureBig
+    case a.PictureMedium != "":
+      return a.PictureMedium
+    case a.PictureSmall != "":
+      return a.PictureSmall
+    case a.Picture != "":
+      return a.Picture
+    default:
+      return ""
+    }
+  }
 
-	switch {
-	case a.PictureXL != "":
-		return a.PictureXL, nil
-	case a.PictureBig != "":
-		return a.PictureBig, nil
-	case a.PictureMedium != "":
-		return a.PictureMedium, nil
-	case a.PictureSmall != "":
-		return a.PictureSmall, nil
-	case a.Picture != "":
-		return a.Picture, nil
-	default:
-		return "", nil
-	}
+  url := getImageUrl(payload)
+  isValidUrl := func(url string) bool {
+    // format is https://cdn-images.dzcdn.net/images/artist/<id>/1000x1000-000000-80-0-0.jpg
+    // if <id> is missing, we return false
+
+    s := strings.Split(url, "artist/")
+    if len(s) != 2 {
+      return false
+    }
+
+    // <id>/1000x1000-000000-80-0-0.jpg
+    s2 := strings.Split(s[1], "/")
+    if len(s2) != 2 {
+      return false
+    }
+
+    return s2[0] != ""
+  }
+
+  valid := isValidUrl(url)
+  if valid {
+    return url, nil
+  }
+  return "", nil
 }
 
 func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) {
@@ -628,32 +654,10 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 		return "", err
 	}
 
-	logger.Info().
-		Str("artistName", artistName).
-		Msg("Resolved artist name from Last.fm URL")
-
-	wikiURL, werr := fetchArtistImageFromWikipedia(ctx, artistName)
-	if werr != nil {
+	deezerURL, err := fetchArtistImageFromDeezer(ctx, artistName)
+	if err != nil {
 		logger.Error().
-			Err(werr).
-			Str("artistName", artistName).
-			Msg("Wikipedia artwork lookup failed")
-	} else if wikiURL != "" {
-		logger.Info().
-			Str("artistName", artistName).
-			Str("artwork_url", wikiURL).
-			Msg("Successfully resolved artist artwork URL from Wikipedia (no MBID)")
-		return wikiURL, nil
-	}
-
-	logger.Warn().
-		Str("artistName", artistName).
-		Msg("No artist artwork found in Wikipedia response; trying Deezer")
-
-	deezerURL, derr := fetchArtistImageFromDeezer(ctx, artistName)
-	if derr != nil {
-		logger.Error().
-			Err(derr).
+			Err(err).
 			Str("artistName", artistName).
 			Msg("Deezer artwork lookup failed")
 	} else if deezerURL != "" {
@@ -664,13 +668,23 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
     return deezerURL, nil
 	}
 
-  logger.Warn().
-    Str("artistName", artistName).
-    Msg("No artist artwork found in Deezer response, looking up MusicBrainz")
+	wikiURL, err := fetchArtistImageFromWikipedia(ctx, artistName)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Str("artistName", artistName).
+			Msg("Wikipedia artwork lookup failed")
+	} else if wikiURL != "" {
+		logger.Info().
+			Str("artistName", artistName).
+			Str("artwork_url", wikiURL).
+			Msg("Successfully resolved artist artwork URL from Wikipedia (no MBID)")
+		return wikiURL, nil
+	}
 
 	mbid, err := searchArtistMBID(ctx, artistName)
 	if err != nil {
-		return "", fmt.Errorf("failed to lookup MBID")
+    return "", fmt.Errorf("failed to lookup MBID: %w", err)
 	}
 
 	if mbid == "" {
@@ -679,11 +693,6 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 			Msg("No MusicBrainz artist found")
     return "", fmt.Errorf("failed to find MusicBrainz id")
 	}
-
-	logger.Info().
-		Str("artistName", artistName).
-		Str("mbid", mbid).
-		Msg("Found MusicBrainz artist MBID")
 
 	fa, err := fetchArtistArtworkFromFanart(ctx, mbid, cfg.Fanart.APIKey)
 	if err != nil {
