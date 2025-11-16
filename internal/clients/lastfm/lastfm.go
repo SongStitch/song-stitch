@@ -66,8 +66,7 @@ func cleanError(err error) error {
 }
 
 var (
-	// wait half a second between MusicBrainz requests to be safe
-	musicBrainzLimiter = rate.NewLimiter(rate.Every(500*time.Millisecond), 1)
+	musicBrainzLimiter = rate.NewLimiter(rate.Every(1*time.Second), 1)
 
 	defaultHTTPClient = &http.Client{
 		Timeout: 10 * time.Second,
@@ -79,7 +78,7 @@ var (
 )
 
 // doMusicBrainzRequest wraps all HTTP calls to MusicBrainz so we never
-// send more than 1 request per half second from this process.
+// send more than 1 request per second from this process.
 func doMusicBrainzRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	if err := musicBrainzLimiter.Wait(ctx); err != nil {
 		return nil, err
