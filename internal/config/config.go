@@ -11,6 +11,9 @@ type Config struct {
 		Endpoint string
 		APIKey   string
 	}
+	Fanart struct {
+		APIKey string
+	}
 	Spotify struct {
 		ClientId     string
 		ClientSecret string
@@ -57,6 +60,11 @@ func Init() error {
 	c.Lastfm.APIKey = os.Getenv("LASTFM_API_KEY")
 	if c.Lastfm.APIKey == "" {
 		return fmt.Errorf("'%s' is required", "LASTFM_API_KEY")
+	}
+
+	c.Fanart.APIKey = os.Getenv("FANART_API_KEY")
+	if c.Fanart.APIKey == "" {
+		return fmt.Errorf("'%s' is required", "FANART_API_KEY")
 	}
 
 	c.Spotify.ClientId = os.Getenv("SPOTIFY_CLIENT_ID")
