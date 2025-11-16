@@ -73,10 +73,10 @@ func Init() error {
 	if err := parseIntWithDefault(&c.MaxImages.Albums, "MAX_ALBUM_IMAGES", 400); err != nil {
 		return err
 	}
-	if err := parseIntWithDefault(&c.MaxImages.Artists, "MAX_ARTIST_IMAGES", 400); err != nil {
+	if err := parseIntWithDefault(&c.MaxImages.Artists, "MAX_ARTIST_IMAGES", 100); err != nil {
 		return err
 	}
-	if err := parseIntWithDefault(&c.MaxImages.Tracks, "MAX_TRACK_IMAGES", 400); err != nil {
+	if err := parseIntWithDefault(&c.MaxImages.Tracks, "MAX_TRACK_IMAGES", 100); err != nil {
 		return err
 	}
 	if err := parseIntWithDefault(&c.ImageSizeCutoffs.ExtraLarge, "IMAGE_SIZE_CUTOFF_EXTRA_LARGE", 100); err != nil {
