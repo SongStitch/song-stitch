@@ -168,7 +168,7 @@ func parseLastfmArtist(
 		}
 	}
 
-	idOrURL, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
+	idOrURL, err := lastfm.GetImageIdForArtist(ctx, artist.Name, artist.Mbid)
 	if err != nil {
 		logger.Error().
 			Err(err).
