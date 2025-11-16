@@ -497,7 +497,7 @@ func parseLikes(s string) int {
 	return n
 }
 
-// / Hack to normalise quote characters for Wikipedia titles
+// Hack to normalise quote characters for Wikipedia titles
 var wikiTitleReplacer = strings.NewReplacer(
 	"’", "'",
 	"‘", "'",
