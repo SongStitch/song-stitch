@@ -111,9 +111,6 @@ func getArtists(
 			defer wg.Done()
 
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
-			if artist.ImageUrl == "" {
-				return
-			}
 
 			img, imgErr := DownloadImageWithRetry(ctx, artist.ImageUrl)
 			if imgErr != nil {
@@ -121,7 +118,6 @@ func getArtists(
 					Err(imgErr).
 					Str("imageUrl", artist.ImageUrl).
 					Msg("Error downloading image")
-				return
 			}
 
 			artist.Image = img

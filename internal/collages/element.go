@@ -32,6 +32,9 @@ var (
 )
 
 func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error) {
+  if url == "" {
+    return nil, nil
+  }
 	var e error
 	for i := range maxRetries {
 		img, err := DownloadImage(ctx, url)
