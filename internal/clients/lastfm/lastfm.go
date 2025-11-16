@@ -635,6 +635,7 @@ func fetchArtistImageFromDeezer(ctx context.Context, artistName string) (string,
 
   valid := isValidUrl(url)
   if valid {
+    url = strings.Replace(url, "1000x1000", "300x300", 1)
     return url, nil
   }
   return "", nil
