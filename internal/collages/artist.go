@@ -164,7 +164,6 @@ func parseLastfmArtist(
 		ImageSize: imageSize,
 	}
 
-	// Build a stable cache key (MBID if present, otherwise Last.fm URL + size).
 	key := newArtist.Identifier()
 	if key != "" {
 		imageCache := cache.GetImageUrlCache()
@@ -176,7 +175,6 @@ func parseLastfmArtist(
 		}
 	}
 
-	// Not in cache – resolve via Last.fm URL / MusicBrainz / fanart / Wikipedia / Deezer.
 	idOrURL, err := lastfm.GetImageIdForArtist(ctx, artist.URL)
 	if err != nil {
 		logger.Error().
@@ -189,7 +187,7 @@ func parseLastfmArtist(
 
 	imageURL := lastfm.BuildArtistImageURL(idOrURL)
 	if imageURL == "" {
-		// Nothing found
+		logger.Warn().Msg("No image URL found for artist")
 		return newArtist
 	}
 
