@@ -632,61 +632,52 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 		Str("artistName", artistName).
 		Msg("Resolved artist name from Last.fm URL")
 
-	mbid, err := searchArtistMBID(ctx, artistName)
-	if err != nil {
+	wikiURL, werr := fetchArtistImageFromWikipedia(ctx, artistName)
+	if werr != nil {
 		logger.Error().
-			Err(err).
+			Err(werr).
 			Str("artistName", artistName).
-			Msg("MusicBrainz artist search failed")
-		return "", err
-	}
-
-	// No MusicBrainz ID: fall back directly to Wikipedia, then Deezer.
-	if mbid == "" {
-		logger.Warn().
-			Str("artistName", artistName).
-			Msg("No MusicBrainz artist found; trying Wikipedia for artwork")
-
-		wikiURL, werr := fetchArtistImageFromWikipedia(ctx, artistName)
-		if werr != nil {
-			logger.Error().
-				Err(werr).
-				Str("artistName", artistName).
-				Msg("Wikipedia artwork lookup failed")
-			return "", werr
-		}
-		if wikiURL == "" {
-			logger.Warn().
-				Str("artistName", artistName).
-				Msg("No artist artwork found in Wikipedia response; trying Deezer")
-
-			deezerURL, derr := fetchArtistImageFromDeezer(ctx, artistName)
-			if derr != nil {
-				logger.Error().
-					Err(derr).
-					Str("artistName", artistName).
-					Msg("Deezer artwork lookup failed")
-				return "", nil
-			}
-			if deezerURL == "" {
-				logger.Warn().
-					Str("artistName", artistName).
-					Msg("No artist artwork found in Deezer response")
-				return "", nil
-			}
-
-			logger.Info().
-				Str("artistName", artistName).
-				Str("artwork_url", deezerURL).
-				Msg("Successfully resolved artist artwork URL from Deezer (no MBID)")
-			return deezerURL, nil
-		}
-
+			Msg("Wikipedia artwork lookup failed")
+	} else if wikiURL != "" {
 		logger.Info().
 			Str("artistName", artistName).
 			Str("artwork_url", wikiURL).
 			Msg("Successfully resolved artist artwork URL from Wikipedia (no MBID)")
 		return wikiURL, nil
+	}
+
+	logger.Warn().
+		Str("artistName", artistName).
+		Msg("No artist artwork found in Wikipedia response; trying Deezer")
+
+	deezerURL, derr := fetchArtistImageFromDeezer(ctx, artistName)
+	if derr != nil {
+		logger.Error().
+			Err(derr).
+			Str("artistName", artistName).
+			Msg("Deezer artwork lookup failed")
+	} else if deezerURL != "" {
+    logger.Info().
+      Str("artistName", artistName).
+      Str("artwork_url", deezerURL).
+      Msg("Successfully resolved artist artwork URL from Deezer (no MBID)")
+    return deezerURL, nil
+	}
+
+  logger.Warn().
+    Str("artistName", artistName).
+    Msg("No artist artwork found in Deezer response, looking up MusicBrainz")
+
+	mbid, err := searchArtistMBID(ctx, artistName)
+	if err != nil {
+		return "", fmt.Errorf("failed to lookup MBID")
+	}
+
+	if mbid == "" {
+		logger.Warn().
+			Str("artistName", artistName).
+			Msg("No MusicBrainz artist found")
+    return "", fmt.Errorf("failed to find MusicBrainz id")
 	}
 
 	logger.Info().
@@ -700,54 +691,10 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 			Err(err).
 			Str("mbid", mbid).
 			Msg("fanart.tv artwork lookup failed")
+    return "", fmt.Errorf("failed to lookup fanart: %w", err)
+  }
 
-		logger.Info().
-			Str("artistName", artistName).
-			Msg("Falling back to Wikipedia after fanart.tv error")
-
-		wikiURL, werr := fetchArtistImageFromWikipedia(ctx, artistName)
-		if werr != nil {
-			logger.Error().
-				Err(werr).
-				Str("artistName", artistName).
-				Msg("Wikipedia artwork lookup failed")
-			return "", err
-		}
-		if wikiURL == "" {
-			logger.Warn().
-				Str("artistName", artistName).
-				Msg("No artist artwork found in Wikipedia response; trying Deezer")
-
-			deezerURL, derr := fetchArtistImageFromDeezer(ctx, artistName)
-			if derr != nil {
-				logger.Error().
-					Err(derr).
-					Str("artistName", artistName).
-					Msg("Deezer artwork lookup failed")
-				return "", err
-			}
-			if deezerURL == "" {
-				logger.Warn().
-					Str("artistName", artistName).
-					Msg("No artist artwork found in Deezer response")
-				return "", err
-			}
-
-			logger.Info().
-				Str("artistName", artistName).
-				Str("artwork_url", deezerURL).
-				Msg("Successfully resolved artist artwork URL from Deezer after fanart.tv error")
-			return deezerURL, nil
-		}
-
-		logger.Info().
-			Str("artistName", artistName).
-			Str("artwork_url", wikiURL).
-			Msg("Successfully resolved artist artwork URL from Wikipedia after fanart.tv error")
-		return wikiURL, nil
-	}
-
-	artURL := bestArtistThumbURL(fa)
+  artURL := bestArtistThumbURL(fa)
 	if artURL != "" {
 		logger.Info().
 			Str("artistName", artistName).
@@ -757,57 +704,7 @@ func GetImageIdForArtist(ctx context.Context, artistUrl string) (string, error) 
 		return artURL, nil
 	}
 
-	logger.Warn().
-		Str("artistName", artistName).
-		Str("mbid", mbid).
-		Msg("No artist artwork found in fanart.tv response; trying Wikipedia")
-
-	wikiURL, werr := fetchArtistImageFromWikipedia(ctx, artistName)
-	if werr != nil {
-		logger.Error().
-			Err(werr).
-			Str("artistName", artistName).
-			Msg("Wikipedia artwork lookup failed")
-		return "", werr
-	}
-	if wikiURL == "" {
-		logger.Warn().
-			Str("artistName", artistName).
-			Str("mbid", mbid).
-			Msg("No artist artwork found in Wikipedia response; trying Deezer")
-
-		deezerURL, derr := fetchArtistImageFromDeezer(ctx, artistName)
-		if derr != nil {
-			logger.Error().
-				Err(derr).
-				Str("artistName", artistName).
-				Str("mbid", mbid).
-				Msg("Deezer artwork lookup failed")
-			return "", nil
-		}
-		if deezerURL == "" {
-			logger.Warn().
-				Str("artistName", artistName).
-				Str("mbid", mbid).
-				Msg("No artist artwork found in Deezer response")
-			return "", nil
-		}
-
-		logger.Info().
-			Str("artistName", artistName).
-			Str("mbid", mbid).
-			Str("artwork_url", deezerURL).
-			Msg("Successfully resolved artist artwork URL from Deezer")
-		return deezerURL, nil
-	}
-
-	logger.Info().
-		Str("artistName", artistName).
-		Str("mbid", mbid).
-		Str("artwork_url", wikiURL).
-		Msg("Successfully resolved artist artwork URL from Wikipedia")
-
-	return wikiURL, nil
+  return "", fmt.Errorf("no image found")
 }
 
 // BuildArtistImageURL normalises either a raw URL or a legacy Last.fm image ID
