@@ -107,14 +107,11 @@ func getArtists(
 	for i, lastfmArtist := range artists {
 		wg.Add(1)
 
-		// Avoid capturing loop variables directly.
 		go func(i int, lastfmArtist LastfmArtist) {
 			defer wg.Done()
 
-			// parseLastfmArtist may hit the cache and will update cacheCount atomically.
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
 			if artist.ImageUrl == "" {
-				// Nothing to download / nothing found
 				return
 			}
 

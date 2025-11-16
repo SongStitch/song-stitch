@@ -206,7 +206,7 @@ type GetTrackInfoResponse struct {
 		Album struct {
 			AlbumName string        `json:"title"`
 			Images    []LastfmImage `json:"image"`
-		} `json:"album"` // NOTE: Last.fm uses "album" (lowercase).
+		} `json:"album"`
 	} `json:"track"`
 }
 
@@ -440,6 +440,7 @@ func fetchArtistArtworkFromFanart(
 }
 
 // bestArtistThumbURL picks the "best" artist thumb URL from a fanart.tv response.
+// In case of multiple candidates, the one with the highest "likes" count is chosen
 func bestArtistThumbURL(f *fanartArtistResponse) string {
 	if f == nil {
 		return ""
@@ -496,6 +497,7 @@ func parseLikes(s string) int {
 	return n
 }
 
+// / Hack to normalise quote characters for Wikipedia titles
 var wikiTitleReplacer = strings.NewReplacer(
 	"’", "'",
 	"‘", "'",
