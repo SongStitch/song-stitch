@@ -105,7 +105,7 @@ func RunServer() {
 		ReadHeaderTimeout: 5 * time.Minute,
 	}
 
-	http.DefaultClient.Timeout = 10 * time.Second
+	http.DefaultClient.Timeout = 60 * time.Second
 	spotify.InitSpotifyClient(context.Background())
 
 	log.Info().Msg("Starting server...")

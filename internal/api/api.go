@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"errors"
 	"image"
 	"image/jpeg"
 	"net/http"
@@ -57,49 +56,48 @@ func generateCollage(
 		TextLocation:   request.TextLocation,
 	}
 
-	var elements []collages.CollageElement
-	var err error
-	switch request.Method {
-	case lastfm.MethodAlbum:
-		elements, err = collages.GetElementsForAlbum(
-			ctx,
-			request.Username,
-			request.Period,
-			count,
-			imageSize,
-			displayOptions,
-		)
-		if err != nil {
-			return nil, nil, err
+	jobChan := make(chan collages.CollageElement, 100)
+	logger := zerolog.Ctx(ctx)
+	go func() {
+		var err error
+		switch request.Method {
+		case lastfm.MethodAlbum:
+			err = collages.GetElementsForAlbum(
+				ctx,
+				request.Username,
+				request.Period,
+				count,
+				imageSize,
+				displayOptions,
+				jobChan,
+			)
+		case lastfm.MethodArtist:
+			err = collages.GetElementsForArtist(
+				ctx,
+				request.Username,
+				request.Period,
+				count,
+				imageSize,
+				displayOptions,
+				jobChan,
+			)
+		case lastfm.MethodTrack:
+			err = collages.GetElementsForTrack(
+				ctx,
+				request.Username,
+				request.Period,
+				count,
+				imageSize,
+				displayOptions,
+				jobChan,
+			)
 		}
-	case lastfm.MethodArtist:
-		elements, err = collages.GetElementsForArtist(
-			ctx,
-			request.Username,
-			request.Period,
-			count,
-			imageSize,
-			displayOptions,
-		)
 		if err != nil {
-			return nil, nil, err
+			logger.Error().Err(err).Msg("failed to fetch image data")
 		}
-	case lastfm.MethodTrack:
-		elements, err = collages.GetElementsForTrack(
-			ctx,
-			request.Username,
-			request.Period,
-			count,
-			imageSize,
-			displayOptions,
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-	default:
-		return nil, nil, errors.New("invalid collage type")
-	}
-	return collages.CreateCollage(ctx, elements, displayOptions)
+		close(jobChan)
+	}()
+	return collages.CreateCollage(ctx, displayOptions, jobChan)
 }
 
 func Collage(w http.ResponseWriter, r *http.Request) {

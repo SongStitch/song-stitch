@@ -3,7 +3,6 @@ package collages
 import (
 	"context"
 	"encoding/json"
-	"image"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -41,16 +40,13 @@ func GetElementsForArtist(
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	config := config.GetConfig()
 	if count > config.MaxImages.Artists {
-		return nil, lastfm.ErrTooManyImages
+		return lastfm.ErrTooManyImages
 	}
-	artists, err := getArtists(ctx, username, period, count, imageSize)
-	if err != nil {
-		return nil, err
-	}
-	return artists, nil
+	return getArtists(ctx, username, period, count, imageSize, jobChan)
 }
 
 func getLastfmArtists(
@@ -91,16 +87,16 @@ func getArtists(
 	period lastfm.Period,
 	count int,
 	imageSize string,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	artists, err := getLastfmArtists(ctx, username, period, count)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var cacheCount int64
 	logger := zerolog.Ctx(ctx)
 
-	elements := make([]CollageElement, len(artists))
 	var wg sync.WaitGroup
 
 	start := time.Now()
@@ -112,7 +108,7 @@ func getArtists(
 
 			artist := parseLastfmArtist(ctx, lastfmArtist, imageSize, &cacheCount)
 
-			img, imgErr := DownloadImageWithRetry(ctx, artist.ImageUrl)
+			img, ext, imgErr := DownloadImageWithRetry(ctx, artist.ImageUrl)
 			if imgErr != nil {
 				logger.Error().
 					Err(imgErr).
@@ -120,9 +116,10 @@ func getArtists(
 					Msg("Error downloading image")
 			}
 
-			artist.Image = img
-			elements[i] = CollageElement{
-				Image:      artist.Image,
+			jobChan <- CollageElement{
+				Index:      i,
+				ImageBytes: img,
+				ImageExt:   ext,
 				Parameters: artist.Parameters(),
 			}
 		}(i, lastfmArtist)
@@ -138,7 +135,7 @@ func getArtists(
 		Str("method", "artist").
 		Msg("Image URLs fetched")
 
-	return elements, nil
+	return nil
 }
 
 func parseLastfmArtist(
@@ -197,7 +194,6 @@ func parseLastfmArtist(
 type Artist struct {
 	Name      string
 	Playcount string
-	Image     image.Image
 	ImageUrl  string
 	Mbid      string
 	ImageSize string

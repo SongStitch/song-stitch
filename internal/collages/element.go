@@ -1,12 +1,8 @@
 package collages
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"image"
-	"image/gif"
-	"image/jpeg"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,15 +27,15 @@ var (
 	}
 )
 
-func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error) {
+func DownloadImageWithRetry(ctx context.Context, url string) (io.ReadCloser, string, error) {
   if url == "" {
-    return nil, nil
+    return nil, "", nil
   }
 	var e error
 	for i := range maxRetries {
-		img, err := DownloadImage(ctx, url)
+		img, ext, err := DownloadImage(ctx, url)
 		if err == nil {
-			return img, nil
+			return img, ext, nil
 		}
 		e = err
 		zerolog.Ctx(ctx).
@@ -50,21 +46,21 @@ func DownloadImageWithRetry(ctx context.Context, url string) (image.Image, error
 		delay := backoffSchedule[i]
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, "", ctx.Err()
 		case <-time.After(delay):
 			continue
 		}
 	}
-	return nil, fmt.Errorf("failed to download image after %d retries: %w", maxRetries, e)
+	return nil, "", fmt.Errorf("failed to download image after %d retries: %w", maxRetries, e)
 }
 
-func DownloadImage(ctx context.Context, url string) (image.Image, error) {
+func DownloadImage(ctx context.Context, url string) (io.ReadCloser, string, error) {
 	if len(url) == 0 {
-		return nil, nil
+		return nil,"", nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	req.Header.Set("User-Agent", "songstitch/1.0 (+https://songstitch.art)")
@@ -72,43 +68,21 @@ func DownloadImage(ctx context.Context, url string) (image.Image, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+    resp.Body.Close()
+		return nil, "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	ioBody := resp.Body
 	extension, err := getExtension(url)
 	if err != nil {
-		return nil, err
+    resp.Body.Close()
+		return nil, "", err
 	}
+  return ioBody, extension, nil
 
-	switch strings.ToLower(extension) {
-	case jpgFileType:
-		img, err := jpeg.Decode(ioBody)
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
-	case gifFileType:
-		img, err := gif.Decode(ioBody)
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
-	default:
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		img, _, err := image.Decode(bytes.NewReader(body))
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
-	}
 }
 
 func getExtension(u string) (string, error) {
