@@ -3,7 +3,6 @@ package collages
 import (
 	"context"
 	"encoding/json"
-	"image"
 	"strconv"
 	"sync"
 	"time"
@@ -46,16 +45,13 @@ func GetElementsForAlbum(
 	count int,
 	imageSize string,
 	displayOptions DisplayOptions,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	config := config.GetConfig()
 	if count > config.MaxImages.Albums {
-		return nil, lastfm.ErrTooManyImages
+		return lastfm.ErrTooManyImages
 	}
-	albums, err := getAlbums(ctx, username, period, count, imageSize)
-	if err != nil {
-		return nil, err
-	}
-	return albums, nil
+	return getAlbums(ctx, username, period, count, imageSize, jobChan)
 }
 
 func getLastfmAlbums(
@@ -96,16 +92,16 @@ func getAlbums(
 	period lastfm.Period,
 	count int,
 	imageSize string,
-) ([]CollageElement, error) {
+	jobChan chan<- CollageElement,
+) error {
 	albums, err := getLastfmAlbums(ctx, username, period, count)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	cacheCount := 0
 
 	logger := zerolog.Ctx(ctx)
 
-	elements := make([]CollageElement, len(albums))
 	var wg sync.WaitGroup
 	wg.Add(len(albums))
 	start := time.Now()
@@ -114,17 +110,20 @@ func getAlbums(
 			defer wg.Done()
 			album := parseLastfmAlbum(ctx, lastfmAlbum, imageSize, &cacheCount)
 
-			album.Image, err = DownloadImageWithRetry(ctx, album.ImageUrl)
+			img, ext, err := DownloadImageWithRetry(ctx, album.ImageUrl)
 			if err != nil {
 				logger.Error().
 					Err(err).
 					Str("imageUrl", album.ImageUrl).
 					Msg("Error downloading image")
 			}
-			elements[i] = CollageElement{
+			jobChan <- CollageElement{
+				Index:      i,
 				Parameters: album.Parameters(),
-				Image:      album.Image,
+				ImageBytes: img,
+				ImageExt:   ext,
 			}
+
 		}(i, lastfmAlbum)
 	}
 	wg.Wait()
@@ -135,7 +134,7 @@ func getAlbums(
 		Dur("duration", time.Since(start)).
 		Str("method", "album").
 		Msg("Image URLs fetched")
-	return elements, nil
+	return nil
 }
 
 func parseLastfmAlbum(
@@ -195,7 +194,6 @@ func getAlbumInfo(
 }
 
 type Album struct {
-	Image     image.Image
 	ImageUrl  string
 	Artist    string
 	Name      string
