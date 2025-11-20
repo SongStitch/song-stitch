@@ -7,7 +7,7 @@ jobs:
     name: runner / hadolint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
@@ -18,7 +18,7 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
@@ -28,7 +28,7 @@ jobs:
     name: runner / prettier
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up npm
         uses: actions/setup-node@v6
       - name: Install dependencies
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Check for typos
         uses: crate-ci/typos@master
         with:
@@ -53,7 +53,7 @@ jobs:
     name: runner / Go package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -74,7 +74,7 @@ jobs:
     name: runner / golines
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -90,7 +90,7 @@ jobs:
     name: runner / Go Test Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -119,7 +119,7 @@ jobs:
       IMAGE_REGISTRY: ghcr.io
       IMAGE_REPOSITORY: songstitch
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push-songstitch
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --image ghcr.io/songstitch/song-stitch:sha-${GITHUB_SHA::7} -c fly.dev.toml
         env:
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-dev
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -180,7 +180,7 @@ jobs:
     needs: build-push-songstitch
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --image ghcr.io/songstitch/song-stitch:sha-${GITHUB_SHA::7}
         env:
@@ -197,7 +197,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-prod
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
