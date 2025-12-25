@@ -117,7 +117,7 @@ func getTracks(
 					Msg("Error downloading image")
 			}
 			jobChan <- CollageElement{
-        Index: i,
+				Index:      i,
 				Parameters: track.Parameters(),
 				ImageBytes: img,
 				ImageExt:   ext,

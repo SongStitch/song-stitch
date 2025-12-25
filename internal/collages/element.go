@@ -28,9 +28,9 @@ var (
 )
 
 func DownloadImageWithRetry(ctx context.Context, url string) (io.ReadCloser, string, error) {
-  if url == "" {
-    return nil, "", nil
-  }
+	if url == "" {
+		return nil, "", nil
+	}
 	var e error
 	for i := range maxRetries {
 		img, ext, err := DownloadImage(ctx, url)
@@ -56,7 +56,7 @@ func DownloadImageWithRetry(ctx context.Context, url string) (io.ReadCloser, str
 
 func DownloadImage(ctx context.Context, url string) (io.ReadCloser, string, error) {
 	if len(url) == 0 {
-		return nil,"", nil
+		return nil, "", nil
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -71,17 +71,17 @@ func DownloadImage(ctx context.Context, url string) (io.ReadCloser, string, erro
 		return nil, "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-    resp.Body.Close()
+		resp.Body.Close()
 		return nil, "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	ioBody := resp.Body
 	extension, err := getExtension(url)
 	if err != nil {
-    resp.Body.Close()
+		resp.Body.Close()
 		return nil, "", err
 	}
-  return ioBody, extension, nil
+	return ioBody, extension, nil
 
 }
 

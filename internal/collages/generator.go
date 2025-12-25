@@ -174,7 +174,7 @@ func getImage(data io.ReadCloser, extension string) (image.Image, error) {
 		return nil, nil
 	}
 
-  defer data.Close()
+	defer data.Close()
 
 	switch strings.ToLower(extension) {
 	case jpgFileType:
@@ -205,34 +205,34 @@ func CreateCollage(
 	}
 	dc.LoadFontFace(fontFile, displayOptions.FontSize)
 
-  var wg sync.WaitGroup
-  var mu sync.Mutex
-  for range 5 {
-    wg.Add(1)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for range 5 {
+		wg.Add(1)
 
-    go func() {
-      defer wg.Done()
+		go func() {
+			defer wg.Done()
 
-      for element := range jobChan {
-        i := element.Index
+			for element := range jobChan {
+				i := element.Index
 
-        x := (i % displayOptions.Columns) * displayOptions.ImageDimension
-        y := (i / displayOptions.Columns) * displayOptions.ImageDimension
-        img, err := getImage(element.ImageBytes, element.ImageExt)
-        if err != nil {
-          zerolog.Ctx(ctx).Error().Err(err).Int("index", i).Msg("failed parsing image")
-        } else if img != nil {
-          img = normaliseToSquare(img, displayOptions.ImageDimension)
-          dc.DrawImage(img, x, y)
-        }
+				x := (i % displayOptions.Columns) * displayOptions.ImageDimension
+				y := (i / displayOptions.Columns) * displayOptions.ImageDimension
+				img, err := getImage(element.ImageBytes, element.ImageExt)
+				if err != nil {
+					zerolog.Ctx(ctx).Error().Err(err).Int("index", i).Msg("failed parsing image")
+				} else if img != nil {
+					img = normaliseToSquare(img, displayOptions.ImageDimension)
+					dc.DrawImage(img, x, y)
+				}
 
-        mu.Lock()
-        placeText(dc, element, displayOptions, float64(x), float64(y))
-        mu.Unlock()
-      }
-    }()
-  }
-  wg.Wait()
+				mu.Lock()
+				placeText(dc, element, displayOptions, float64(x), float64(y))
+				mu.Unlock()
+			}
+		}()
+	}
+	wg.Wait()
 	collage := dc.Image()
 
 	if displayOptions.Resize {
