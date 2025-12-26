@@ -364,21 +364,22 @@
   input[type="button"] {
     font-family: "Poppins";
     font-weight: bold;
-  }
-  input[type="submit"],
-  input[type="button"] {
+
     width: 100%;
-    background-color: #4caf50;
-    color: white;
+    background: transparent;
+    color: black;
     padding: 14px 20px;
     margin: 8px 0;
-    border: none;
+    border: 2px solid black;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1em;
   }
-  input[type="submit"]:hover {
-    background-color: #45a049;
+
+  input[type="submit"]:hover,
+  input[type="button"]:hover {
+    background: black;
+    color: white;
   }
   input:focus {
     outline: none;
@@ -433,48 +434,25 @@
       rgb(0 0 0 / 24%) 0px 1px 2px;
     transition: all 0.1s ease 0s;
   }
-  .btn-grad {
-    background-image: linear-gradient(
-      to right,
-      #da22ff 0%,
-      #9733ee 51%,
-      #da22ff 100%
-    );
-    margin: 10px;
-    padding: 15px 45px;
-    text-align: center;
-    text-transform: uppercase;
-    transition: 0.5s;
-    background-size: 200% auto;
-    color: white;
-    border-radius: 10px;
-    display: block;
-  }
-  .btn-grad:hover {
-    background-position: right center;
-    color: #fff;
-    text-decoration: none;
-  }
+
+  .btn-grad,
   .btn-grad-embed {
-    background-image: linear-gradient(
-      to right,
-      #dd5e89 0%,
-      #f7bb97 51%,
-      #dd5e89 100%
-    );
+    background: transparent;
+    border: 2px solid black;
+    color: black;
     margin: 10px;
     padding: 15px 45px;
     text-align: center;
     text-transform: uppercase;
-    transition: 0.5s;
-    background-size: 200% auto;
-    color: white;
+    transition: 0.2s;
     border-radius: 10px;
     display: block;
   }
+
+  .btn-grad:hover,
   .btn-grad-embed:hover {
-    background-position: right center;
-    color: #fff;
+    background: black;
+    color: white;
     text-decoration: none;
   }
   .loader {
@@ -549,9 +527,15 @@
     box-shadow: 0 0 2px #bfc2c7;
   }
   :global(body.dark-mode) .btn-grad,
-  .btn-grad-embed {
-    box-shadow: none;
-    color: white !important;
+  :global(body.dark-mode) .btn-grad-embed {
+    border-color: #bfc2c7;
+    color: #bfc2c7 !important;
+    background-color: transparent;
+  }
+  :global(body.dark-mode) .btn-grad:hover,
+  :global(body.dark-mode) .btn-grad-embed:hover {
+    background: #bfc2c7;
+    color: #202124 !important;
   }
   :global(body.dark-mode) input {
     background-color: #202124;
