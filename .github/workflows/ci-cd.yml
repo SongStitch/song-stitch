@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
+        uses: securego/gosec@v2.23.0
         with:
           args: -severity medium  ./...
 
