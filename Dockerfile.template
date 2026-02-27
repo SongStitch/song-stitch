@@ -1,9 +1,3 @@
-FROM node:21-alpine AS node-builder
-
-WORKDIR /app/ui
-COPY ui ./
-RUN npm install && npm run build
-
 FROM golang:1.25-bookworm AS builder
 
 WORKDIR /app
@@ -13,9 +7,15 @@ COPY vendor ./vendor
 COPY cmd ./cmd
 COPY internal ./internal
 COPY assets ./assets
-COPY --from=node-builder /app/public ./public
+COPY ui ./ui
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN rm -rf public \
+      && mkdir -p public/assets \
+      && cp -R ui/public/. public/ \
+      && cp -R ui/assets/. public/assets/ \
+      && cp ui/*.html ui/*.css ui/*.js public/
 
 # Minify Assets
 # hadolint ignore=DL3008
