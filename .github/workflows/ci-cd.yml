@@ -29,14 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Set up npm
-        uses: actions/setup-node@v6
-      - name: Install dependencies
-        working-directory: ./ui
-        run: npm install
       - name: Prettify code
-        working-directory: ./ui
-        run: npm run prettier
+        uses: creyD/prettier_action@v4.6
+        with:
+          dry: true
+          no_commit: true
+          working_directory: ui
+          prettier_options: --check "**/*.{html,js,css}"
 
   typocheck:
     name: runner / Spell Check with Typos

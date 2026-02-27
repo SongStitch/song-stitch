@@ -25,20 +25,6 @@ updates:
         patterns:
           - '*'
 
-  - package-ecosystem: 'npm'
-    directory: '/ui'
-    schedule:
-      interval: 'daily'
-      time: '09:00'
-      timezone: 'Australia/Sydney'
-    ignore:
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major']
-    groups:
-      npm:
-        patterns:
-          - '*'
-
   - package-ecosystem: 'gomod'
     directory: '/'
     schedule:

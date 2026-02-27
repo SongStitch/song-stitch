@@ -12,8 +12,8 @@
 
 ![Last.fm](https://img.shields.io/badge/Last.fm-%23D51007.svg?style=flat-square&logo=lastdotfm&logoColor=ffffff)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/SongStitch/song-stitch?style=flat-square&logo=go)
-![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=flat-square&logo=svelte&logoColor=white)
-![typescript](https://img.shields.io/badge/typescript-%233178C6.svg?style=flat-square&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23f7df1e.svg?style=flat-square&logo=javascript&logoColor=black)
+![No Framework](https://img.shields.io/badge/UI-Frameworkless-black?style=flat-square)
 [![Prettier](https://img.shields.io/badge/Prettier-%23F7B93E.svg?style=flat-square&logo=prettier&logoColor=black)](https://github.com/prettier/prettier)
 [![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=flat-square&logo=app-store&logoColor=white)](https://apps.apple.com/au/app/songstitch/id6450189672)
 [![Website Status](https://img.shields.io/website?label=songstitch.art&style=flat-square&url=https%3A%2F%2Fsongstitch.fly.dev/)](https://songstitch.art/)
@@ -56,7 +56,7 @@ If you would like to run SongStitch yourself, below are the instructions on how 
 
 There are currently two options to run SongStitch yourself.
 
-1. Build and run the application locally. This requires you to have the `go` and `npm` installed, and the [WebP](https://developers.google.com/speed/webp/) library.
+1. Build and run the application locally. This requires you to have `go` installed, and the [WebP](https://developers.google.com/speed/webp/) library.
 
 2. Run the application inside the docker container. This requires `docker` to be installed.
 
@@ -82,6 +82,6 @@ There is also the free, [open source](https://github.com/SongStitch/songstitch-i
 
 ## Contributors
 
-- [TheDen](https://github.com/TheDen)
+- [TheDen](https://theden.sh)
 - [BradLewis](https://github.com/BradLewis)
 - [Meena Tharmarajah](https://www.linkedin.com/in/meenatharmarajah/)

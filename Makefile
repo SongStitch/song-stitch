@@ -14,14 +14,6 @@ hadolint:
 	@printf "%s\n" "==== Running hadolint ====="
 	hadolint Dockerfile
 
-lint-prettier:
-	@printf "%s\n" "==== Running prettier lint check ====="
-	prettier -c .
-
-format-prettier:
-	@printf "%s\n" "==== Running prettier format ====="
-	prettier -w .
-
 typos:
 	@printf "%s\n" "==== Running typos ====="
 	typos
@@ -38,27 +30,24 @@ golines-format:
 	@printf "%s\n" "==== Running golines ====="
 	golines --write-output --ignored-dirs=vendor .
 
-format-npm:
-	@printf "%s\n" "==== Running npm format ====="
-	(cd ui && npm run format)
+lint: hadolint go-staticcheck
 
-lint: lint-prettier hadolint go-staticcheck
-
-format: format-go golines-format format-npm format-prettier
+format: format-go golines-format
 
 format-lint: format lint
 
 build-ui:
-	(cd ui && npm install && npm run build)
+	rm -rf public
+	mkdir -p public/assets
+	cp -R ui/public/. public/
+	cp -R ui/assets/. public/assets/
+	cp ui/*.html ui/*.css ui/*.js public/
 
 run: build-ui
 	go run cmd/*.go
 
 watch: build-ui
 	gow run cmd/*.go
-
-watch-ui: build-ui
-	(cd ui && npm run watch)
 
 run-debug:
 	GODEBUG=gctrace=1 go run cmd/*.go
