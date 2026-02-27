@@ -12,6 +12,13 @@ function getContributorNames() {
   return names;
 }
 
+function getContributorLink(name) {
+  if (name === "TheDen") {
+    return "https://theden.sh";
+  }
+  return `https://github.com/${name}`;
+}
+
 export function renderHeader() {
   return `
     <div class="header-img-container" id="top">
@@ -123,7 +130,7 @@ export function renderFooter() {
         <span>
           <a
             class="href-links"
-            href="https://github.com/${names[0]}"
+            href="${getContributorLink(names[0])}"
             target="_blank"
             rel="noopener"
           >${names[0]}</a>
@@ -132,7 +139,7 @@ export function renderFooter() {
         <span>
           <a
             class="href-links"
-            href="https://github.com/${names[1]}"
+            href="${getContributorLink(names[1])}"
             target="_blank"
             rel="noopener"
           >${names[1]}</a>

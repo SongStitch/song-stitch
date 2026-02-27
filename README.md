@@ -82,6 +82,6 @@ There is also the free, [open source](https://github.com/SongStitch/songstitch-i
 
 ## Contributors
 
-- [TheDen](https://github.com/TheDen)
+- [TheDen](https://theden.sh)
 - [BradLewis](https://github.com/BradLewis)
 - [Meena Tharmarajah](https://www.linkedin.com/in/meenatharmarajah/)
