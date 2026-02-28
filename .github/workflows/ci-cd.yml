@@ -11,18 +11,21 @@ jobs:
       - uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
-
   gosec:
     name: runner / gosec
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
     steps:
-      - uses: actions/checkout@v5
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@v2.23.0
+      - uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          args: -severity medium  ./...
+          go-version: '1.25'
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec
+        run: $(go env GOPATH)/bin/gosec -severity medium ./...
 
   prettier:
     name: runner / prettier
