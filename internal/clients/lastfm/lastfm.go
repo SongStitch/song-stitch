@@ -80,7 +80,7 @@ func GetLastFmResponse(
 	username string,
 	period Period,
 	count int,
-	handler func(data []byte) (fetched int, totalPages int, err error),
+	handler func(data io.Reader) (fetched int, totalPages int, err error),
 ) error {
 	cfg := config.GetConfig()
 	endpoint := cfg.Lastfm.Endpoint
@@ -124,48 +124,15 @@ func GetLastFmResponse(
 		q.Set("format", "json")
 		u.RawQuery = q.Encode()
 
-		body, err := func() ([]byte, error) {
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-			if err != nil {
-				return nil, err
-			}
-
-			start := time.Now()
-			res, err := defaultHTTPClient.Do(req)
-			if res != nil {
-				defer res.Body.Close()
-			}
-
-			logger.Info().
-				Dur("duration", time.Since(start)).
-				Str("method", method).
-				Int("status", statusCodeOrZero(res)).
-				Msg("Last.fm request completed")
-
-			if err != nil {
-				return nil, cleanError(err)
-			}
-
-			if res.StatusCode == http.StatusNotFound {
-				return nil, ErrUserNotFound
-			}
-
-			if res.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("lastfm unexpected status code: %d", res.StatusCode)
-			}
-
-			body, err := io.ReadAll(res.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			return body, nil
-		}()
+		body, err := doRequest(ctx, u.String())
 		if err != nil {
 			return err
 		}
 
-		fetched, totalPages, err := handler(body)
+		fetched, totalPages, err := func() (int, int, error) {
+			defer body.Close()
+			return handler(body)
+		}()
 		if err != nil {
 			return err
 		}
@@ -180,6 +147,36 @@ func GetLastFmResponse(
 	}
 
 	return nil
+}
+
+func doRequest(ctx context.Context, url string) (io.ReadCloser, error) {
+	logger := zerolog.Ctx(ctx)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	res, err := defaultHTTPClient.Do(req)
+
+	logger.Info().
+		Dur("duration", time.Since(start)).
+		Int("status", statusCodeOrZero(res)).
+		Msg("Last.fm request completed")
+
+	if err != nil {
+		return nil, cleanError(err)
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return nil, ErrUserNotFound
+	}
+
+	if res.StatusCode != http.StatusOK {
+		res.Body.Close()
+		return nil, fmt.Errorf("lastfm unexpected status code: %d", res.StatusCode)
+	}
+	return res.Body, nil
 }
 
 func statusCodeOrZero(res *http.Response) int {
@@ -241,13 +238,8 @@ func GetTrackInfo(
 		)
 	}
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return clients.TrackInfo{}, err
-	}
-
 	var response GetTrackInfoResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return clients.TrackInfo{}, err
 	}
 
