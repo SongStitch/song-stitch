@@ -81,7 +81,19 @@ func (t *Token) KeepAlive(ctx context.Context) {
 	log := zerolog.Ctx(ctx)
 	for {
 		// Wait until 5 minutes before expiration and then refresh again
-		time.Sleep(time.Duration(t.ExpiresIn-5*60) * time.Second)
+		wait := time.Duration(t.ExpiresIn-5*60) * time.Second
+		// If we're already inside the refresh window, retry after a short delay
+		// to avoid a tight loop.
+		if wait <= 0 {
+			wait = time.Second
+		}
+
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("stopping spotify token keep-alive")
+			return
+		case <-time.After(wait):
+		}
 
 		log.Info().Msg("refreshing spotify token...")
 		err := t.Refresh()
