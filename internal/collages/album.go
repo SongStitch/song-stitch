@@ -3,6 +3,7 @@ package collages
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"strconv"
 	"sync"
 	"time"
@@ -63,9 +64,9 @@ func getLastfmAlbums(
 	albums := []LastfmAlbum{}
 	totalPages := 0
 
-	handler := func(data []byte) (int, int, error) {
+	handler := func(data io.Reader) (int, int, error) {
 		var lastfmTopAlbums LastfmTopAlbums
-		err := json.Unmarshal(data, &lastfmTopAlbums)
+		err := json.NewDecoder(data).Decode(&lastfmTopAlbums)
 		if err != nil {
 			return 0, 0, err
 		}

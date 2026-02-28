@@ -62,13 +62,8 @@ func (t *Token) Refresh() error {
 		return fmt.Errorf("spotify authentication failed, status code: %d", res.StatusCode)
 	}
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-
 	var response SpotifyAuthResponse
-	err = json.Unmarshal([]byte(body), &response)
+	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
 		return err
 	}
@@ -146,7 +141,7 @@ func (c *SpotifyClient) doRequest(
 	requestType string,
 	queryParams map[string]string,
 	market string,
-) ([]byte, error) {
+) (io.ReadCloser, error) {
 	logger := zerolog.Ctx(ctx)
 	u, err := url.Parse(c.endpoint)
 	if err != nil {
@@ -173,19 +168,13 @@ func (c *SpotifyClient) doRequest(
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
+		res.Body.Close()
 		logger.Warn().Int("status", res.StatusCode).Msg("Spotify returned non-200 status")
 		return nil, fmt.Errorf("unexpected status code from spotify request: %d", res.StatusCode)
-
 	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	return res.Body, nil
 }
 
 func (c *SpotifyClient) doTrackRequest(
@@ -203,8 +192,10 @@ func (c *SpotifyClient) doTrackRequest(
 	if err != nil {
 		return clients.TrackInfo{}, err
 	}
+	defer body.Close()
+
 	var response TracksResponse
-	err = json.Unmarshal([]byte(body), &response)
+	err = json.NewDecoder(body).Decode(&response)
 	if err != nil {
 		return clients.TrackInfo{}, err
 	}
@@ -268,8 +259,10 @@ func (c *SpotifyClient) doAlbumRequest(
 	if err != nil {
 		return clients.AlbumInfo{}, err
 	}
+	defer body.Close()
+
 	var response AlbumResponse
-	err = json.Unmarshal([]byte(body), &response)
+	err = json.NewDecoder(body).Decode(&response)
 	if err != nil {
 		return clients.AlbumInfo{}, err
 	}
