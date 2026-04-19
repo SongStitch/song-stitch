@@ -473,9 +473,10 @@ function clampNumberInput(input, max, min = 0) {
 }
 
 function updateComputedState(values) {
-  const isDarkMode = document.body.classList.contains("dark-mode");
-  const checkedColor = isDarkMode ? "#bfc2c7" : "black";
-  const uncheckedColor = isDarkMode ? "#8e9399" : "darkgrey";
+  const styles = getComputedStyle(document.documentElement);
+  const checkedColor = styles.getPropertyValue("--text").trim() || "#1a1a1a";
+  const uncheckedColor =
+    styles.getPropertyValue("--text-dim").trim() || "darkgrey";
 
   const showTrack = values.method === "track";
   const showAlbum = values.method !== "artist";
