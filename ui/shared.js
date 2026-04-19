@@ -32,7 +32,7 @@ export function renderHeader() {
         />
       </a>
     </div>
-    <p class="subheading">Create a collage of your most played Last.fm music</p>
+    <p class="subheading">Share your most played Last.FM music with an image collage!</p>
   `;
 }
 
