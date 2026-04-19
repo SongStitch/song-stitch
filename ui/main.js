@@ -1,6 +1,5 @@
 import {
   initialiseDarkMode,
-  renderDarkModeToggle,
   renderFooter,
   renderHeader,
 } from "./shared.js";
@@ -33,57 +32,59 @@ const app = document.getElementById("app");
 app.innerHTML = `
   <main>
     ${renderHeader()}
-    ${renderDarkModeToggle()}
     <form id="collage-form" novalidate>
-      <label class="form-heading" for="username">Generate a collage for</label>
-      <br />
-      <input
-        class="username"
-        type="text"
-        name="username"
-        id="username"
-        autocomplete="on"
-        placeholder="*Last.FM username"
-      />
-      <div class="error" id="username-error" hidden></div>
+      <div class="form-group">
+        <label class="form-heading" for="username">Last.fm Username</label>
+        <input
+          class="username"
+          type="text"
+          name="username"
+          id="username"
+          autocomplete="on"
+          placeholder="Enter your username"
+        />
+        <div class="error" id="username-error" hidden></div>
+      </div>
 
-      <label class="form-heading" for="method">With</label>
-      <br />
-      <select name="method" id="method">
-        <option value="album">Top Albums</option>
-        <option value="artist">Top Artists</option>
-        <option value="track">Top Tracks</option>
-      </select>
-      <br />
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label class="form-heading" for="method">Type</label>
+          <select name="method" id="method">
+            <option value="album">Top Albums</option>
+            <option value="artist">Top Artists</option>
+            <option value="track">Top Tracks</option>
+          </select>
+        </div>
 
-      <label class="form-heading" for="period">For the time period</label>
-      <br />
-      <select name="period" id="period">
-        <option value="7day">7 Days</option>
-        <option value="1month">1 Month</option>
-        <option value="3month">3 Months</option>
-        <option value="6month">6 Months</option>
-        <option value="12month">Year</option>
-        <option value="overall">All Time</option>
-      </select>
-      <br />
+        <div class="form-group form-group-half">
+          <label class="form-heading" for="period">Time Period</label>
+          <select name="period" id="period">
+            <option value="7day">7 Days</option>
+            <option value="1month">1 Month</option>
+            <option value="3month">3 Months</option>
+            <option value="6month">6 Months</option>
+            <option value="12month">Year</option>
+            <option value="overall">All Time</option>
+          </select>
+        </div>
+      </div>
 
       <fieldset id="fieldset">
-        <legend class="legend">Collage Options</legend>
+        <legend class="legend">Display Options</legend>
 
         <div class="checkbox-wrapper" id="track-wrapper">
           <input type="checkbox" class="switch" name="track" id="track" />
-          <label class="checkbox-label" for="track">Display Track Name</label>
+          <label class="checkbox-label" for="track">Track Name</label>
         </div>
 
         <div class="checkbox-wrapper" id="artist-wrapper">
           <input type="checkbox" class="switch" name="artist" id="artist" />
-          <label class="checkbox-label" for="artist">Display Artist Name</label>
+          <label class="checkbox-label" for="artist">Artist Name</label>
         </div>
 
         <div class="checkbox-wrapper" id="album-wrapper">
           <input type="checkbox" class="switch" name="album" id="album" />
-          <label class="checkbox-label" for="album">Display Album Name</label>
+          <label class="checkbox-label" for="album">Album Name</label>
         </div>
 
         <div class="checkbox-wrapper" id="playcount-wrapper">
@@ -93,55 +94,68 @@ app.innerHTML = `
             name="playcount"
             id="playcount"
           />
-          <label class="checkbox-label" for="playcount">Display Playcount</label>
+          <label class="checkbox-label" for="playcount">Play Count</label>
         </div>
+      </fieldset>
 
-        <br />
+      <fieldset id="grid-fieldset">
+        <legend class="legend">Grid Size</legend>
+        <div class="grid-size-section">
+          <div class="grid-inputs">
+            <div class="form-row">
+              <div class="form-group form-group-half">
+                <label class="label" for="rows">
+                  Rows <span class="limit">(max <span id="rows-max">20</span>)</span>
+                </label>
+                <input
+                  class="number-input"
+                  inputmode="decimal"
+                  type="number"
+                  max="20"
+                  min="0"
+                  name="rows"
+                  id="rows"
+                />
+                <div class="error" id="rows-error" hidden></div>
+              </div>
 
-        <label class="label" for="rows">
-          Number of Rows <span class="limit">(max. <span id="rows-max">20</span>)</span>
-        </label>
-        <br />
-        <input
-          class="number-input"
-          inputmode="decimal"
-          type="number"
-          max="20"
-          min="0"
-          name="rows"
-          id="rows"
-        />
-        <div class="error" id="rows-error" hidden></div>
-
-        <label class="label" for="columns">
-          Number of Columns
-          <span class="limit">(max. <span id="columns-max">20</span>)</span>
-        </label>
-        <br />
-        <input
-          class="number-input"
-          inputmode="decimal"
-          type="number"
-          max="20"
-          min="0"
-          name="columns"
-          id="columns"
-        />
-        <div class="error" id="columns-error" hidden></div>
-
-        <div class="checkbox-wrapper" id="advanced-options-wrapper">
-          <input
-            type="checkbox"
-            class="switch"
-            name="advancedOptions"
-            id="advancedOptions"
-          />
-          <label class="checkbox-label" for="advancedOptions"
-            >Show Advanced Options</label
-          >
+              <div class="form-group form-group-half">
+                <label class="label" for="columns">
+                  Columns <span class="limit">(max <span id="columns-max">20</span>)</span>
+                </label>
+                <input
+                  class="number-input"
+                  inputmode="decimal"
+                  type="number"
+                  max="20"
+                  min="0"
+                  name="columns"
+                  id="columns"
+                />
+                <div class="error" id="columns-error" hidden></div>
+              </div>
+            </div>
+          </div>
+          <div class="grid-preview" id="grid-preview"></div>
         </div>
+      </fieldset>
 
-        <div class="advanced-options">
+      <fieldset id="advanced-fieldset">
+        <legend class="legend">
+          <div class="checkbox-wrapper advanced-legend-toggle" id="advanced-options-wrapper">
+            <input
+              type="checkbox"
+              class="switch"
+              name="advancedOptions"
+              id="advancedOptions"
+            />
+            <label class="checkbox-label" for="advancedOptions"
+              >Advanced Options</label
+            >
+          </div>
+        </legend>
+
+        <div class="advanced-options" id="advanced-options-content">
           <div class="checkbox-wrapper" id="grayscale-wrapper">
             <input
               type="checkbox"
@@ -150,7 +164,7 @@ app.innerHTML = `
               id="grayscaleImage"
             />
             <label class="checkbox-label" for="grayscaleImage"
-              >Grayscale Image</label
+              >Grayscale</label
             >
           </div>
 
@@ -161,7 +175,7 @@ app.innerHTML = `
               name="showBoldtext"
               id="showBoldtext"
             />
-            <label class="checkbox-label" for="showBoldtext">Use Bold Text</label>
+            <label class="checkbox-label" for="showBoldtext">Bold Text</label>
           </div>
 
           <div class="checkbox-wrapper" id="text-size-wrapper">
@@ -172,20 +186,18 @@ app.innerHTML = `
               id="showTextSize"
             />
             <label class="checkbox-label" for="showTextSize"
-              >Set Text Font Size</label
+              >Custom Font Size</label
             >
           </div>
 
           <div class="sub-options" id="text-size-options" hidden>
-            <label class="advanced-option-label" for="textSize">Text Font Size</label>
-            <br />
+            <label class="advanced-option-label" for="textSize">Font Size</label>
             <select name="textSize" id="textSize">
               <option value="10">Extra Small</option>
               <option value="12">Small (default)</option>
               <option value="15">Medium</option>
               <option value="18">Large</option>
             </select>
-            <br />
           </div>
 
           <div class="checkbox-wrapper" id="text-location-wrapper">
@@ -196,13 +208,12 @@ app.innerHTML = `
               id="showTextLocation"
             />
             <label class="checkbox-label" for="showTextLocation"
-              >Set Text Location</label
+              >Custom Text Position</label
             >
           </div>
 
           <div class="sub-options" id="text-location-options" hidden>
-            <label class="advanced-option-label" for="textLocation">Text Location</label>
-            <br />
+            <label class="advanced-option-label" for="textLocation">Position</label>
             <select name="textLocation" id="textLocation">
               <option value="topleft">Top Left (default)</option>
               <option value="topcentre">Top Centre</option>
@@ -211,7 +222,6 @@ app.innerHTML = `
               <option value="bottomcentre">Bottom Centre</option>
               <option value="bottomright">Bottom Right</option>
             </select>
-            <br />
           </div>
 
           <div id="webp-container">
@@ -223,7 +233,7 @@ app.innerHTML = `
                 id="WebPLossyCompression"
               />
               <label class="checkbox-label" for="WebPLossyCompression"
-                >WebP Compressed Image</label
+                >WebP Compression</label
               >
             </div>
           </div>
@@ -234,21 +244,19 @@ app.innerHTML = `
         <div class="loader" id="form-loader" hidden></div>
       </div>
 
-      <input
-        name="submit"
-        id="submit-button"
-        class="btn-grad"
-        type="submit"
-        value="Generate"
-      />
+      <div class="form-actions">
+        <button
+          id="submit-button"
+          class="btn-primary"
+          type="submit"
+        >Generate Collage</button>
 
-      <input
-        name="embed"
-        id="embed-button"
-        class="btn-grad-embed"
-        type="button"
-        value="Share/embed"
-      />
+        <button
+          id="embed-button"
+          class="btn-secondary"
+          type="button"
+        >Share / Embed</button>
+      </div>
 
       <div class="reset-button">
         <a class="reset-text" href="#top" id="reset-link">Reset Form</a>
@@ -261,12 +269,15 @@ app.innerHTML = `
   <dialog id="embed-modal">
     <div id="modal-content">
       <span class="close" id="modal-close">&times;</span>
-      <div class="modal-text">Share/Embed</div>
-      <div class="modal-text">
-        <a class="href-links" id="share-link" href="">Share this link to the collage</a>
-        <p>
-          Or use this HTML code to embed your configured collage. The latest collage
-          will automatically be shown whenever viewed! &#127881;
+      <h3 class="modal-title">Share / Embed</h3>
+      <div class="modal-section">
+        <p class="modal-section-label">Direct Link</p>
+        <a class="share-link-btn" id="share-link" href="" target="_blank" rel="noopener">Open Collage</a>
+      </div>
+      <div class="modal-section">
+        <p class="modal-section-label">Embed Code</p>
+        <p class="modal-hint">
+          Paste this HTML to embed a live collage that updates automatically.
         </p>
       </div>
     </div>
@@ -284,6 +295,8 @@ const rowsInput = document.getElementById("rows");
 const columnsInput = document.getElementById("columns");
 const submitButton = document.getElementById("submit-button");
 const loader = document.getElementById("form-loader");
+const gridPreview = document.getElementById("grid-preview");
+const advancedContent = document.getElementById("advanced-options-content");
 
 const usernameError = document.getElementById("username-error");
 const rowsError = document.getElementById("rows-error");
@@ -500,19 +513,7 @@ function updateComputedState(values) {
     : "none";
 
   const advancedVisible = values.advancedOptions;
-  const advancedIds = [
-    "grayscale-wrapper",
-    "bold-wrapper",
-    "text-size-wrapper",
-    "text-location-wrapper",
-    "webp-wrapper",
-  ];
-
-  advancedIds.forEach((id) => {
-    document.getElementById(id).style.display = advancedVisible
-      ? "block"
-      : "none";
-  });
+  advancedContent.hidden = !advancedVisible;
 
   document.getElementById("text-size-options").hidden =
     !advancedVisible || !values.showTextSize;
@@ -521,6 +522,28 @@ function updateComputedState(values) {
 
   const webpContainer = document.getElementById("webp-container");
   webpContainer.hidden = values.grayscaleImage;
+
+  // Render grid preview
+  const previewRows = Math.min(
+    Math.max(values.rows || 0, 0),
+    state.maxRows,
+    10,
+  );
+  const previewCols = Math.min(
+    Math.max(values.columns || 0, 0),
+    state.maxColumns,
+    10,
+  );
+  let gridHTML = "";
+  if (previewRows > 0 && previewCols > 0) {
+    gridHTML = `<div class="grid-preview-grid" style="grid-template-columns: repeat(${previewCols}, 1fr); grid-template-rows: repeat(${previewRows}, 1fr);">`;
+    for (let i = 0; i < previewRows * previewCols; i++) {
+      gridHTML += '<div class="grid-preview-cell"></div>';
+    }
+    gridHTML += "</div>";
+    gridHTML += `<span class="grid-preview-label">${values.rows || 0} &times; ${values.columns || 0}</span>`;
+  }
+  gridPreview.innerHTML = gridHTML;
 
   document.querySelectorAll(".checkbox-wrapper").forEach((wrapper) => {
     const input = wrapper.querySelector('input[type="checkbox"]');
