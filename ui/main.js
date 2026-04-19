@@ -526,15 +526,10 @@ function updateComputedState(values) {
   webpContainer.hidden = values.grayscaleImage;
 
   // Render grid preview
-  const previewRows = Math.min(
-    Math.max(values.rows || 0, 0),
-    state.maxRows,
-    10,
-  );
+  const previewRows = Math.min(Math.max(values.rows || 0, 0), state.maxRows);
   const previewCols = Math.min(
     Math.max(values.columns || 0, 0),
     state.maxColumns,
-    10,
   );
   let gridHTML = "";
   if (previewRows > 0 && previewCols > 0) {
