@@ -1,5 +1,6 @@
 import {
   initialiseDarkMode,
+  renderDarkModeToggle,
   renderFooter,
   renderHeader,
 } from "./shared.js";
@@ -33,6 +34,7 @@ app.innerHTML = `
   <main>
     ${renderHeader()}
     <form id="collage-form" novalidate>
+      ${renderDarkModeToggle()}
       <div class="form-group">
         <label class="form-heading" for="username">Last.fm Username</label>
         <input

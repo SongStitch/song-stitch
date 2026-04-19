@@ -124,7 +124,7 @@ a:hover {
 
 body {
   display: grid;
-  place-items: center;
+  /* place-items: center; */
   min-height: 100%;
   font-family: "Poppins", system-ui, -apple-system, sans-serif;
   padding: 20px;
@@ -159,21 +159,10 @@ a.href-links:active {
 
 /* Header */
 
-.site-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 1em 0 0;
-}
-
 .header-img-container {
   text-align: center;
   text-decoration: none;
-  flex: 1;
+  padding-top: 1em;
 }
 
 .header-img {
@@ -201,20 +190,22 @@ a.img-link:hover {
 
 /* Dark mode toggle */
 
-.dark-mode-toggle {
+.dark-mode-icon {
   position: absolute;
-  right: 0;
-  top: 1em;
-  padding: 0.5em;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  padding: 6px;
   border-radius: 8px;
   transition: background-color 0.15s ease;
+  z-index: 1;
 }
 
-.dark-mode-toggle:hover {
+.dark-mode-icon:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-:root.dark-mode .dark-mode-toggle:hover {
+:root.dark-mode .dark-mode-icon:hover {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -233,6 +224,7 @@ body.dark-mode .darkmode-icon-img {
 /* Form */
 
 form {
+  position: relative;
   max-width: 500px;
   width: 100%;
   padding: 28px;
@@ -866,10 +858,9 @@ pre {
 
 .footer-support {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 16px;
-  flex-wrap: wrap;
   margin-bottom: 1.5em;
 }
 
@@ -878,6 +869,7 @@ pre {
 }
 
 .appstore-icon {
+  width: auto;
   height: 40px;
   vertical-align: middle;
 }
