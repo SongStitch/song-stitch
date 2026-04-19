@@ -397,7 +397,8 @@ fieldset {
   align-items: center;
   gap: 6px;
   padding-top: 4px;
-  min-width: 80px;
+  width: 80px;
+  flex-shrink: 0;
 }
 
 .grid-preview-grid {
@@ -680,15 +681,18 @@ fieldset {
 
 /* Error states */
 
-.error {
+.error-text {
   color: var(--error);
-  padding-top: 0;
-  margin-top: 0;
-  font-size: 0.8em;
-  padding-left: 0;
-  padding-bottom: 0;
-  margin-bottom: 0.5em;
-  contain: inline-size;
+  font-size: x-small;
+/*  display: table-caption;
+  text-align: -webkit-center;
+  box-sizing: border-box;
+  width: 100%;
+  text-wrap: auto; */
+}
+
+#username-error {
+  color: var(--error);
 }
 
 .number-input.error {

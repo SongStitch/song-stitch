@@ -118,7 +118,7 @@ app.innerHTML = `
                   name="rows"
                   id="rows"
                 />
-                <div class="error" id="rows-error" hidden></div>
+                <div class="error error-text" id="rows-error" hidden></div>
               </div>
 
               <div class="form-group form-group-half">
@@ -134,7 +134,7 @@ app.innerHTML = `
                   name="columns"
                   id="columns"
                 />
-                <div class="error" id="columns-error" hidden></div>
+                <div class="error error-text" id="columns-error" hidden></div>
               </div>
             </div>
           </div>
@@ -564,19 +564,19 @@ function validate(values) {
   }
 
   if (values.rows === null) {
-    errors.rows = "Number of rows is required";
+    errors.rows = "Number is required";
   } else if (!Number.isInteger(values.rows)) {
     errors.rows = "Expected integer, received float";
   } else if (values.rows < 1) {
-    errors.rows = "Number must be greater than or equal to 1";
+    errors.rows = "Must be greater than 0";
   }
 
   if (values.columns === null) {
-    errors.columns = "Number of columns is required";
+    errors.columns = "Number is required";
   } else if (!Number.isInteger(values.columns)) {
     errors.columns = "Expected integer, received float";
   } else if (values.columns < 1) {
-    errors.columns = "Number must be greater than or equal to 1";
+    errors.columns = "Must be greater than 0";
   }
 
   return errors;
