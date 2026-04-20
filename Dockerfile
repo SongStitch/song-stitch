@@ -19,7 +19,7 @@ RUN rm -rf public \
 
 # Minify Assets
 # hadolint ignore=DL3008
-RUN dpkg --add-architecture arm64 && apt-get update && apt-get update \
+RUN dpkg --add-architecture amd64 && apt-get update && apt-get update \
   && apt-get install -y --no-install-recommends \
   minify=2.12.4-2 \
   libwebp-dev=1.2.4-0.2+deb12u1 \
