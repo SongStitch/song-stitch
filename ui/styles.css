@@ -1116,10 +1116,19 @@ body.dark-mode option {
     align-items: stretch;
   }
 
+  .grid-inputs .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .grid-inputs .form-group-half {
+    margin-bottom: 0;
+  }
+
   .grid-preview {
     flex-direction: row;
     justify-content: center;
-    min-width: unset;
+    width: unset;
   }
 
   .footer {
