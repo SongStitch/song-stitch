@@ -19,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
@@ -60,7 +60,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: Install Dependencies
         run: |
@@ -81,7 +81,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: golines
         run: |
@@ -97,7 +97,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: Install Dependencies
         run: |
@@ -172,7 +172,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
       - name: Run Tests
         run: TEST_DOMAIN=songstitch-dev.fly.dev make test
 
@@ -203,6 +203,6 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.25'
+          go-version: '1.26'
       - name: Run Tests
         run: make test
