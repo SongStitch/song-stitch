@@ -1,4 +1,4 @@
-FROM golang:1.25-bookworm@sha256:564e366a28ad1d70f460a2b97d1d299a562f08707eb0ecb24b659e5bd6c108e1 AS builder
+FROM golang:1.26-bookworm@sha256:4f4ab2c90005e7e63cb631f0b4427f05422f241622ee3ec4727cc5febbf83e34 AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN rm -rf public \
 
 # Minify Assets
 # hadolint ignore=DL3008
-RUN dpkg --add-architecture amd64 && apt-get update && apt-get update \
+RUN dpkg --add-architecture arm64 && apt-get update && apt-get update \
   && apt-get install -y --no-install-recommends \
   minify=2.12.4-2 \
   libwebp-dev=1.2.4-0.2+deb12u1 \
