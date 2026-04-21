@@ -1,6 +1,6 @@
 module github.com/SongStitch/song-stitch
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/SongStitch/go-webp v1.2.0
