@@ -47,7 +47,7 @@ jobs:
       - name: Checkout Actions Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Check for typos
-        uses: crate-ci/typos@93c857b593a98e94ba33871b7130363df8b5d51f
+        uses: crate-ci/typos@7c572958218557a3272c2d6719629443b5cc26fd
         with:
           config: ./.typos.toml
 
